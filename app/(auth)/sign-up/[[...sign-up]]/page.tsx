@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { SignUp } from "@clerk/nextjs";
 import { Card, CardContent } from "@/components/ui/card";
 
