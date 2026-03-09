@@ -49,10 +49,10 @@ export function DashboardSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200",
                 active
                   ? "bg-[#201A17] text-white"
-                  : "text-[#4A3E35] hover:bg-[#F2E7D8]"
+                  : "text-[#4A3E35] hover:bg-[#F2E7D8] hover:scale-[1.02]"
               )}
             >
               <Icon className="h-4 w-4" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { ClipboardCheck, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,30 +23,47 @@ export function ExtractionReview({
   const audit = auditDraft(draft);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Review extracted menu</CardTitle>
-          <p className="mt-2 text-sm text-stone">
-            Edit anything before it becomes the source of truth for the public page.
-          </p>
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-saffron/10">
+            <ClipboardCheck className="h-5 w-5 text-saffron" />
+          </div>
+          <div>
+            <CardTitle>Review extracted menu</CardTitle>
+            <p className="mt-1 text-sm text-stone">
+              Edit anything before it becomes the source of truth for the public page.
+            </p>
+          </div>
         </div>
-        <Button onClick={onSave} disabled={saving}>
+        <Button onClick={onSave} disabled={saving} className="shrink-0">
           {saving ? "Saving..." : "Save to menu"}
         </Button>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid gap-4 lg:grid-cols-2">
+
+      {/* Progress banner */}
+      <div className="border-b border-t border-[#E7DAC5] bg-[#FFF8EE] px-6 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="muted">{audit.totalSections} sections</Badge>
+          <Badge variant="muted">{audit.totalItems} dishes</Badge>
+          <Badge variant={audit.blockingIssues.length ? "accent" : "success"}>
+            {audit.blockingIssues.length
+              ? `${audit.blockingIssues.length} blocking issue${audit.blockingIssues.length === 1 ? "" : "s"}`
+              : "Ready to import"}
+          </Badge>
+          <div className="ml-auto h-2 w-32 overflow-hidden rounded-full bg-[#E7DAC5]">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-saffron to-coral transition-all duration-300"
+              style={{ width: audit.blockingIssues.length ? "60%" : "100%" }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <CardContent className="space-y-6 p-6">
+        <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Badge variant="muted">{audit.totalSections} sections</Badge>
-              <Badge variant="muted">{audit.totalItems} dishes</Badge>
-              <Badge variant={audit.blockingIssues.length ? "accent" : "success"}>
-                {audit.blockingIssues.length
-                  ? `${audit.blockingIssues.length} blocking issue${audit.blockingIssues.length === 1 ? "" : "s"}`
-                  : "Ready to import"}
-              </Badge>
-            </div>
+            <div className="mb-3 text-xs uppercase tracking-[0.2em] text-stone">Blocking issues</div>
             {audit.blockingIssues.length ? (
               <div className="space-y-2 text-sm text-stone">
                 {audit.blockingIssues.map((issue) => (
@@ -63,7 +80,7 @@ export function ExtractionReview({
           </div>
 
           <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
-            <div className="mb-3 text-sm font-medium text-ink">Polish after import</div>
+            <div className="mb-3 text-xs uppercase tracking-[0.2em] text-stone">Polish after import</div>
             {audit.improvementIssues.length ? (
               <div className="space-y-2 text-sm text-stone">
                 {audit.improvementIssues.map((issue) => (
@@ -81,10 +98,12 @@ export function ExtractionReview({
         </div>
 
         {draft.sections.map((section, sectionIndex) => (
-          <div key={`${section.name}-${sectionIndex}`} className="rounded-[28px] border border-[#E7DAC5] p-5">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="w-full">
-                <Label>Section name</Label>
+          <div key={`${section.name}-${sectionIndex}`} className="rounded-[28px] border border-[#E7DAC5] overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-[#E7DAC5] bg-[#FFFDF9] px-5 py-4">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
+                {sectionIndex + 1}
+              </div>
+              <div className="min-w-0 flex-1">
                 <Input
                   value={section.name}
                   onChange={(event) => {
@@ -92,6 +111,7 @@ export function ExtractionReview({
                     next.sections[sectionIndex].name = event.target.value;
                     onChange(next);
                   }}
+                  className="border-0 bg-transparent text-base font-medium shadow-none focus-visible:ring-0"
                 />
               </div>
               <Button
@@ -107,9 +127,12 @@ export function ExtractionReview({
               </Button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 p-5">
               {section.items.map((item, itemIndex) => (
-                <div key={`${item.name}-${itemIndex}`} className="grid gap-3 rounded-3xl border border-[#EEE2D2] p-4 md:grid-cols-[1.3fr,1.6fr,0.6fr,auto]">
+                <div
+                  key={`${item.name}-${itemIndex}`}
+                  className="group grid gap-3 rounded-[24px] border border-[#EEE2D2] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1.3fr,1.6fr,0.6fr,auto]"
+                >
                   <div>
                     <Label>Name</Label>
                     <Input
@@ -162,43 +185,50 @@ export function ExtractionReview({
                   </div>
                 </div>
               ))}
-            </div>
 
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => {
-                const next = structuredClone(draft);
-                next.sections[sectionIndex].items.push({
-                  name: "New item",
-                  description: null,
-                  price: 0,
-                });
-                onChange(next);
-              }}
-            >
-              Add item
-            </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  const next = structuredClone(draft);
+                  next.sections[sectionIndex].items.push({
+                    name: "New item",
+                    description: null,
+                    price: 0,
+                  });
+                  onChange(next);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Add item
+              </Button>
+            </div>
           </div>
         ))}
 
-        <Button
-          variant="secondary"
-          onClick={() => {
-            onChange({
-              ...draft,
-              sections: [
-                ...draft.sections,
-                {
-                  name: "New section",
-                  items: [],
-                },
-              ],
-            });
-          }}
-        >
-          Add section
-        </Button>
+        <div className="flex items-center justify-between gap-4">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              onChange({
+                ...draft,
+                sections: [
+                  ...draft.sections,
+                  {
+                    name: "New section",
+                    items: [],
+                  },
+                ],
+              });
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Add section
+          </Button>
+
+          <Button onClick={onSave} disabled={saving} className="shrink-0">
+            {saving ? "Saving..." : "Save to menu"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

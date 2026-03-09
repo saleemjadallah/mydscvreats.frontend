@@ -47,7 +47,7 @@ function SortableSection({
       <div className="flex items-center gap-3 border-b border-[#F1E6D5] px-5 py-4">
         <button
           type="button"
-          className="rounded-full border border-[#E4D6C1] p-2 text-stone"
+          className="rounded-full border border-[#E4D6C1] p-2 text-stone opacity-50 transition-opacity group-hover:opacity-100"
           {...attributes}
           {...listeners}
         >
@@ -218,8 +218,8 @@ export function MenuEditor({
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-col gap-4 border-l-4 border-l-saffron md:flex-row md:items-center md:justify-between">
         <div>
           <CardTitle>Menu editor</CardTitle>
           <p className="mt-2 text-sm text-stone">
@@ -231,6 +231,7 @@ export function MenuEditor({
             variant="secondary"
             onClick={() => void queueImages("missing")}
             disabled={bulkImageMode !== null}
+            className="bg-saffron/10 text-saffron hover:bg-saffron/20"
           >
             <ImagePlus className="h-4 w-4" />
             {bulkImageMode === "missing" ? "Queueing..." : "Generate missing images"}
@@ -239,6 +240,7 @@ export function MenuEditor({
             variant="secondary"
             onClick={() => void queueImages("failed")}
             disabled={bulkImageMode !== null || audit.failedImages === 0}
+            className="bg-saffron/10 text-saffron hover:bg-saffron/20"
           >
             <ImagePlus className="h-4 w-4" />
             {bulkImageMode === "failed" ? "Retrying..." : "Retry failed"}
@@ -250,7 +252,7 @@ export function MenuEditor({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 grid gap-4 xl:grid-cols-[1.05fr,0.95fr]">
+        <div className="mb-6 grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
           <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge variant="muted">{audit.totalSections} sections</Badge>
@@ -302,7 +304,7 @@ export function MenuEditor({
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => void onSectionDragEnd(event)}>
           <SortableContext items={sections.map((section) => section.id)} strategy={rectSortingStrategy}>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {sections.map((section, sectionIndex) => (
                 <SortableSection key={section.id} id={section.id}>
                   <div className="space-y-4">
@@ -340,9 +342,18 @@ export function MenuEditor({
                       {section.items.map((item, itemIndex) => (
                         <div
                           key={item.id}
-                          className="grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 md:grid-cols-[1.2fr,1.5fr,0.6fr,auto,auto]"
+                          className="group grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1.2fr,1.5fr,0.6fr,auto,auto]"
                         >
-                          <div>
+                          {item.imageUrl ? (
+                            <div className="flex items-center gap-3 md:col-span-5 md:col-start-1 md:row-start-1 md:col-span-1">
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="h-12 w-12 rounded-xl border border-[#E7DAC5] object-cover"
+                              />
+                            </div>
+                          ) : null}
+                          <div className={item.imageUrl ? "" : ""}>
                             <Label>Name</Label>
                             <Input
                               value={item.name}

@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { Camera, Globe, ImageIcon, Palette, Save, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ThemePicker } from "@/components/dashboard/theme-picker";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
 import type { Restaurant } from "@/types";
@@ -82,121 +84,254 @@ export default function AppearancePage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Appearance and profile</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label>Name</Label>
-          <Input
-            value={form.name ?? ""}
-            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Cuisine type</Label>
-          <Input
-            value={form.cuisineType ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, cuisineType: event.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2 md:col-span-2">
-          <Label>Description</Label>
-          <Textarea
-            value={form.description ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, description: event.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Location</Label>
-          <Input
-            value={form.location ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, location: event.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Address</Label>
-          <Input
-            value={form.address ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, address: event.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Phone</Label>
-          <Input
-            value={form.phone ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, phone: event.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Website</Label>
-          <Input
-            value={form.website ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, website: event.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Logo upload</Label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(event) => {
-              const nextFile = event.target.files?.[0];
-              if (nextFile) {
-                void uploadAsset(nextFile, "logoUrl");
-              }
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Cover upload</Label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(event) => {
-              const nextFile = event.target.files?.[0];
-              if (nextFile) {
-                void uploadAsset(nextFile, "coverImageUrl");
-              }
-            }}
-          />
-        </div>
-        <div className="space-y-2 md:col-span-2">
-          <Label>Publish status</Label>
-          <div className="flex gap-3">
-            <Button
-              variant={form.isPublished ? "default" : "secondary"}
-              onClick={() => setForm((current) => ({ ...current, isPublished: true }))}
-            >
-              Published
-            </Button>
-            <Button
-              variant={!form.isPublished ? "default" : "secondary"}
-              onClick={() => setForm((current) => ({ ...current, isPublished: false }))}
-            >
-              Draft
-            </Button>
+    <div className="space-y-6">
+      <div className="text-xs uppercase tracking-[0.3em] text-stone">Appearance & Profile</div>
+
+      {/* Restaurant identity */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <User className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>Restaurant identity</CardTitle>
           </div>
-        </div>
-        <div className="md:col-span-2">
-          <Button onClick={() => void save()} disabled={loading}>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input
+              value={form.name ?? ""}
+              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Cuisine type</Label>
+            <Input
+              value={form.cuisineType ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, cuisineType: event.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label>Description</Label>
+            <Textarea
+              value={form.description ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, description: event.target.value }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Location & contact */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <Globe className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>Location & contact</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Location</Label>
+            <Input
+              value={form.location ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, location: event.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Address</Label>
+            <Input
+              value={form.address ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, address: event.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Phone</Label>
+            <Input
+              value={form.phone ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, phone: event.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Website</Label>
+            <Input
+              value={form.website ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, website: event.target.value }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Brand assets */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <ImageIcon className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>Brand assets</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-3">
+            <Label>Logo</Label>
+            <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE]">
+              {form.logoUrl ? (
+                <>
+                  <img src={form.logoUrl} alt="Logo" className="h-full w-full object-contain p-4" />
+                  <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-ink/0 opacity-0 transition-opacity hover:bg-ink/40 hover:opacity-100">
+                    <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-ink shadow-lg">
+                      <Camera className="h-4 w-4" />
+                      Change
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const nextFile = event.target.files?.[0];
+                        if (nextFile) {
+                          void uploadAsset(nextFile, "logoUrl");
+                        }
+                      }}
+                    />
+                  </label>
+                </>
+              ) : (
+                <label className="flex cursor-pointer flex-col items-center gap-2 text-stone">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+                    <Camera className="h-5 w-5 text-saffron" />
+                  </div>
+                  <span className="text-sm">Upload logo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      const nextFile = event.target.files?.[0];
+                      if (nextFile) {
+                        void uploadAsset(nextFile, "logoUrl");
+                      }
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+          <div className="space-y-3">
+            <Label>Cover image</Label>
+            <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE]">
+              {form.coverImageUrl ? (
+                <>
+                  <img src={form.coverImageUrl} alt="Cover" className="h-full w-full object-cover" />
+                  <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-ink/0 opacity-0 transition-opacity hover:bg-ink/40 hover:opacity-100">
+                    <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-ink shadow-lg">
+                      <Camera className="h-4 w-4" />
+                      Change
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const nextFile = event.target.files?.[0];
+                        if (nextFile) {
+                          void uploadAsset(nextFile, "coverImageUrl");
+                        }
+                      }}
+                    />
+                  </label>
+                </>
+              ) : (
+                <label className="flex cursor-pointer flex-col items-center gap-2 text-stone">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+                    <ImageIcon className="h-5 w-5 text-saffron" />
+                  </div>
+                  <span className="text-sm">Upload cover</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      const nextFile = event.target.files?.[0];
+                      if (nextFile) {
+                        void uploadAsset(nextFile, "coverImageUrl");
+                      }
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme & publish */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <Palette className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>Publish settings</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label>Theme</Label>
+            <ThemePicker
+              value={form.themeKey ?? null}
+              onChange={(themeKey) => setForm((current) => ({ ...current, themeKey }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Publish status</Label>
+            <div className="flex gap-3">
+              <Button
+                variant={form.isPublished ? "default" : "secondary"}
+                onClick={() => setForm((current) => ({ ...current, isPublished: true }))}
+                className="transition-all duration-200"
+              >
+                <div className={`mr-1.5 h-2 w-2 rounded-full ${form.isPublished ? "bg-white" : "bg-[#2E8B57]"}`} />
+                Published
+              </Button>
+              <Button
+                variant={!form.isPublished ? "default" : "secondary"}
+                onClick={() => setForm((current) => ({ ...current, isPublished: false }))}
+                className="transition-all duration-200"
+              >
+                <div className={`mr-1.5 h-2 w-2 rounded-full ${!form.isPublished ? "bg-white" : "bg-stone"}`} />
+                Draft
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sticky save bar */}
+      <div className="sticky bottom-4 z-10">
+        <div className="glass-panel flex items-center justify-between rounded-[20px] border border-[#E5D7C0] px-5 py-3 shadow-lg">
+          <p className="text-sm text-stone">Unsaved changes will be lost if you navigate away.</p>
+          <Button onClick={() => void save()} disabled={loading} className="transition-all duration-200 hover:-translate-y-0.5">
+            <Save className="h-4 w-4" />
             {loading ? "Saving..." : "Save profile"}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

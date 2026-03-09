@@ -9,5 +9,19 @@ export function ImageStatusBadge({ status }: { status: ImageStatus }) {
         ? "accent"
         : "muted";
 
-  return <Badge variant={variant}>{status}</Badge>;
+  const dotColor =
+    status === "generated" || status === "uploaded"
+      ? "bg-[#2E8B57]"
+      : status === "failed"
+        ? "bg-coral"
+        : status === "generating"
+          ? "bg-saffron animate-pulse"
+          : "bg-stone";
+
+  return (
+    <Badge variant={variant} className="gap-1.5">
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
+      {status}
+    </Badge>
+  );
 }

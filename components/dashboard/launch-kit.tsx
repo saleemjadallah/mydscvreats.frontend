@@ -65,7 +65,7 @@ export function LaunchKit({
       <CardHeader className="bg-gradient-to-r from-[#201A17] via-[#3A2B23] to-[#6D3B22] text-white">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-[#F0D08A]">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-saffron">
               <Sparkles className="h-4 w-4" />
               Launch kit
             </div>
@@ -79,9 +79,9 @@ export function LaunchKit({
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4 p-6 lg:grid-cols-[1.05fr,0.95fr]">
+      <CardContent className="grid gap-6 p-6 lg:grid-cols-[1.05fr,0.95fr]">
         <div className="space-y-4">
-          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
               <Share2 className="h-4 w-4 text-saffron" />
               Hosted page
@@ -103,7 +103,7 @@ export function LaunchKit({
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
               <Code2 className="h-4 w-4 text-saffron" />
               Widget snippet
@@ -125,16 +125,17 @@ export function LaunchKit({
             <QrCode className="h-4 w-4 text-saffron" />
             QR code for tables and print
           </div>
-          <div className="flex flex-col items-center gap-4 rounded-[20px] bg-white p-4">
+          <div className="relative flex flex-col items-center gap-4 rounded-[20px] bg-white p-4">
+            <div className="absolute -inset-1 rounded-[24px] bg-gradient-to-b from-saffron/10 to-transparent blur-xl" />
             <img
               src={qrCodeUrl}
               alt={`QR code for ${restaurantName}`}
-              className="h-52 w-52 rounded-2xl border border-[#E7DAC5] bg-white p-2"
+              className="relative h-52 w-52 rounded-2xl border border-[#E7DAC5] bg-white p-2"
             />
-            <p className="text-center text-sm text-stone">
+            <p className="relative text-center text-sm text-stone">
               Scan to open the live hosted menu page.
             </p>
-            <Button variant="secondary" onClick={() => void copy(publicUrl, "QR destination link")}>
+            <Button variant="secondary" onClick={() => void copy(publicUrl, "QR destination link")} className="relative">
               <Copy className="h-4 w-4" />
               Copy QR destination
             </Button>
