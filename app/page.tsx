@@ -49,10 +49,18 @@ export default async function HomePage() {
               {clerkEnabled ? (
                 <>
                   <SignedOut>
-                    <SignUpButton mode="modal">
+                    <SignUpButton
+                      mode="modal"
+                      forceRedirectUrl="/dashboard/onboarding"
+                      fallbackRedirectUrl="/dashboard/onboarding"
+                    >
                       <Button size="sm" variant="secondary">Sign up</Button>
                     </SignUpButton>
-                    <SignInButton mode="modal">
+                    <SignInButton
+                      mode="modal"
+                      forceRedirectUrl="/dashboard"
+                      fallbackRedirectUrl="/dashboard"
+                    >
                       <Button size="sm">Sign in</Button>
                     </SignInButton>
                   </SignedOut>
