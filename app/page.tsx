@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api-client";
 
@@ -49,6 +49,9 @@ export default async function HomePage() {
               {clerkEnabled ? (
                 <>
                   <SignedOut>
+                    <SignUpButton mode="modal">
+                      <Button size="sm" variant="secondary">Sign up</Button>
+                    </SignUpButton>
                     <SignInButton mode="modal">
                       <Button size="sm">Sign in</Button>
                     </SignInButton>
