@@ -45,7 +45,7 @@ export function DashboardSidebar() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="rounded-full p-1.5 text-stone hover:bg-[#F2E7D8] lg:hidden"
+            className="rounded-full p-1.5 text-stone hover:bg-[#F2E7D8] md:hidden"
           >
             <X className="h-5 w-5" />
           </button>
@@ -91,7 +91,7 @@ export function DashboardSidebar() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="glass-panel flex items-center gap-2 rounded-2xl border border-[#E5D7C0] px-4 py-3 text-sm font-medium text-ink lg:hidden"
+        className="glass-panel flex items-center gap-2 rounded-2xl border border-[#E5D7C0] px-4 py-3 text-sm font-medium text-ink md:hidden"
       >
         <Menu className="h-4 w-4" />
         Menu
@@ -100,7 +100,7 @@ export function DashboardSidebar() {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
@@ -108,7 +108,7 @@ export function DashboardSidebar() {
       {/* Mobile slide-out sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col rounded-r-[32px] border-r border-[#E5D7C0] bg-sand p-5 shadow-xl transition-transform duration-300 lg:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col rounded-r-[32px] border-r border-[#E5D7C0] bg-sand p-5 shadow-xl transition-transform duration-300 md:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -116,7 +116,7 @@ export function DashboardSidebar() {
       </aside>
 
       {/* Desktop sidebar — hidden below lg, sticky */}
-      <aside className="glass-panel sticky top-8 hidden h-fit max-h-[calc(100vh-4rem)] flex-col overflow-y-auto rounded-[32px] border border-[#E5D7C0] p-5 lg:flex lg:max-w-[280px]">
+      <aside className="glass-panel sticky top-8 hidden h-fit max-h-[calc(100vh-4rem)] flex-col overflow-y-auto rounded-[32px] border border-[#E5D7C0] p-5 md:flex md:max-w-[260px]">
         {sidebarContent}
       </aside>
     </>
