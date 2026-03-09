@@ -86,8 +86,8 @@ export function DashboardSidebar() {
   );
 
   return (
-    <>
-      {/* Mobile menu button — visible below lg */}
+    <div>
+      {/* Mobile menu button — visible below md */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -115,10 +115,10 @@ export function DashboardSidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Desktop sidebar — hidden below lg, sticky */}
-      <aside className="glass-panel sticky top-8 hidden h-fit max-h-[calc(100vh-4rem)] flex-col overflow-y-auto rounded-[32px] border border-[#E5D7C0] p-5 md:flex md:max-w-[260px]">
+      {/* Desktop sidebar — hidden below md, sticky */}
+      <aside className="glass-panel sticky top-8 hidden h-fit max-h-[calc(100vh-4rem)] flex-col overflow-y-auto rounded-[32px] border border-[#E5D7C0] p-5 md:flex">
         {sidebarContent}
       </aside>
-    </>
+    </div>
   );
 }
