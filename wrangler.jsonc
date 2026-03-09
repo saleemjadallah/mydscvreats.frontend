@@ -1,5 +1,7 @@
 {
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "mydscvreats-frontend",
+  "main": ".open-next/worker.js",
   "compatibility_date": "2026-02-23",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
