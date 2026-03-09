@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   BarChart3,
   CreditCard,
   LayoutDashboard,
+  Menu,
   Palette,
   ScanLine,
   Soup,
   Sparkles,
   WandSparkles,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -28,15 +31,25 @@ const navigation = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
-  return (
-    <aside className="glass-panel flex h-full w-full flex-col rounded-[32px] border border-[#E5D7C0] p-5 lg:max-w-[280px]">
+  const sidebarContent = (
+    <>
       <div className="mb-8 flex items-center justify-between">
         <Link href="/" className="space-y-1">
           <div className="text-xs uppercase tracking-[0.26em] text-stone">mydscvr Eats</div>
           <div className="text-xl font-semibold text-ink">Owner Console</div>
         </Link>
-        <Badge variant="default">Beta</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="default">Beta</Badge>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="rounded-full p-1.5 text-stone hover:bg-[#F2E7D8] lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <nav className="space-y-1.5">
@@ -48,6 +61,7 @@ export function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200",
                 active
@@ -68,6 +82,43 @@ export function DashboardSidebar() {
           Publish menu updates, queue AI imagery, and share your hosted page without touching your own site.
         </p>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile menu button — visible below lg */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="glass-panel flex items-center gap-2 rounded-2xl border border-[#E5D7C0] px-4 py-3 text-sm font-medium text-ink lg:hidden"
+      >
+        <Menu className="h-4 w-4" />
+        Menu
+      </button>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Mobile slide-out sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col rounded-r-[32px] border-r border-[#E5D7C0] bg-sand p-5 shadow-xl transition-transform duration-300 lg:hidden",
+          open ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar — hidden below lg, sticky */}
+      <aside className="glass-panel sticky top-8 hidden h-fit max-h-[calc(100vh-4rem)] flex-col overflow-y-auto rounded-[32px] border border-[#E5D7C0] p-5 lg:flex lg:max-w-[280px]">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
