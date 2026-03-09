@@ -33,7 +33,7 @@ export function PainSolution() {
           </h3>
           <ul className="space-y-4">
             {painPoints.map((point) => (
-              <li key={point} className="flex gap-3 text-sm text-stone">
+              <li key={point} className="flex gap-3 text-sm text-ink/70">
                 <X className="mt-0.5 h-4 w-4 shrink-0 text-coral/70" />
                 <span>{point}</span>
               </li>

@@ -14,9 +14,9 @@ export function SocialProof() {
         {trustSignals.map((signal) => (
           <div
             key={signal.label}
-            className="flex items-center gap-2.5 text-sm text-stone"
+            className="flex items-center gap-2.5 text-sm text-ink/60"
           >
-            <signal.icon className="h-4 w-4 text-stone/60" />
+            <signal.icon className="h-4 w-4 text-ink/40" />
             <span>{signal.label}</span>
           </div>
         ))}
@@ -30,7 +30,7 @@ export function SocialProof() {
         <h3 className="mt-3 text-xl font-semibold text-ink">
           Be one of the first 50 restaurants.
         </h3>
-        <p className="mt-2 text-sm text-stone">
+        <p className="mt-2 text-sm text-ink/60">
           Early adopters get priority support and a direct line to the founding
           team.
         </p>

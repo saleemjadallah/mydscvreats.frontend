@@ -50,7 +50,7 @@ export function HowItWorks() {
               <h3 className="mb-2 text-xl font-semibold text-white">
                 {step.title}
               </h3>
-              <p className="mx-auto max-w-xs text-sm leading-relaxed text-white/60">
+              <p className="mx-auto max-w-xs text-sm leading-relaxed text-white/80">
                 {step.description}
               </p>
             </div>

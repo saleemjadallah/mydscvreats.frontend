@@ -15,7 +15,7 @@ export function OneLinkSection() {
         <h2 className="text-3xl font-semibold text-ink sm:text-4xl">
           One link. Everywhere.
         </h2>
-        <p className="mt-4 text-lg text-stone">
+        <p className="mt-4 text-lg text-ink/70">
           Replace PDF menus, outdated websites, and Instagram galleries with a
           single, always-up-to-date link.
         </p>
@@ -38,9 +38,9 @@ export function OneLinkSection() {
           {shareTargets.map((target) => (
             <div key={target.label} className="flex flex-col items-center gap-2">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#E7DAC5] bg-white/80">
-                <target.icon className="h-5 w-5 text-stone" />
+                <target.icon className="h-5 w-5 text-ink/60" />
               </div>
-              <span className="text-xs text-stone">{target.label}</span>
+              <span className="text-xs text-ink/60">{target.label}</span>
             </div>
           ))}
         </div>

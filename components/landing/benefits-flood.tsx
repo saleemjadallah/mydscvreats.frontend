@@ -72,7 +72,7 @@ export function BenefitsFlood() {
     <section className="bg-oat py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-14 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-stone">
+          <p className="text-xs uppercase tracking-[0.3em] text-ink/50">
             Everything you get
           </p>
           <h2 className="mt-3 text-3xl font-semibold text-ink sm:text-4xl">
@@ -94,7 +94,7 @@ export function BenefitsFlood() {
               <h3 className="mb-2 text-lg font-semibold text-ink">
                 {benefit.title}
               </h3>
-              <p className="text-sm leading-relaxed text-stone">
+              <p className="text-sm leading-relaxed text-ink/70">
                 {benefit.description}
               </p>
             </div>

@@ -61,19 +61,19 @@ export function PricingSection() {
                 </div>
               )}
               <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
-              <p className="mt-1 text-sm text-white/60">{plan.description}</p>
+              <p className="mt-1 text-sm text-white/90">{plan.description}</p>
               <div className="mt-5 flex items-baseline gap-1">
                 <span className="text-4xl font-semibold text-white">
                   AED {plan.priceAed}
                 </span>
-                <span className="text-sm text-white/50">/mo</span>
+                <span className="text-sm text-white/70">/mo</span>
               </div>
 
               <ul className="mt-8 space-y-3">
                 {features.map((feature) => (
                   <li
                     key={feature}
-                    className="flex items-start gap-3 text-sm text-white/80"
+                    className="flex items-start gap-3 text-sm text-white/90"
                   >
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-saffron" />
                     <span>{feature}</span>
@@ -101,7 +101,7 @@ export function PricingSection() {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-white/50">
+        <p className="mt-8 text-center text-sm text-white/70">
           14-day free trial on all plans. No credit card required.
         </p>
       </div>

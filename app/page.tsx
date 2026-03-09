@@ -26,10 +26,10 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="glass-panel flex items-center justify-between rounded-[36px] border border-[#E7DAC5] px-6 py-4">
             <div className="flex items-center gap-8">
-              <div className="text-xs uppercase tracking-[0.32em] text-stone">
+              <div className="text-xs uppercase tracking-[0.32em] text-ink/60">
                 mydscvr Eats
               </div>
-              <nav className="hidden items-center gap-5 text-sm text-stone md:flex">
+              <nav className="hidden items-center gap-5 text-sm text-ink/60 md:flex">
                 <a href="#how-it-works" className="hover:text-ink">
                   How it works
                 </a>
@@ -42,7 +42,7 @@ export default async function HomePage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/explore"
-                className="hidden text-sm font-medium text-stone sm:block"
+                className="hidden text-sm font-medium text-ink/60 sm:block"
               >
                 Explore
               </Link>

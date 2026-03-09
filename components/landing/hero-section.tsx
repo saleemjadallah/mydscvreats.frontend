@@ -10,7 +10,7 @@ export function HeroSection() {
           <h1 className="max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-6xl">
             Your menu, stunning and online, in under 10&nbsp;minutes.
           </h1>
-          <p className="max-w-xl text-lg leading-relaxed text-stone">
+          <p className="max-w-xl text-lg leading-relaxed text-ink/70">
             Hand us your menu in any format — a PDF, a photo, even a napkin
             sketch. Our AI extracts every dish, generates beautiful imagery, and
             publishes a hosted page at{" "}
@@ -29,7 +29,7 @@ export function HeroSection() {
             </Button>
           </div>
 
-          <p className="text-sm text-stone">
+          <p className="text-sm text-ink/60">
             14-day free trial. No credit card required.
           </p>
         </div>
@@ -42,7 +42,7 @@ export function HeroSection() {
               {/* Browser bar */}
               <div className="mb-3 flex items-center gap-2 rounded-full bg-oat/60 px-4 py-2">
                 <div className="h-2 w-2 rounded-full bg-stone/30" />
-                <span className="text-xs text-stone">mydscvr.ai/saffron-kitchen</span>
+                <span className="text-xs text-ink/60">mydscvr.ai/saffron-kitchen</span>
               </div>
               {/* Cover image placeholder */}
               <div className="h-32 rounded-[20px] bg-gradient-to-br from-saffron/30 to-coral/30" />
