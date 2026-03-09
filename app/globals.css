@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-saffron: #E8A317;
+  --color-coral: #FF6B5A;
+  --color-ink: #201A17;
+  --color-sand: #F7F1E8;
+  --color-oat: #EDE3D4;
+  --color-stone: #8A7563;
+
+  --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-arabic: "Geeza Pro", "Tahoma", "Arial", sans-serif;
+
+  --shadow-card: 0 24px 60px rgba(32, 26, 23, 0.08);
+}
+
 :root {
   --background: #f7f1e8;
   --foreground: #201a17;
