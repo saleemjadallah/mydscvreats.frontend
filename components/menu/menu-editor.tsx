@@ -18,12 +18,15 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiClient } from "@/lib/api-client";
+import { auditSections } from "@/lib/menu-audit";
 import type { MenuItem, MenuSection } from "@/types";
 
 function SortableSection({
@@ -68,7 +71,9 @@ export function MenuEditor({
   const { getToken } = useAuth();
   const [sections, setSections] = useState(initialSections);
   const [isPending, startTransition] = useTransition();
+  const [bulkImageMode, setBulkImageMode] = useState<"missing" | "failed" | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
+  const audit = auditSections(sections);
 
   useEffect(() => {
     setSections(initialSections);
@@ -175,21 +180,126 @@ export function MenuEditor({
     });
   }
 
+  async function queueImages(mode: "missing" | "failed") {
+    const targetIds = sections.flatMap((section) =>
+      section.items
+        .filter((item) =>
+          mode === "missing"
+            ? !item.imageUrl && item.imageStatus !== "generating"
+            : item.imageStatus === "failed"
+        )
+        .map((item) => item.id)
+    );
+
+    if (!targetIds.length) {
+      toast.message(
+        mode === "missing"
+          ? "No missing dish images left to queue."
+          : "There are no failed image jobs to retry."
+      );
+      return;
+    }
+
+    setBulkImageMode(mode);
+    try {
+      await withToken(async (token) => {
+        await Promise.all(targetIds.map((itemId) => apiClient.queueImageGeneration(token, itemId)));
+      });
+
+      toast.success(
+        `Queued ${targetIds.length} image job${targetIds.length === 1 ? "" : "s"}.`
+      );
+      await onRefresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to queue image jobs.");
+    } finally {
+      setBulkImageMode(null);
+    }
+  }
+
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <CardTitle>Menu editor</CardTitle>
           <p className="mt-2 text-sm text-stone">
             Reorder sections, update dishes, and queue AI imagery from one place.
           </p>
         </div>
-        <Button onClick={() => void createSection()}>
-          <Plus className="h-4 w-4" />
-          Add section
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => void queueImages("missing")}
+            disabled={bulkImageMode !== null}
+          >
+            <ImagePlus className="h-4 w-4" />
+            {bulkImageMode === "missing" ? "Queueing..." : "Generate missing images"}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => void queueImages("failed")}
+            disabled={bulkImageMode !== null || audit.failedImages === 0}
+          >
+            <ImagePlus className="h-4 w-4" />
+            {bulkImageMode === "failed" ? "Retrying..." : "Retry failed"}
+          </Button>
+          <Button onClick={() => void createSection()}>
+            <Plus className="h-4 w-4" />
+            Add section
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
+        <div className="mb-6 grid gap-4 xl:grid-cols-[1.05fr,0.95fr]">
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <Badge variant="muted">{audit.totalSections} sections</Badge>
+              <Badge variant="muted">{audit.totalItems} dishes</Badge>
+              <Badge variant={audit.blockingIssues.length ? "accent" : "success"}>
+                {audit.blockingIssues.length
+                  ? `${audit.blockingIssues.length} launch blocker${audit.blockingIssues.length === 1 ? "" : "s"}`
+                  : "Ready to publish"}
+              </Badge>
+            </div>
+
+            {audit.blockingIssues.length ? (
+              <div className="space-y-2 text-sm text-stone">
+                {audit.blockingIssues.map((issue) => (
+                  <div key={issue.id}>
+                    <span className="font-medium text-ink">{issue.label}:</span> {issue.description}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-stone">
+                Pricing and menu structure look clean. Finish any optional polish, then move to publish.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <Badge variant="muted">{audit.imagesReady} visuals ready</Badge>
+              <Badge variant="muted">{audit.itemsWithoutImages} missing visuals</Badge>
+              {audit.failedImages > 0 ? <Badge variant="accent">{audit.failedImages} failed</Badge> : null}
+            </div>
+
+            {audit.improvementIssues.length ? (
+              <div className="space-y-2 text-sm text-stone">
+                {audit.improvementIssues.map((issue) => (
+                  <div key={issue.id}>
+                    <span className="font-medium text-ink">{issue.label}:</span> {issue.description}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-stone">
+                The page is already polished. Use bulk image generation only when you add new dishes.
+              </p>
+            )}
+          </div>
+        </div>
+
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => void onSectionDragEnd(event)}>
           <SortableContext items={sections.map((section) => section.id)} strategy={rectSortingStrategy}>
             <div className="space-y-4">

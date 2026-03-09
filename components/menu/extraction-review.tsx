@@ -1,10 +1,12 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { auditDraft } from "@/lib/menu-audit";
 import type { MenuExtractionDraft } from "@/types";
 
 export function ExtractionReview({
@@ -18,6 +20,8 @@ export function ExtractionReview({
   onSave: () => void;
   saving: boolean;
 }) {
+  const audit = auditDraft(draft);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -32,6 +36,50 @@ export function ExtractionReview({
         </Button>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <Badge variant="muted">{audit.totalSections} sections</Badge>
+              <Badge variant="muted">{audit.totalItems} dishes</Badge>
+              <Badge variant={audit.blockingIssues.length ? "accent" : "success"}>
+                {audit.blockingIssues.length
+                  ? `${audit.blockingIssues.length} blocking issue${audit.blockingIssues.length === 1 ? "" : "s"}`
+                  : "Ready to import"}
+              </Badge>
+            </div>
+            {audit.blockingIssues.length ? (
+              <div className="space-y-2 text-sm text-stone">
+                {audit.blockingIssues.map((issue) => (
+                  <div key={issue.id}>
+                    <span className="font-medium text-ink">{issue.label}:</span> {issue.description}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-stone">
+                Structure and pricing look clean enough to move into the menu editor.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
+            <div className="mb-3 text-sm font-medium text-ink">Polish after import</div>
+            {audit.improvementIssues.length ? (
+              <div className="space-y-2 text-sm text-stone">
+                {audit.improvementIssues.map((issue) => (
+                  <div key={issue.id}>
+                    <span className="font-medium text-ink">{issue.label}:</span> {issue.description}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-stone">
+                This draft is already in strong shape. The next screen should be mostly about imagery and final checks.
+              </p>
+            )}
+          </div>
+        </div>
+
         {draft.sections.map((section, sectionIndex) => (
           <div key={`${section.name}-${sectionIndex}`} className="rounded-[28px] border border-[#E7DAC5] p-5">
             <div className="mb-4 flex items-center gap-3">

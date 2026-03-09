@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { ExtractionReview } from "@/components/menu/extraction-review";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +27,7 @@ async function fileToBase64(file: File) {
 }
 
 export default function AiMenuPage() {
+  const router = useRouter();
   const { getToken } = useAuth();
   const { restaurant, refresh } = useRestaurant();
   const [file, setFile] = useState<File | null>(null);
@@ -65,6 +68,9 @@ export default function AiMenuPage() {
       });
 
       setDraft(extracted);
+      toast.success("Extraction ready for review.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Menu extraction failed.");
     } finally {
       setLoading(false);
     }
@@ -88,6 +94,10 @@ export default function AiMenuPage() {
       });
 
       await refresh();
+      toast.success("Menu imported. Review pricing and imagery before publish.");
+      router.push("/dashboard/menu");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save extracted menu.");
     } finally {
       setSaving(false);
     }

@@ -27,13 +27,17 @@ export function DashboardTopbar() {
       </div>
 
       <div className="flex items-center gap-3">
-        {restaurant?.slug ? (
+        {restaurant?.slug && restaurant.isPublished ? (
           <Button asChild variant="secondary">
             <Link href={`/${restaurant.slug}`} target="_blank">
               <Globe2 className="h-4 w-4" />
               View public page
               <ArrowUpRight className="h-4 w-4" />
             </Link>
+          </Button>
+        ) : restaurant ? (
+          <Button asChild variant="secondary">
+            <Link href="/dashboard">Launch checklist</Link>
           </Button>
         ) : null}
         <UserButton afterSignOutUrl="/" />

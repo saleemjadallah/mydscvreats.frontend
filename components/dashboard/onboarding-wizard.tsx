@@ -5,45 +5,11 @@ import { CheckCircle2, Circle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useRestaurant } from "@/hooks/use-restaurant";
-
-const stepDefinitions = [
-  {
-    id: "profile",
-    label: "Profile",
-    href: "/dashboard/appearance",
-    description: "Add cover art, cuisine, contact details, and the page voice.",
-  },
-  {
-    id: "menu",
-    label: "Upload menu",
-    href: "/dashboard/ai-menu",
-    description: "Import from a PDF or image, then review the extracted menu structure.",
-  },
-  {
-    id: "review",
-    label: "Review",
-    href: "/dashboard/menu",
-    description: "Clean up sections, prices, availability, and imagery status.",
-  },
-  {
-    id: "publish",
-    label: "Publish",
-    href: "/dashboard/billing",
-    description: "Choose a plan and make your hosted menu page live.",
-  },
-];
+import { getRestaurantSetupState } from "@/lib/restaurant-setup";
 
 export function OnboardingWizard() {
   const { restaurant } = useRestaurant();
-
-  const completedSteps = {
-    profile: Boolean(restaurant?.description && restaurant?.cuisineType),
-    menu: Boolean(restaurant?.menuSections?.length),
-    review: Boolean(
-      restaurant?.menuSections?.some((section) => section.items.length > 0)
-    ),
-    publish: Boolean(restaurant?.isPublished),
-  };
+  const setup = getRestaurantSetupState(restaurant);
 
   return (
     <Card>
@@ -57,8 +23,8 @@ export function OnboardingWizard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {stepDefinitions.map((step) => {
-          const done = completedSteps[step.id as keyof typeof completedSteps];
+        {setup.steps.map((step) => {
+          const isNext = setup.nextStep?.id === step.id;
 
           return (
             <Link
@@ -66,10 +32,11 @@ export function OnboardingWizard() {
               href={step.href}
               className={cn(
                 "flex items-start gap-4 rounded-3xl border border-[#E8DCC9] p-4 transition-colors hover:bg-[#FFF8EE]",
-                done && "border-[#CCEBD9] bg-[#F7FEFA]"
+                step.completed && "border-[#CCEBD9] bg-[#F7FEFA]",
+                isNext && "border-[#E8C66A] bg-[#FFF8EE]"
               )}
             >
-              {done ? (
+              {step.completed ? (
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2E8B57]" />
               ) : (
                 <Circle className="mt-0.5 h-5 w-5 text-stone" />
@@ -77,6 +44,7 @@ export function OnboardingWizard() {
               <div>
                 <div className="font-medium text-ink">{step.label}</div>
                 <div className="text-sm text-stone">{step.description}</div>
+                <div className="mt-1 text-sm font-medium text-ink">{step.summary}</div>
               </div>
             </Link>
           );
