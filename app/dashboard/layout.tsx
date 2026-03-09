@@ -29,9 +29,9 @@ export default function DashboardLayout({
   return (
     <RestaurantProvider>
       <main className="grain min-h-screen px-4 py-6 md:px-6 md:py-8">
-        <div className="mx-auto max-w-7xl md:grid md:grid-cols-[260px,minmax(0,1fr)] md:items-start md:gap-6">
+        <div className="mx-auto max-w-7xl md:grid md:grid-cols-[260px,1fr] md:items-start md:gap-6">
           <DashboardSidebar />
-          <div className="min-w-0 space-y-6">
+          <div className="min-w-0 max-w-full space-y-6 overflow-x-hidden">
             <DashboardTopbar />
             {children}
           </div>

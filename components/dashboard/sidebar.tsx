@@ -86,7 +86,7 @@ export function DashboardSidebar() {
   );
 
   return (
-    <div>
+    <div className="md:w-[260px] md:min-w-[260px]">
       {/* Mobile menu button — visible below md */}
       <button
         type="button"
