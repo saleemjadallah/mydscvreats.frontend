@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 
 import { RestaurantCard } from "@/components/public/restaurant-card";
 import { Card, CardContent } from "@/components/ui/card";

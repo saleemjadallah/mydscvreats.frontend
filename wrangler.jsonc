@@ -1,0 +1,9 @@
+{
+  "name": "mydscvreats-frontend",
+  "compatibility_date": "2026-02-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+}

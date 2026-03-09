@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 
 import Link from "next/link";
 import { ArrowRight, ChefHat, Globe, Sparkles, WandSparkles } from "lucide-react";
