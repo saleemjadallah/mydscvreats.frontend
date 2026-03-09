@@ -1,5 +1,6 @@
 export type SubscriptionStatus = "trial" | "active" | "paused" | "cancelled";
 export type SubscriptionPlan = "starter" | "pro";
+export type RestaurantThemeKey = "saffron" | "midnight" | "rose";
 export type ImageStatus =
   | "none"
   | "generating"
@@ -35,6 +36,7 @@ export interface Restaurant {
   name: string;
   description: string | null;
   cuisineType: string | null;
+  themeKey: RestaurantThemeKey | null;
   location: string | null;
   address: string | null;
   phone: string | null;

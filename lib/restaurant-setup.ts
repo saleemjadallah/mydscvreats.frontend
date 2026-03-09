@@ -1,8 +1,9 @@
 import { auditSections } from "@/lib/menu-audit";
+import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import type { Restaurant } from "@/types";
 
 export interface SetupStep {
-  id: "profile" | "menu" | "review" | "publish";
+  id: "menu" | "theme" | "publish";
   label: string;
   description: string;
   href: string;
@@ -14,68 +15,54 @@ export interface SetupStep {
 export function getRestaurantSetupState(restaurant: Restaurant | null) {
   const sections = restaurant?.menuSections ?? [];
   const audit = auditSections(sections);
-  const hasProfileBasics = Boolean(
-    restaurant?.cuisineType &&
-      restaurant.location &&
-      (restaurant.description || restaurant.coverImageUrl)
-  );
   const hasMenu = audit.totalItems > 0;
-  const reviewComplete = hasMenu && audit.blockingIssues.length === 0;
+  const hasTheme = Boolean(restaurant?.themeKey);
   const isPublished = Boolean(restaurant?.isPublished);
+  const onboardingComplete = Boolean(restaurant && hasMenu && hasTheme);
+  const themeName = hasTheme ? getRestaurantTheme(restaurant?.themeKey).name : null;
 
   const steps: SetupStep[] = [
-    {
-      id: "profile",
-      label: "Shape the page",
-      description: "Add cuisine, location, cover art, and a tighter restaurant story.",
-      href: "/dashboard/appearance",
-      cta: hasProfileBasics ? "Refine profile" : "Finish profile",
-      completed: hasProfileBasics,
-      summary: hasProfileBasics
-        ? "Profile basics are in place."
-        : "The hosted page still needs its public-facing basics.",
-    },
     {
       id: "menu",
       label: "Import the menu",
       description: "Upload a PDF or image so the AI can structure sections, dishes, and prices.",
-      href: "/dashboard/ai-menu",
-      cta: hasMenu ? "Re-import menu" : "Upload menu",
+      href: "/dashboard/onboarding",
+      cta: hasMenu ? "Update menu" : "Import menu",
       completed: hasMenu,
       summary: hasMenu
-        ? `${audit.totalItems} dishes across ${audit.totalSections} sections are in the app.`
+        ? `${audit.totalItems} dishes across ${audit.totalSections} sections are ready.`
         : "No menu has been imported yet.",
     },
     {
-      id: "review",
-      label: "Review and polish",
-      description: "Clean up extraction mistakes, confirm prices, and queue missing visuals.",
-      href: "/dashboard/menu",
-      cta: hasMenu ? "Review menu" : "Menu editor",
-      completed: reviewComplete,
-      summary: !hasMenu
-        ? "The editor becomes useful after the first import."
-        : reviewComplete
-          ? "Pricing and structure are clean enough to launch."
-          : `${audit.blockingIssues.length} cleanup item${audit.blockingIssues.length === 1 ? "" : "s"} still need attention.`,
+      id: "theme",
+      label: "Choose the page theme",
+      description: "Pick the visual direction for the hosted page and preview the draft.",
+      href: "/dashboard/onboarding",
+      cta: hasTheme ? "Adjust theme" : "Choose theme",
+      completed: hasTheme,
+      summary: hasTheme
+        ? `${themeName} is applied to the hosted page.`
+        : "Theme choice is still missing.",
     },
     {
       id: "publish",
       label: "Publish and share",
-      description: "Choose a plan, make the page live, then share the link, QR code, and widget.",
+      description: "Go live only after the page already feels right.",
       href: "/dashboard/billing",
       cta: isPublished ? "Manage billing" : "Go live",
       completed: isPublished,
       summary: isPublished
         ? `Live at mydscvr.ai/${restaurant?.slug}.`
-        : "The public link is reserved, but it is not live yet.",
+        : "Publishing is intentionally left out of onboarding to reduce drop-off.",
     },
   ];
 
   return {
     audit,
     steps,
+    onboardingComplete,
     completionCount: steps.filter((step) => step.completed).length,
     nextStep: steps.find((step) => !step.completed) ?? null,
+    nextOnboardingStep: steps.find((step) => !step.completed && step.id !== "publish") ?? null,
   };
 }

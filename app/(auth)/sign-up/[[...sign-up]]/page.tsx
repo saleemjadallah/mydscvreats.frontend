@@ -13,5 +13,13 @@ export default function SignUpPage() {
     );
   }
 
-  return <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />;
+  return (
+    <SignUp
+      routing="path"
+      path="/sign-up"
+      signInUrl="/sign-in"
+      forceRedirectUrl="/dashboard/onboarding"
+      fallbackRedirectUrl="/dashboard/onboarding"
+    />
+  );
 }

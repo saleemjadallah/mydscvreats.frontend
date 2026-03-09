@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MapPin, Phone, Globe2 } from "lucide-react";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { apiClient } from "@/lib/api-client";
+import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -50,23 +50,39 @@ export default async function RestaurantPage({
     notFound();
   }
 
+  const theme = getRestaurantTheme(restaurant.themeKey);
+
   return (
-    <main className="px-4 py-5 md:px-8 md:py-8">
+    <main
+      className="px-4 py-5 md:px-8 md:py-8"
+      style={{
+        background: `radial-gradient(circle at top right, ${theme.glowA}, transparent 34%), radial-gradient(circle at bottom left, ${theme.glowB}, transparent 30%), ${theme.pageBackground}`,
+      }}
+    >
       <RestaurantTracker restaurantId={restaurant.id} />
       <div className="mx-auto max-w-7xl space-y-6">
         <section
-          className="overflow-hidden rounded-[40px] border border-[#E6D8C4] bg-[#201A17] text-white"
+          className="overflow-hidden rounded-[40px] border text-white"
           style={{
+            borderColor: theme.divider,
             backgroundImage: restaurant.coverImageUrl
-              ? `linear-gradient(120deg, rgba(32,26,23,0.88), rgba(32,26,23,0.5)), url(${restaurant.coverImageUrl})`
-              : "linear-gradient(120deg, #201A17, #4B3226)",
+              ? `linear-gradient(120deg, ${theme.heroOverlayStart}, ${theme.heroOverlayEnd}), url(${restaurant.coverImageUrl})`
+              : `linear-gradient(120deg, ${theme.heroFrom}, ${theme.heroTo})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
           <div className="grid gap-8 p-8 lg:grid-cols-[1.2fr,0.8fr] lg:p-12">
             <div className="space-y-5">
-              <Badge variant="default">{restaurant.cuisineType ?? "Restaurant"}</Badge>
+              <div
+                className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
+                style={{
+                  backgroundColor: theme.badgeBg,
+                  color: theme.badgeText,
+                }}
+              >
+                {restaurant.cuisineType ?? "Restaurant"}
+              </div>
               <div>
                 <h1 className="text-5xl font-semibold tracking-tight">{restaurant.name}</h1>
                 {restaurant.description ? (
@@ -102,7 +118,12 @@ export default async function RestaurantPage({
                   <a
                     key={section.id}
                     href={`#section-${section.id}`}
-                    className="rounded-full bg-[#F2E7D8] px-4 py-2 text-sm font-medium text-ink"
+                    className="rounded-full border px-4 py-2 text-sm font-medium"
+                    style={{
+                      backgroundColor: theme.chipBg,
+                      color: theme.chipText,
+                      borderColor: theme.chipBorder,
+                    }}
                   >
                     {section.name}
                   </a>
@@ -112,13 +133,17 @@ export default async function RestaurantPage({
           </div>
         </section>
 
-        <div className="sticky top-3 z-10 overflow-x-auto rounded-full border border-[#E6D8C4] bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur">
+        <div
+          className="sticky top-3 z-10 overflow-x-auto rounded-full border bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur"
+          style={{ borderColor: theme.divider }}
+        >
           <div className="flex gap-2">
             {restaurant.menuSections?.map((section) => (
               <a
                 key={section.id}
                 href={`#section-${section.id}`}
-                className="whitespace-nowrap rounded-full border border-[#E6D8C4] px-4 py-2 text-sm font-medium"
+                className="whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium"
+                style={{ borderColor: theme.divider }}
               >
                 {section.name}
               </a>
@@ -131,7 +156,7 @@ export default async function RestaurantPage({
             <div key={section.id} id={`section-${section.id}`} className="space-y-4 scroll-mt-28">
               <div className="flex items-center gap-4">
                 <h2 className="text-3xl font-semibold">{section.name}</h2>
-                <Separator className="max-w-[120px]" />
+                <Separator className="max-w-[120px]" style={{ backgroundColor: theme.divider }} />
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {section.items.map((item) => (
@@ -141,13 +166,13 @@ export default async function RestaurantPage({
                       style={{
                         backgroundImage: item.imageUrl
                           ? `url(${item.imageUrl})`
-                          : "linear-gradient(135deg, rgba(232,163,23,0.4), rgba(255,107,90,0.3))",
+                          : `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
                       }}
                     />
                     <div className="space-y-3 p-5">
                       <div className="flex items-start justify-between gap-4">
                         <h3 className="text-xl font-semibold">{item.name}</h3>
-                        <div className="text-sm font-semibold text-coral">
+                        <div className="text-sm font-semibold" style={{ color: theme.price }}>
                           {formatCurrency(item.price, item.currency)}
                         </div>
                       </div>

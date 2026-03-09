@@ -2,9 +2,12 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import type { Restaurant } from "@/types";
 
 export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
+  const theme = getRestaurantTheme(restaurant.themeKey);
+
   return (
     <Link href={`/${restaurant.slug}`}>
       <Card className="group overflow-hidden transition-transform duration-300 hover:-translate-y-1">
@@ -12,8 +15,8 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
           className="h-44 bg-cover bg-center"
           style={{
             backgroundImage: restaurant.coverImageUrl
-              ? `linear-gradient(180deg, rgba(32,26,23,0.05), rgba(32,26,23,0.5)), url(${restaurant.coverImageUrl})`
-              : "linear-gradient(135deg, rgba(232,163,23,0.35), rgba(255,107,90,0.35))",
+              ? `linear-gradient(180deg, rgba(32,26,23,0.05), ${theme.heroOverlayEnd}), url(${restaurant.coverImageUrl})`
+              : `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
           }}
         />
         <CardContent className="space-y-4 p-5">
