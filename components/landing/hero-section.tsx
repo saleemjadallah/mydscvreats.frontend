@@ -25,7 +25,7 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <Link href="/explore">See a live page</Link>
+              <Link href="/preview">Preview your menu</Link>
             </Button>
           </div>
 

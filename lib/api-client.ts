@@ -153,6 +153,17 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
+  previewMenu(payload: {
+    sourceText?: string;
+    fileName?: string;
+    contentType?: string;
+    base64?: string;
+  }) {
+    return request<MenuExtractionDraft>("/api/preview/extract", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
   queueImageGeneration(token: string, menuItemId: string, promptModifier?: string) {
     return request<{ queued: boolean; imageId: string }>("/api/menu/generate-image", {
       method: "POST",
