@@ -15,6 +15,8 @@ export function RestaurantDraftPreview({
     cuisineType?: string | null;
     description?: string | null;
     location?: string | null;
+    logoUrl?: string | null;
+    coverImageUrl?: string | null;
   };
   sections: MenuSection[];
   themeKey?: RestaurantThemeKey | null;
@@ -34,18 +36,33 @@ export function RestaurantDraftPreview({
         className="overflow-hidden rounded-[28px] text-white"
         style={{
           backgroundColor: theme.heroFrom,
-          background: `linear-gradient(135deg, ${theme.heroFrom}, ${theme.heroTo})`,
+          backgroundImage: restaurant.coverImageUrl
+            ? `linear-gradient(135deg, ${theme.heroOverlayStart}, ${theme.heroOverlayEnd}), url("${restaurant.coverImageUrl}")`
+            : `linear-gradient(135deg, ${theme.heroFrom}, ${theme.heroTo})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <div className="space-y-4 p-6">
-          <div
-            className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
-            style={{
-              backgroundColor: theme.badgeBg,
-              color: theme.badgeText,
-            }}
-          >
-            {restaurant.cuisineType ?? "Restaurant"}
+          <div className="flex flex-wrap items-center gap-3">
+            {restaurant.logoUrl ? (
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-[20px] border border-white/20 bg-white/95 p-2.5 shadow-lg">
+                <img
+                  src={restaurant.logoUrl}
+                  alt={`${restaurant.name || "Restaurant"} logo`}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            ) : null}
+            <div
+              className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
+              style={{
+                backgroundColor: theme.badgeBg,
+                color: theme.badgeText,
+              }}
+            >
+              {restaurant.cuisineType ?? "Restaurant"}
+            </div>
           </div>
           <div>
             <h3 className="text-3xl font-semibold tracking-tight">

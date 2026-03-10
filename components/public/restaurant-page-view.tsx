@@ -199,7 +199,7 @@ export function RestaurantPageView({
             borderColor: theme.divider,
             backgroundColor: theme.heroFrom,
             backgroundImage: restaurant.coverImageUrl
-              ? `linear-gradient(120deg, ${theme.heroOverlayStart}, ${theme.heroOverlayEnd}), url(${restaurant.coverImageUrl})`
+              ? `linear-gradient(120deg, ${theme.heroOverlayStart}, ${theme.heroOverlayEnd}), url("${restaurant.coverImageUrl}")`
               : `linear-gradient(120deg, ${theme.heroFrom}, ${theme.heroTo})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -207,14 +207,25 @@ export function RestaurantPageView({
         >
           <div className="grid gap-8 p-8 lg:grid-cols-[1.2fr,0.8fr] lg:p-12">
             <div className="space-y-5">
-              <div
-                className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
-                style={{
-                  backgroundColor: theme.badgeBg,
-                  color: theme.badgeText,
-                }}
-              >
-                {restaurant.cuisineType ?? "Restaurant"}
+              <div className="flex flex-wrap items-center gap-4">
+                {restaurant.logoUrl ? (
+                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-[24px] border border-white/20 bg-white/95 p-3 shadow-lg">
+                    <img
+                      src={restaurant.logoUrl}
+                      alt={`${restaurant.name} logo`}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                ) : null}
+                <div
+                  className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
+                  style={{
+                    backgroundColor: theme.badgeBg,
+                    color: theme.badgeText,
+                  }}
+                >
+                  {restaurant.cuisineType ?? "Restaurant"}
+                </div>
               </div>
               <div>
                 <h1 className="text-5xl font-semibold tracking-tight">{restaurant.name}</h1>
