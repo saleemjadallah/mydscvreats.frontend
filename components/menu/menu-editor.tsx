@@ -214,10 +214,15 @@ export function MenuEditor({
   }
 
   async function queueImage(itemId: string) {
-    await withToken(async (token) => {
-      await apiClient.queueImageGeneration(token, itemId);
-      await onRefresh();
-    });
+    try {
+      await withToken(async (token) => {
+        await apiClient.queueImageGeneration(token, itemId);
+        await onRefresh();
+      });
+      toast.success("Image generation queued.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to queue image generation.");
+    }
   }
 
   async function queueImages(mode: "missing" | "failed") {
