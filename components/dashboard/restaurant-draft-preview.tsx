@@ -33,6 +33,7 @@ export function RestaurantDraftPreview({
       <div
         className="overflow-hidden rounded-[28px] text-white"
         style={{
+          backgroundColor: theme.heroFrom,
           background: `linear-gradient(135deg, ${theme.heroFrom}, ${theme.heroTo})`,
         }}
       >

@@ -197,6 +197,7 @@ export function RestaurantPageView({
           className="overflow-hidden rounded-[40px] border text-white"
           style={{
             borderColor: theme.divider,
+            backgroundColor: theme.heroFrom,
             backgroundImage: restaurant.coverImageUrl
               ? `linear-gradient(120deg, ${theme.heroOverlayStart}, ${theme.heroOverlayEnd}), url(${restaurant.coverImageUrl})`
               : `linear-gradient(120deg, ${theme.heroFrom}, ${theme.heroTo})`,
