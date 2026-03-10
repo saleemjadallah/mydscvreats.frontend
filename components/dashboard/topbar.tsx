@@ -6,10 +6,17 @@ import { ArrowUpRight, Globe2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRestaurant } from "@/hooks/use-restaurant";
+import { countMenuItems } from "@/lib/entitlements";
+import { plans } from "@/lib/plans";
 
 export function DashboardTopbar() {
   const { restaurant } = useRestaurant();
   const hasStripeSubscription = Boolean(restaurant?.subscription?.stripeSubscriptionId);
+  const menuItemCount = countMenuItems(restaurant?.menuSections);
+  const draftNeedsPro =
+    !hasStripeSubscription &&
+    plans.starter.itemLimit !== null &&
+    menuItemCount > plans.starter.itemLimit;
 
   return (
     <div className="glass-panel relative overflow-hidden rounded-[28px] border border-[#E5D7C0]">
@@ -52,6 +59,24 @@ export function DashboardTopbar() {
           <UserButton afterSignOutUrl="/" />
         </div>
       </div>
+
+      {restaurant && !hasStripeSubscription ? (
+        <div className="border-t border-[#E5D7C0] bg-[#FFF8EE] px-5 py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-ink">You&apos;re in draft mode</div>
+              <p className="mt-1 text-sm text-stone">
+                {draftNeedsPro && plans.starter.itemLimit !== null
+                  ? `No plan is selected yet. This draft has ${menuItemCount} dishes, so it will need Pro to publish.`
+                  : "No plan is selected yet. Build the menu first, then choose Starter or Pro when you’re ready to publish."}
+              </p>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link href="/dashboard/billing">Choose a plan</Link>
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
