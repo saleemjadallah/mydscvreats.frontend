@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +12,25 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   return (
     <Link href={`/${restaurant.slug}`}>
       <Card className="group overflow-hidden transition-transform duration-300 hover:-translate-y-1">
-        <div
-          className="h-44 bg-cover bg-center"
-          style={{
-            backgroundImage: restaurant.coverImageUrl
-              ? `linear-gradient(180deg, rgba(32,26,23,0.05), ${theme.heroOverlayEnd}), url(${restaurant.coverImageUrl})`
-              : `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
-          }}
-        />
+        <div className="relative h-44">
+          {restaurant.coverImageUrl ? (
+            <Image
+              src={restaurant.coverImageUrl}
+              alt={`${restaurant.name}${restaurant.cuisineType ? ` – ${restaurant.cuisineType}` : ""} restaurant`}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+              className="object-cover"
+            />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{
+                background: `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
+              }}
+              role="presentation"
+            />
+          )}
+        </div>
         <CardContent className="space-y-4 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>

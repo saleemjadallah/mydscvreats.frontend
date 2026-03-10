@@ -8,7 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { apiClient } from "@/lib/api-client";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency } from "@/lib/utils";
-import { buildRestaurantJsonLd } from "@/lib/structured-data";
+import Image from "next/image";
+import { buildRestaurantJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
 
 export async function generateMetadata({
   params,
@@ -80,6 +81,7 @@ export default async function RestaurantPage({
   const theme = getRestaurantTheme(restaurant.themeKey);
 
   const jsonLd = buildRestaurantJsonLd(restaurant);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
 
   return (
     <main
@@ -91,6 +93,10 @@ export default async function RestaurantPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <RestaurantTracker restaurantId={restaurant.id} />
       <div className="mx-auto max-w-7xl space-y-6">
@@ -130,13 +136,13 @@ export default async function RestaurantPage({
                   </span>
                 ) : null}
                 {restaurant.phone ? (
-                  <span className="inline-flex items-center gap-2">
+                  <a href={`tel:${restaurant.phone}`} className="inline-flex items-center gap-2 hover:text-white">
                     <Phone className="h-4 w-4" />
                     {restaurant.phone}
-                  </span>
+                  </a>
                 ) : null}
                 {restaurant.website ? (
-                  <a href={restaurant.website} className="inline-flex items-center gap-2" target="_blank">
+                  <a href={restaurant.website} className="inline-flex items-center gap-2" target="_blank" rel="noopener noreferrer">
                     <Globe2 className="h-4 w-4" />
                     Website
                   </a>
@@ -166,7 +172,8 @@ export default async function RestaurantPage({
           </div>
         </section>
 
-        <div
+        <nav
+          aria-label="Menu sections"
           className="sticky top-3 z-10 overflow-x-auto rounded-full border bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur"
           style={{ borderColor: theme.divider }}
         >
@@ -182,7 +189,7 @@ export default async function RestaurantPage({
               </a>
             ))}
           </div>
-        </div>
+        </nav>
 
         <section className="space-y-8">
           {restaurant.menuSections?.map((section) => (
@@ -194,14 +201,25 @@ export default async function RestaurantPage({
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {section.items.map((item) => (
                   <Card key={item.id} className="overflow-hidden">
-                    <div
-                      className="h-52 bg-cover bg-center"
-                      style={{
-                        backgroundImage: item.imageUrl
-                          ? `url(${item.imageUrl})`
-                          : `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
-                      }}
-                    />
+                    <div className="relative h-52">
+                      {item.imageUrl ? (
+                        <Image
+                          src={item.imageUrl}
+                          alt={`${item.name} – ${section.name} at ${restaurant.name}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="h-full w-full"
+                          style={{
+                            background: `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
+                          }}
+                          role="presentation"
+                        />
+                      )}
+                    </div>
                     <div className="space-y-3 p-5">
                       <div className="flex items-start justify-between gap-4">
                         <h3 className="text-xl font-semibold">{item.name}</h3>

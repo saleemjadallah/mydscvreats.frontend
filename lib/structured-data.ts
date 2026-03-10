@@ -52,3 +52,30 @@ export function buildRestaurantJsonLd(restaurant: Restaurant) {
     },
   };
 }
+
+export function buildBreadcrumbJsonLd(restaurantName: string, slug: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://mydscvr.ai",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Explore",
+        item: "https://mydscvr.ai/explore",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: restaurantName,
+        item: `https://mydscvr.ai/${slug}`,
+      },
+    ],
+  };
+}
