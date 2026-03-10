@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.mydscvr.ai",
       },
+      {
+        protocol: "https",
+        hostname: "eats-images.mydscvr.ai",
+      },
     ],
   },
   outputFileTracingRoot: path.join(process.cwd()),
