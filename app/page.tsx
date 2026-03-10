@@ -37,9 +37,8 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="glass-panel flex items-center justify-between rounded-[36px] border border-[#E7DAC5] px-6 py-4">
             <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo.png" alt="MyDscvr Eats" width={40} height={40} className="h-10 w-10" />
-                <span className="text-sm font-semibold tracking-wide text-ink">mydscvr Eats</span>
+              <Link href="/">
+                <Image src="/logo.png" alt="MyDscvr Eats" width={48} height={48} className="h-12 w-auto" />
               </Link>
               <nav className="hidden items-center gap-5 text-sm text-ink/60 md:flex">
                 <a href="#how-it-works" className="hover:text-ink">

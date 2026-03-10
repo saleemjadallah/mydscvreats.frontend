@@ -6,16 +6,11 @@ export function Footer() {
     <footer className="bg-ink py-12">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-          <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="MyDscvr Eats" width={36} height={36} className="h-9 w-9 brightness-0 invert" />
-            <div>
-              <div className="text-xs uppercase tracking-[0.32em] text-white/60">
-                mydscvr Eats
-              </div>
-            <p className="mt-1 text-sm text-white/70">
+          <div className="flex items-center gap-4">
+            <Image src="/logo.png" alt="MyDscvr Eats" width={48} height={48} className="h-12 w-auto brightness-0 invert" />
+            <p className="text-sm text-white/70">
               Living menu pages for Dubai restaurants.
             </p>
-            </div>
           </div>
 
           <nav className="flex items-center gap-6 text-sm text-white/70">

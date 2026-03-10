@@ -37,12 +37,8 @@ export function DashboardSidebar() {
   const sidebarContent = (
     <>
       <div className="mb-8 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <Image src="/logo.png" alt="MyDscvr Eats" width={44} height={44} className="h-11 w-11" />
-          <div className="space-y-0.5">
-            <div className="text-xs uppercase tracking-[0.26em] text-stone">mydscvr Eats</div>
-            <div className="text-lg font-semibold leading-tight text-ink">Owner Console</div>
-          </div>
+        <Link href="/">
+          <Image src="/logo.png" alt="MyDscvr Eats" width={52} height={52} className="h-13 w-auto" />
         </Link>
         <div className="flex items-center gap-2">
           <Badge variant="default">Beta</Badge>
