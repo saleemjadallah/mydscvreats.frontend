@@ -38,7 +38,7 @@ export function DashboardSidebar() {
     <>
       <div className="mb-8 flex items-center justify-between">
         <Link href="/">
-          <Image src="/logo.png" alt="MyDscvr Eats" width={52} height={52} className="h-13 w-auto" />
+          <Image src="/logo.png" alt="MyDscvr Eats" width={140} height={56} className="h-14 w-auto" />
         </Link>
         <div className="flex items-center gap-2">
           <Badge variant="default">Beta</Badge>
