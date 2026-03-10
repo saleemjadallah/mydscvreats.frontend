@@ -301,44 +301,23 @@ export default function AppearancePage() {
         </CardContent>
       </Card>
 
-      {/* Theme & publish */}
+      {/* Theme settings */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
               <Palette className="h-5 w-5 text-saffron" />
             </div>
-            <CardTitle>Publish settings</CardTitle>
+            <CardTitle>Theme settings</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
           <div className="space-y-2">
             <Label>Theme</Label>
             <ThemePicker
               value={form.themeKey ?? null}
               onChange={(themeKey) => setForm((current) => ({ ...current, themeKey }))}
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Publish status</Label>
-            <div className="flex gap-3">
-              <Button
-                variant={form.isPublished ? "default" : "secondary"}
-                onClick={() => setForm((current) => ({ ...current, isPublished: true }))}
-                className="transition-all duration-200"
-              >
-                <div className={`mr-1.5 h-2 w-2 rounded-full ${form.isPublished ? "bg-white" : "bg-[#2E8B57]"}`} />
-                Published
-              </Button>
-              <Button
-                variant={!form.isPublished ? "default" : "secondary"}
-                onClick={() => setForm((current) => ({ ...current, isPublished: false }))}
-                className="transition-all duration-200"
-              >
-                <div className={`mr-1.5 h-2 w-2 rounded-full ${!form.isPublished ? "bg-white" : "bg-stone"}`} />
-                Draft
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
