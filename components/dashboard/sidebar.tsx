@@ -76,7 +76,7 @@ export function DashboardSidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-[28px] bg-[#201A17] p-5 text-white">
+      <div className="mt-8 rounded-[28px] bg-[#201A17] p-5 text-white">
         <div className="mb-2 text-sm uppercase tracking-[0.2em] text-[#E8C66A]">Built for speed</div>
         <p className="text-sm text-white/80">
           Publish menu updates, queue AI imagery, and share your hosted page without touching your own site.
