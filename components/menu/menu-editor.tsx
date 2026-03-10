@@ -16,7 +16,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
+import { GripVertical, ImagePlus, Plus, Save, Trash2, X, ZoomIn } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
@@ -72,6 +72,7 @@ export function MenuEditor({
   const [sections, setSections] = useState(initialSections);
   const [isPending, startTransition] = useTransition();
   const [bulkImageMode, setBulkImageMode] = useState<"missing" | "failed" | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
   const audit = auditSections(sections);
 
@@ -391,11 +392,20 @@ export function MenuEditor({
                         >
                           {item.imageUrl ? (
                             <div className="flex items-center gap-3 md:col-span-5 md:col-start-1 md:row-start-1 md:col-span-1">
-                              <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className="h-12 w-12 rounded-xl border border-[#E7DAC5] object-cover"
-                              />
+                              <button
+                                type="button"
+                                className="group/img relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-[#E7DAC5]"
+                                onClick={() => setPreviewImage({ url: item.imageUrl!, name: item.name })}
+                              >
+                                <img
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                  className="h-full w-full object-cover"
+                                />
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
+                                  <ZoomIn className="h-4 w-4 text-white" />
+                                </span>
+                              </button>
                             </div>
                           ) : null}
                           <div className={item.imageUrl ? "" : ""}>
@@ -488,6 +498,35 @@ export function MenuEditor({
           <div className="mt-4 text-sm text-stone">Saving menu order...</div>
         ) : null}
       </CardContent>
+
+      {/* Image preview lightbox */}
+      {previewImage ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            type="button"
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            onClick={() => setPreviewImage(null)}
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div
+            className="relative max-h-[85vh] max-w-[85vw] overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={previewImage.url}
+              alt={previewImage.name}
+              className="max-h-[85vh] max-w-[85vw] object-contain"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3">
+              <p className="text-sm font-medium text-white">{previewImage.name}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </Card>
   );
 }
