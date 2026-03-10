@@ -1,18 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { BarChart3, Calendar, Eye, TrendingUp } from "lucide-react";
+import { BarChart3, Calendar, Eye, Lock, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
+import { getRestaurantEntitlements } from "@/lib/entitlements";
 import type { AnalyticsSummary } from "@/types";
 
 export default function AnalyticsPage() {
   const { getToken } = useAuth();
   const { restaurant } = useRestaurant();
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+  const entitlements = getRestaurantEntitlements(restaurant);
 
   useEffect(() => {
     async function load() {
@@ -76,7 +80,22 @@ export default function AnalyticsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {summary?.topPaths?.length ? (
+          {entitlements.analyticsTier !== "advanced" ? (
+            <div className="flex flex-col items-center gap-4 py-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-saffron/10">
+                <Lock className="h-6 w-6 text-saffron" />
+              </div>
+              <div>
+                <p className="font-medium text-ink">Advanced path analytics are on Pro</p>
+                <p className="mt-1 text-sm text-stone">
+                  Starter includes headline view counts. Upgrade to unlock top paths and deeper demand signals.
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/dashboard/billing">Upgrade to Pro</Link>
+              </Button>
+            </div>
+          ) : summary?.topPaths?.length ? (
             <div className="space-y-3">
               {summary.topPaths.map((path, index) => (
                 <div key={path.path} className="flex items-center gap-4">

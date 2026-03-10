@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
+import { getMenuItemLimitMessage, getMenuItemUsage } from "@/lib/entitlements";
 import type { MenuExtractionDraft } from "@/types";
 
 async function fileToBase64(file: File) {
@@ -52,6 +53,9 @@ export function AiMenuImportPanel({
   const [isDragOver, setIsDragOver] = useState(false);
 
   const currentStep = draft ? 2 : file ? 1 : 0;
+  const usage = getMenuItemUsage(restaurant, draft?.sections);
+  const saveDisabledReason =
+    usage.overLimit && usage.limit !== null ? getMenuItemLimitMessage(usage.limit) : null;
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -258,6 +262,7 @@ export function AiMenuImportPanel({
           onChange={setDraft}
           onSave={() => void saveDraft()}
           saving={saving}
+          saveDisabledReason={saveDisabledReason}
         />
       ) : null}
     </div>

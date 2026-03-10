@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -28,8 +29,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
+import {
+  getMenuItemLimitMessage,
+  getMenuItemUsage,
+  getRestaurantEntitlements,
+} from "@/lib/entitlements";
 import { auditSections } from "@/lib/menu-audit";
-import type { MenuItem, MenuItemImage, MenuSection } from "@/types";
+import type { MenuItem, MenuItemImage, MenuSection, Restaurant } from "@/types";
 
 function SortableSection({
   id,
@@ -88,11 +94,11 @@ function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
 }
 
 export function MenuEditor({
-  restaurantId,
+  restaurant,
   initialSections,
   onRefresh,
 }: {
-  restaurantId: string;
+  restaurant: Restaurant;
   initialSections: MenuSection[];
   onRefresh: () => Promise<void>;
 }) {
@@ -105,6 +111,11 @@ export function MenuEditor({
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
   const audit = auditSections(sections);
+  const entitlements = getRestaurantEntitlements(restaurant);
+  const usage = getMenuItemUsage(restaurant, sections);
+  const menuItemLimitMessage =
+    usage.limit !== null ? getMenuItemLimitMessage(usage.limit) : null;
+  const addItemDisabled = usage.atLimit;
 
   useEffect(() => {
     setSections(initialSections);
@@ -118,7 +129,7 @@ export function MenuEditor({
     try {
       const token = await getToken();
       if (!token) return;
-      const statuses = await apiClient.getImageStatuses(token, restaurantId);
+      const statuses = await apiClient.getImageStatuses(token, restaurant.id);
       const map = new Map(statuses.map((s) => [s.id, s]));
       setSections((prev) => {
         let changed = false;
@@ -151,7 +162,7 @@ export function MenuEditor({
     } finally {
       pollRef.current = false;
     }
-  }, [getToken, restaurantId]);
+  }, [getToken, restaurant.id]);
 
   useEffect(() => {
     const hasGenerating = sections.some((s) =>
@@ -177,7 +188,7 @@ export function MenuEditor({
     startTransition(() => {
       void withToken((token) =>
         apiClient.reorderMenu(token, {
-          restaurantId,
+          restaurantId: restaurant.id,
           sections: nextSections.map((section, sectionIndex) => ({
             id: section.id,
             displayOrder: sectionIndex,
@@ -214,7 +225,7 @@ export function MenuEditor({
   async function createSection() {
     await withToken(async (token) => {
       await apiClient.createSection(token, {
-        restaurantId,
+        restaurantId: restaurant.id,
         name: `Section ${sections.length + 1}`,
         displayOrder: sections.length,
       });
@@ -223,17 +234,26 @@ export function MenuEditor({
   }
 
   async function createItem(sectionId: string, count: number) {
-    await withToken(async (token) => {
-      await apiClient.createItem(token, {
-        restaurantId,
-        sectionId,
-        name: "New dish",
-        description: "",
-        price: 0,
-        displayOrder: count,
+    if (addItemDisabled) {
+      toast.error(menuItemLimitMessage ?? "Upgrade to Pro to add more dishes.");
+      return;
+    }
+
+    try {
+      await withToken(async (token) => {
+        await apiClient.createItem(token, {
+          restaurantId: restaurant.id,
+          sectionId,
+          name: "New dish",
+          description: "",
+          price: 0,
+          displayOrder: count,
+        });
+        await onRefresh();
       });
-      await onRefresh();
-    });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to add a new dish.");
+    }
   }
 
   async function saveSection(section: MenuSection) {
@@ -265,7 +285,11 @@ export function MenuEditor({
       });
       setImageComposerItemId(null);
       setImagePromptByItem((prev) => ({ ...prev, [itemId]: "" }));
-      toast.success("Image generation queued.");
+      toast.success(
+        entitlements.priorityImageGeneration
+          ? "Priority image generation queued."
+          : "Image generation queued."
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to queue image generation.");
     }
@@ -312,7 +336,7 @@ export function MenuEditor({
       });
 
       toast.success(
-        `Queued ${targetIds.length} image job${targetIds.length === 1 ? "" : "s"}.`
+        `${entitlements.priorityImageGeneration ? "Priority" : "Standard"} queue: ${targetIds.length} image job${targetIds.length === 1 ? "" : "s"} added.`
       );
       await onRefresh();
     } catch (error) {
@@ -363,6 +387,13 @@ export function MenuEditor({
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge variant="muted">{audit.totalSections} sections</Badge>
               <Badge variant="muted">{audit.totalItems} dishes</Badge>
+              {usage.limit !== null ? (
+                <Badge variant={usage.atLimit ? "accent" : "muted"}>
+                  {usage.totalItems}/{usage.limit} dishes used
+                </Badge>
+              ) : (
+                <Badge variant="success">Unlimited dishes</Badge>
+              )}
               <Badge variant={audit.blockingIssues.length ? "accent" : "success"}>
                 {audit.blockingIssues.length
                   ? `${audit.blockingIssues.length} launch blocker${audit.blockingIssues.length === 1 ? "" : "s"}`
@@ -379,9 +410,16 @@ export function MenuEditor({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-stone">
-                Pricing and menu structure look clean. Finish any optional polish, then move to publish.
-              </p>
+              <div className="space-y-2 text-sm text-stone">
+                <p>
+                  Pricing and menu structure look clean. Finish any optional polish, then move to publish.
+                </p>
+                {menuItemLimitMessage ? (
+                  <p className={usage.atLimit ? "font-medium text-[#9E3B2D]" : ""}>
+                    {menuItemLimitMessage}
+                  </p>
+                ) : null}
+              </div>
             )}
           </div>
 
@@ -389,6 +427,9 @@ export function MenuEditor({
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge variant="muted">{audit.imagesReady} visuals ready</Badge>
               <Badge variant="muted">{audit.itemsWithoutImages} missing visuals</Badge>
+              {entitlements.priorityImageGeneration ? (
+                <Badge variant="success">Priority image queue</Badge>
+              ) : null}
               {audit.failedImages > 0 ? <Badge variant="accent">{audit.failedImages} failed</Badge> : null}
             </div>
 
@@ -407,6 +448,18 @@ export function MenuEditor({
             )}
           </div>
         </div>
+
+        {usage.atLimit && menuItemLimitMessage ? (
+          <div className="mb-6 flex flex-col gap-3 rounded-[24px] border border-[#F2CFC7] bg-[#FFF4F1] p-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-ink">Starter limit reached</div>
+              <p className="mt-1 text-sm text-stone">{menuItemLimitMessage}</p>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link href="/dashboard/billing">Upgrade to Pro</Link>
+            </Button>
+          </div>
+        ) : null}
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => void onSectionDragEnd(event)}>
           <SortableContext items={sections.map((section) => section.id)} strategy={rectSortingStrategy}>
@@ -655,9 +708,10 @@ export function MenuEditor({
                     <Button
                       variant="secondary"
                       onClick={() => void createItem(section.id, section.items.length)}
+                      disabled={addItemDisabled}
                     >
                       <Plus className="h-4 w-4" />
-                      Add item
+                      {addItemDisabled ? "Upgrade for more dishes" : "Add item"}
                     </Button>
                   </div>
                 </SortableSection>

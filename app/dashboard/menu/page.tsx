@@ -61,7 +61,7 @@ export default function DashboardMenuPage() {
 
   return (
     <MenuEditor
-      restaurantId={restaurant.id}
+      restaurant={restaurant}
       initialSections={restaurant.menuSections}
       onRefresh={refresh}
     />

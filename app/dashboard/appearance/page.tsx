@@ -87,6 +87,25 @@ export default function AppearancePage() {
     <div className="space-y-6">
       <div className="text-xs uppercase tracking-[0.3em] text-stone">Appearance & Profile</div>
 
+      {/* Publish status */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium text-stone">Status</span>
+        <div
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${
+            restaurant.isPublished
+              ? "bg-[#2E8B57]/10 text-[#2E8B57]"
+              : "bg-stone/10 text-stone"
+          }`}
+        >
+          <div
+            className={`h-2 w-2 rounded-full ${
+              restaurant.isPublished ? "bg-[#2E8B57]" : "bg-stone"
+            }`}
+          />
+          {restaurant.isPublished ? "Published" : "Draft"}
+        </div>
+      </div>
+
       {/* Restaurant identity */}
       <Card>
         <CardHeader>

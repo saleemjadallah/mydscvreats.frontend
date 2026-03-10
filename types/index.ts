@@ -1,5 +1,6 @@
 export type SubscriptionStatus = "trial" | "active" | "paused" | "cancelled";
 export type SubscriptionPlan = "starter" | "pro";
+export type AnalyticsTier = "basic" | "advanced";
 export type RestaurantThemeKey = "saffron" | "midnight" | "rose";
 export type ImageStatus =
   | "none"
@@ -59,6 +60,15 @@ export interface Restaurant {
   createdAt: string;
   updatedAt: string;
   menuSections?: MenuSection[];
+  entitlements?: {
+    plan: SubscriptionPlan;
+    menuItemLimit: number | null;
+    widgetEnabled: boolean;
+    customDomainEnabled: boolean;
+    analyticsTier: AnalyticsTier;
+    imageGenerationPriority: number;
+    priorityImageGeneration: boolean;
+  };
   subscription?: {
     id: string;
     plan: SubscriptionPlan;
@@ -69,6 +79,7 @@ export interface Restaurant {
 }
 
 export interface AnalyticsSummary {
+  tier: AnalyticsTier;
   totalViews: number;
   viewsToday: number;
   viewsThisWeek: number;

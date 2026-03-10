@@ -1,15 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { Check, Code2, Copy } from "lucide-react";
+import { Check, Code2, Copy, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRestaurant } from "@/hooks/use-restaurant";
+import { getRestaurantEntitlements } from "@/lib/entitlements";
 import { getRestaurantWidgetSnippet } from "@/lib/share";
 
 export default function WidgetPage() {
   const { restaurant } = useRestaurant();
+  const entitlements = getRestaurantEntitlements(restaurant);
   const snippet = restaurant?.slug ? getRestaurantWidgetSnippet(restaurant.slug) : "";
   const [copied, setCopied] = useState(false);
 
@@ -37,6 +40,26 @@ export default function WidgetPage() {
         </p>
       </div>
 
+      {!entitlements.widgetEnabled ? (
+        <Card>
+          <CardContent className="space-y-4 p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-saffron/10">
+              <Lock className="h-6 w-6 text-saffron" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-ink">Unlock the widget on Pro</h3>
+              <p className="mt-1 text-sm text-stone">
+                Starter restaurants can publish a hosted menu page. Pro unlocks the embeddable widget for your own site.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/dashboard/billing">Upgrade to Pro</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {entitlements.widgetEnabled ? (
       <div className="grid gap-6 lg:grid-cols-[1fr,1.2fr]">
         <Card>
           <CardContent className="space-y-5 p-6">
@@ -87,6 +110,7 @@ export default function WidgetPage() {
           </CardContent>
         </Card>
       </div>
+      ) : null}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
+import { getRestaurantEntitlements } from "@/lib/entitlements";
 import { plans } from "@/lib/plans";
 
 const starterFeatures = [
@@ -41,6 +42,7 @@ const planCards = [
 export default function BillingPage() {
   const { getToken } = useAuth();
   const { restaurant } = useRestaurant();
+  const entitlements = getRestaurantEntitlements(restaurant);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -203,6 +205,21 @@ export default function BillingPage() {
             <Shield className="h-4 w-4" />
             {portalLoading ? "Opening..." : "Open billing portal"}
           </Button>
+          <div className="flex flex-wrap gap-2">
+            {entitlements.priorityImageGeneration ? (
+              <div className="rounded-full bg-[#D9F4E5] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#206B48]">
+                Priority image queue
+              </div>
+            ) : null}
+            {entitlements.widgetEnabled ? (
+              <div className="rounded-full bg-[#D9F4E5] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#206B48]">
+                Widget unlocked
+              </div>
+            ) : null}
+            <div className="rounded-full bg-[#EFE7DB] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#6B5A4C]">
+              {entitlements.analyticsTier === "advanced" ? "Advanced analytics" : "Basic analytics"}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

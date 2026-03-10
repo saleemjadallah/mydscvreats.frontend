@@ -14,11 +14,13 @@ export function ExtractionReview({
   onChange,
   onSave,
   saving,
+  saveDisabledReason,
 }: {
   draft: MenuExtractionDraft;
   onChange: (draft: MenuExtractionDraft) => void;
   onSave: () => void;
   saving: boolean;
+  saveDisabledReason?: string | null;
 }) {
   const audit = auditDraft(draft);
 
@@ -36,7 +38,7 @@ export function ExtractionReview({
             </p>
           </div>
         </div>
-        <Button onClick={onSave} disabled={saving} className="shrink-0">
+        <Button onClick={onSave} disabled={saving || Boolean(saveDisabledReason)} className="shrink-0">
           {saving ? "Saving..." : "Save to menu"}
         </Button>
       </CardHeader>
@@ -96,6 +98,12 @@ export function ExtractionReview({
             )}
           </div>
         </div>
+
+        {saveDisabledReason ? (
+          <div className="rounded-[24px] border border-[#F2CFC7] bg-[#FFF4F1] p-5 text-sm text-stone">
+            <span className="font-medium text-ink">Import locked:</span> {saveDisabledReason}
+          </div>
+        ) : null}
 
         {draft.sections.map((section, sectionIndex) => (
           <div key={`${section.name}-${sectionIndex}`} className="rounded-[28px] border border-[#E7DAC5] overflow-hidden">
@@ -225,7 +233,11 @@ export function ExtractionReview({
             Add section
           </Button>
 
-          <Button onClick={onSave} disabled={saving} className="shrink-0">
+          <Button
+            onClick={onSave}
+            disabled={saving || Boolean(saveDisabledReason)}
+            className="shrink-0"
+          >
             {saving ? "Saving..." : "Save to menu"}
           </Button>
         </div>
