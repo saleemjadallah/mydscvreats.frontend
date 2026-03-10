@@ -679,7 +679,7 @@ export function MenuEditor({
               onClick={() => setPreviewImage(null)}
             >
               <div
-                className="relative w-80 overflow-hidden rounded-2xl border border-[#E7DAC5] bg-white shadow-2xl"
+                className="relative w-[28rem] max-w-[90vw] overflow-hidden rounded-2xl border border-[#E7DAC5] bg-white shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
