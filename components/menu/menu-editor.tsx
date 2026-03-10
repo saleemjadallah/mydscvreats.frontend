@@ -116,6 +116,7 @@ export function MenuEditor({
   const [showBulkDescriptions, setShowBulkDescriptions] = useState(false);
   const [showDietaryTags, setShowDietaryTags] = useState(false);
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
+  const [queueingImageItemIds, setQueueingImageItemIds] = useState<Record<string, boolean>>({});
   const [imageRetryChoice, setImageRetryChoice] = useState<{
     itemId: string;
     itemName: string;
@@ -304,6 +305,11 @@ export function MenuEditor({
       replaceImageId?: string;
     }
   ) {
+    if (queueingImageItemIds[itemId]) {
+      return;
+    }
+
+    setQueueingImageItemIds((prev) => ({ ...prev, [itemId]: true }));
     try {
       await withToken(async (token) => {
         await apiClient.queueImageGeneration(token, itemId, options);
@@ -319,6 +325,12 @@ export function MenuEditor({
       );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to queue image generation.");
+    } finally {
+      setQueueingImageItemIds((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
     }
   }
 
@@ -602,6 +614,8 @@ export function MenuEditor({
                         const displayImages = getDisplayImages(item);
                         const canAddVariant = displayImages.length > 0 && displayImages.length < 3;
                         const isComposingVariant = imageComposerItemId === item.id;
+                        const isQueueingImage = Boolean(queueingImageItemIds[item.id]);
+                        const isImageBusy = item.imageStatus === "generating" || isQueueingImage;
 
                         return (
                           <div
@@ -660,6 +674,7 @@ export function MenuEditor({
                                             variant="secondary"
                                             size="sm"
                                             className="w-full"
+                                            disabled={isImageBusy}
                                             onClick={() =>
                                               setImageRetryChoice({
                                                 itemId: item.id,
@@ -714,6 +729,7 @@ export function MenuEditor({
                                       <div className="mt-3 flex flex-wrap gap-2">
                                         <Button
                                           size="sm"
+                                          disabled={isImageBusy}
                                           onClick={() =>
                                             void queueImage(item.id, {
                                               promptModifier: imagePromptByItem[item.id] ?? "",
@@ -721,7 +737,7 @@ export function MenuEditor({
                                           }
                                         >
                                           <ImagePlus className="h-4 w-4" />
-                                          Generate variation
+                                          {isQueueingImage ? "Queueing..." : "Generate variation"}
                                         </Button>
                                         <Button
                                           variant="ghost"
@@ -735,11 +751,14 @@ export function MenuEditor({
                                   ) : (
                                     <button
                                       type="button"
-                                      className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#D8C7AF] bg-[#FFF8EE] text-stone transition-colors hover:border-saffron hover:text-saffron"
+                                      disabled={isImageBusy}
+                                      className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#D8C7AF] bg-[#FFF8EE] text-stone transition-colors hover:border-saffron hover:text-saffron disabled:cursor-not-allowed disabled:opacity-50"
                                       onClick={() => setImageComposerItemId(item.id)}
                                     >
                                       <Plus className="h-5 w-5" />
-                                      <span className="mt-1 text-xs">Add</span>
+                                      <span className="mt-1 text-xs">
+                                        {isQueueingImage ? "..." : "Add"}
+                                      </span>
                                     </button>
                                   )
                                 ) : null}
@@ -819,16 +838,18 @@ export function MenuEditor({
                                   <Button
                                     variant="secondary"
                                     size="sm"
+                                    disabled={isImageBusy}
                                     onClick={() => void queueImage(item.id)}
                                   >
                                     <ImagePlus className="h-4 w-4" />
-                                    Generate
+                                    {isQueueingImage ? "Queueing..." : "Generate"}
                                   </Button>
                                 ) : null}
                                 {item.imageStatus === "failed" ? (
                                   <Button
                                     variant="secondary"
                                     size="sm"
+                                    disabled={isImageBusy}
                                     onClick={() =>
                                       setImageRetryChoice({
                                         itemId: item.id,
