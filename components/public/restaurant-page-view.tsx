@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { Globe2, MapPin, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe2, MapPin, Phone } from "lucide-react";
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,123 @@ import { Separator } from "@/components/ui/separator";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency } from "@/lib/utils";
-import type { Restaurant, RestaurantThemeKey } from "@/types";
+import type { MenuItem, MenuItemImage, Restaurant, RestaurantThemeKey } from "@/types";
+
+type DisplayMenuImage = MenuItemImage & {
+  isSynthetic?: boolean;
+};
+
+function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
+  if (item.images?.length) {
+    return [...item.images].sort((a, b) => a.slot - b.slot);
+  }
+
+  if (!item.imageUrl) {
+    return [];
+  }
+
+  return [
+    {
+      id: `legacy-${item.id}`,
+      slot: 0,
+      imageUrl: item.imageUrl,
+      imageStatus: item.imageStatus,
+      promptModifier: null,
+      isPrimary: true,
+      isSynthetic: true,
+    },
+  ];
+}
+
+function MenuItemImageGallery({
+  item,
+  sectionName,
+  restaurantName,
+  placeholderFrom,
+  placeholderTo,
+}: {
+  item: MenuItem;
+  sectionName: string;
+  restaurantName: string;
+  placeholderFrom: string;
+  placeholderTo: string;
+}) {
+  const images = getDisplayImages(item).filter((image) => Boolean(image.imageUrl));
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  if (!images.length) {
+    return (
+      <div
+        className="h-full w-full"
+        style={{
+          background: `linear-gradient(135deg, ${placeholderFrom}, ${placeholderTo})`,
+        }}
+        role="presentation"
+      />
+    );
+  }
+
+  const activeImage = images[activeIndex] ?? images[0];
+  const hasMultipleImages = images.length > 1;
+
+  function showPreviousImage() {
+    setActiveIndex((current) => (current === 0 ? images.length - 1 : current - 1));
+  }
+
+  function showNextImage() {
+    setActiveIndex((current) => (current === images.length - 1 ? 0 : current + 1));
+  }
+
+  return (
+    <>
+      <Image
+        src={activeImage.imageUrl ?? item.imageUrl ?? ""}
+        alt={`${item.name} – ${sectionName} at ${restaurantName}`}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+        className="object-cover"
+      />
+      {hasMultipleImages ? (
+        <>
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+            <button
+              type="button"
+              onClick={showPreviousImage}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/60"
+              aria-label={`Show previous image for ${item.name}`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div className="rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-medium text-white">
+              {activeIndex + 1} / {images.length}
+            </div>
+            <button
+              type="button"
+              onClick={showNextImage}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/60"
+              aria-label={`Show next image for ${item.name}`}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 flex justify-center gap-1.5 p-3">
+            {images.map((image, index) => (
+              <button
+                key={image.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={`h-2.5 rounded-full transition-all ${
+                  index === activeIndex ? "w-6 bg-white" : "w-2.5 bg-white/55"
+                }`}
+                aria-label={`Show image ${index + 1} for ${item.name}`}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
+    </>
+  );
+}
 
 export function RestaurantPageView({
   restaurant,
@@ -202,23 +318,13 @@ export function RestaurantPageView({
                 {section.items.map((item) => (
                   <Card key={item.id} className="overflow-hidden">
                     <div className="relative h-52">
-                      {item.imageUrl ? (
-                        <Image
-                          src={item.imageUrl}
-                          alt={`${item.name} – ${section.name} at ${restaurant.name}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="h-full w-full"
-                          style={{
-                            background: `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
-                          }}
-                          role="presentation"
-                        />
-                      )}
+                      <MenuItemImageGallery
+                        item={item}
+                        sectionName={section.name}
+                        restaurantName={restaurant.name}
+                        placeholderFrom={theme.placeholderFrom}
+                        placeholderTo={theme.placeholderTo}
+                      />
                     </div>
                     <div className="space-y-3 p-5">
                       <div className="flex items-start justify-between gap-4">
