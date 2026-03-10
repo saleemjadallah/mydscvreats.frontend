@@ -1,5 +1,10 @@
+
+"use client";
+
 import Image from "next/image";
+import { useMemo, useState } from "react";
 import { Globe2, MapPin, Phone } from "lucide-react";
+import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -19,6 +24,36 @@ export function RestaurantPageView({
   previewBanner?: React.ReactNode;
   themeKeyOverride?: RestaurantThemeKey | null;
 }) {
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
+
+  function toggleFilter(tagKey: string) {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagKey)) {
+        next.delete(tagKey);
+      } else {
+        next.add(tagKey);
+      }
+      return next;
+    });
+  }
+
+  // Filter sections based on active dietary filters
+  const filteredSections = useMemo(() => {
+    if (activeFilters.size === 0) return restaurant.menuSections;
+
+    return restaurant.menuSections?.map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        const itemTagKeys = new Set(
+          (item.dietaryTags ?? []).map((dt) => dt.tag.key)
+        );
+        return Array.from(activeFilters).every((filter) =>
+          itemTagKeys.has(filter)
+        );
+      }),
+    })).filter((section) => section.items.length > 0);
+  }, [restaurant.menuSections, activeFilters]);
   const theme = getRestaurantTheme(themeKeyOverride ?? restaurant.themeKey);
   const jsonLd = buildRestaurantJsonLd(restaurant);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
@@ -126,10 +161,10 @@ export function RestaurantPageView({
 
         <nav
           aria-label="Menu sections"
-          className="sticky top-3 z-10 overflow-x-auto rounded-full border bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur"
+          className="sticky top-3 z-10 space-y-2 rounded-[20px] border bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur"
           style={{ borderColor: theme.divider }}
         >
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto">
             {restaurant.menuSections?.map((section) => (
               <a
                 key={section.id}
@@ -141,10 +176,20 @@ export function RestaurantPageView({
               </a>
             ))}
           </div>
+          {restaurant.menuSections && (
+            <DietaryFilterChips
+              sections={restaurant.menuSections}
+              activeFilters={activeFilters}
+              onToggleFilter={toggleFilter}
+              chipBg={theme.chipBg}
+              chipText={theme.chipText}
+              chipBorder={theme.chipBorder}
+            />
+          )}
         </nav>
 
         <section className="space-y-8">
-          {restaurant.menuSections?.map((section) => (
+          {filteredSections?.map((section) => (
             <div key={section.id} id={`section-${section.id}`} className="space-y-4 scroll-mt-28">
               <div className="flex items-center gap-4">
                 <h2 className="text-3xl font-semibold">{section.name}</h2>
@@ -185,6 +230,24 @@ export function RestaurantPageView({
                       {item.description ? (
                         <p className="text-sm text-stone">{item.description}</p>
                       ) : null}
+                      {item.dietaryTags && item.dietaryTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {item.dietaryTags.map((dt) => (
+                            <span
+                              key={dt.id}
+                              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+                              style={{
+                                borderColor: theme.chipBorder,
+                                backgroundColor: theme.chipBg,
+                                color: theme.chipText,
+                              }}
+                            >
+                              {dt.tag.icon && <span>{dt.tag.icon}</span>}
+                              {dt.tag.label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </Card>
                 ))}

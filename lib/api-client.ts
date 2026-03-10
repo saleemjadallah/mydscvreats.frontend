@@ -1,5 +1,8 @@
 import type {
   AnalyticsSummary,
+  DietaryTag,
+  ItemTagSuggestions,
+  MenuAnalysisResult,
   MenuExtractionDraft,
   MenuItemImage,
   MenuSection,
@@ -222,6 +225,102 @@ export const apiClient = {
     return request<{ ok: boolean }>("/api/analytics/page-view", {
       method: "POST",
       body: JSON.stringify(payload),
+    });
+  },
+
+  // ── AI Description Writer ──────────────────────────────────
+  enhanceDescription(token: string, menuItemId: string, tone?: string) {
+    return request<{
+      suggestion: string;
+      originalDescription: string | null;
+      usage: { used: number; limit: number | null };
+    }>("/api/ai/enhance-description", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ menuItemId, tone }),
+    });
+  },
+  enhanceDescriptionsBulk(
+    token: string,
+    payload: { restaurantId: string; mode: "missing" | "weak" | "all"; tone?: string }
+  ) {
+    return request<{
+      suggestions: Record<string, string>;
+      count: number;
+    }>("/api/ai/enhance-descriptions-bulk", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  acceptDescriptions(
+    token: string,
+    actions: Array<{ menuItemId: string; action: "accept" | "reject"; description?: string }>
+  ) {
+    return request<{ ok: boolean }>("/api/ai/accept-descriptions", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ actions }),
+    });
+  },
+
+  // ── Dietary Tags ───────────────────────────────────────────
+  getDietaryTags() {
+    return request<DietaryTag[]>("/api/dietary-tags");
+  },
+  suggestTags(token: string, restaurantId: string) {
+    return request<{
+      suggestions: ItemTagSuggestions[];
+      usage: { used: number; limit: number | null };
+    }>("/api/ai/suggest-tags", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ restaurantId }),
+    });
+  },
+  setItemTags(
+    token: string,
+    itemId: string,
+    tags: Array<{ tagId: string; source?: string; confidence?: number }>
+  ) {
+    return request("/api/dietary-tags/items/" + itemId + "/tags", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ tags }),
+    });
+  },
+  confirmTagsBulk(
+    token: string,
+    actions: Array<{ menuItemId: string; tagId: string; action: "confirm" | "reject" }>
+  ) {
+    return request<{ ok: boolean }>("/api/ai/confirm-tags-bulk", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ actions }),
+    });
+  },
+
+  // ── Menu Analysis ─────────────────────────────────────────
+  analyzeMenu(token: string, restaurantId: string) {
+    return request<{
+      analysis: MenuAnalysisResult;
+      cached: boolean;
+      usage: { used: number; limit: number | null };
+      level: "basic" | "full";
+    }>("/api/ai/analyze-menu", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ restaurantId }),
+    });
+  },
+  getMenuAnalysis(token: string, restaurantId: string) {
+    return request<{
+      analysis: MenuAnalysisResult | null;
+      cached?: boolean;
+      createdAt?: string;
+      level: "basic" | "full";
+    }>("/api/ai/analyze-menu/" + restaurantId, {
+      token,
     });
   },
 };

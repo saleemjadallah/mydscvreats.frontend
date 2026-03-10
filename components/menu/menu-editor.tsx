@@ -18,9 +18,12 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Eye, GripVertical, ImagePlus, Plus, Save, Trash2, X, ZoomIn } from "lucide-react";
+import { Eye, GripVertical, ImagePlus, Plus, Save, Sparkles, Tag, Trash2, X, ZoomIn } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { BulkDescriptionDialog } from "@/components/menu/bulk-description-dialog";
+import { DescriptionEnhancer } from "@/components/menu/description-enhancer";
+import { DietaryTagManager } from "@/components/menu/dietary-tag-manager";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,6 +112,8 @@ export function MenuEditor({
   const [bulkImageMode, setBulkImageMode] = useState<"missing" | "failed" | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
   const [imagePromptByItem, setImagePromptByItem] = useState<Record<string, string>>({});
+  const [showBulkDescriptions, setShowBulkDescriptions] = useState(false);
+  const [showDietaryTags, setShowDietaryTags] = useState(false);
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
   const audit = auditSections(sections);
@@ -368,6 +373,22 @@ export function MenuEditor({
               <Eye className="h-4 w-4" />
               Preview menu page
             </Link>
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setShowBulkDescriptions(true)}
+            className="bg-[#FFFBF0] text-[#B8960C] hover:bg-[#FFF3D6]"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Descriptions
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDietaryTags(true)}
+            className="bg-[#F0FFF4] text-[#2E8B57] hover:bg-[#D6FFE4]"
+          >
+            <Tag className="h-4 w-4" />
+            Dietary Tags
           </Button>
           <Button
             variant="secondary"
@@ -667,7 +688,19 @@ export function MenuEditor({
                               />
                             </div>
                             <div>
-                              <Label>Description</Label>
+                              <div className="flex items-center gap-1">
+                                <Label>Description</Label>
+                                <DescriptionEnhancer
+                                  menuItemId={item.id}
+                                  currentDescription={item.description}
+                                  onAccept={(desc) => {
+                                    const next = structuredClone(sections);
+                                    next[sectionIndex].items[itemIndex].description = desc;
+                                    setSections(next);
+                                    void saveItem({ ...item, description: desc });
+                                  }}
+                                />
+                              </div>
                               <Input
                                 value={item.description ?? ""}
                                 onChange={(event) => {
@@ -677,6 +710,19 @@ export function MenuEditor({
                                   setSections(next);
                                 }}
                               />
+                              {item.dietaryTags && item.dietaryTags.length > 0 && (
+                                <div className="mt-1.5 flex flex-wrap gap-1">
+                                  {item.dietaryTags.map((dt) => (
+                                    <span
+                                      key={dt.id}
+                                      className="inline-flex items-center gap-0.5 rounded-full border border-[#E7DAC5] bg-[#F9F3EA] px-2 py-0.5 text-[11px] text-stone"
+                                    >
+                                      {dt.tag.icon && <span>{dt.tag.icon}</span>}
+                                      {dt.tag.label}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             <div>
                               <Label>Price</Label>
@@ -754,6 +800,27 @@ export function MenuEditor({
       </CardContent>
 
     </Card>
+
+      {/* Bulk description dialog */}
+      {showBulkDescriptions && (
+        <BulkDescriptionDialog
+          restaurantId={restaurant.id}
+          sections={sections}
+          bulkEnabled={entitlements.bulkDescriptionEnabled}
+          onClose={() => setShowBulkDescriptions(false)}
+          onApplied={onRefresh}
+        />
+      )}
+
+      {/* Dietary tag manager */}
+      {showDietaryTags && (
+        <DietaryTagManager
+          restaurantId={restaurant.id}
+          sections={sections}
+          onClose={() => setShowDietaryTags(false)}
+          onApplied={onRefresh}
+        />
+      )}
 
       {/* Image preview lightbox — portaled to body so it's truly viewport-fixed */}
       {previewImage

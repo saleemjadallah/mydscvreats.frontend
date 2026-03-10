@@ -18,6 +18,23 @@ export interface MenuItemImage {
   isPrimary: boolean;
 }
 
+export interface DietaryTag {
+  id: string;
+  key: string;
+  label: string;
+  icon: string | null;
+  category: string;
+}
+
+export interface MenuItemDietaryTag {
+  id: string;
+  menuItemId: string;
+  tagId: string;
+  source: string;
+  confidence: number | null;
+  tag: DietaryTag;
+}
+
 export interface MenuItem {
   id: string;
   sectionId: string;
@@ -31,6 +48,9 @@ export interface MenuItem {
   images?: MenuItemImage[];
   isAvailable: boolean;
   displayOrder: number;
+  aiDescriptionStatus?: string | null;
+  originalDescription?: string | null;
+  dietaryTags?: MenuItemDietaryTag[];
 }
 
 export interface MenuSection {
@@ -69,6 +89,11 @@ export interface Restaurant {
     analyticsTier: AnalyticsTier;
     imageGenerationPriority: number;
     priorityImageGeneration: boolean;
+    aiDescriptionLimit: number | null;
+    bulkDescriptionEnabled: boolean;
+    aiTagAnalysisLimit: number | null;
+    menuAnalysisLevel: "basic" | "full";
+    analysisLimit: number | null;
   };
   subscription?: {
     id: string;
@@ -100,4 +125,40 @@ export interface MenuExtractionDraft {
       price: number;
     }>;
   }>;
+}
+
+export interface TagSuggestion {
+  tagKey: string;
+  confidence: number;
+  reasoning: string;
+}
+
+export interface ItemTagSuggestions {
+  menuItemId: string;
+  tags: TagSuggestion[];
+}
+
+export interface AnalysisItem {
+  type: "warning" | "suggestion" | "positive";
+  message: string;
+  menuItemId?: string;
+  menuItemName?: string;
+}
+
+export interface CategoryAnalysis {
+  score: number;
+  title: string;
+  summary: string;
+  items: AnalysisItem[];
+}
+
+export interface MenuAnalysisResult {
+  overallScore: number;
+  categories: {
+    pricing: CategoryAnalysis;
+    descriptions: CategoryAnalysis;
+    structure: CategoryAnalysis;
+    gaps: CategoryAnalysis;
+    seasonal: CategoryAnalysis;
+  };
 }
