@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
@@ -14,6 +15,15 @@ import { PricingSection } from "@/components/landing/pricing-section";
 import { RestaurantShowcase } from "@/components/landing/restaurant-showcase";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
+
+export const metadata: Metadata = {
+  title: "mydscvr Eats - Beautiful Menu Pages for Dubai Restaurants",
+  description:
+    "Create stunning hosted menu pages for your Dubai restaurant. Dish photos, prices, descriptions — all in one beautiful link.",
+  alternates: {
+    canonical: "https://mydscvr.ai",
+  },
+};
 
 export default async function HomePage() {
   const restaurants = await apiClient.listRestaurants().catch(() => []);

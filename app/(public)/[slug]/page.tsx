@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { apiClient } from "@/lib/api-client";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency } from "@/lib/utils";
+import { buildRestaurantJsonLd } from "@/lib/structured-data";
 
 export async function generateMetadata({
   params,
@@ -23,14 +24,40 @@ export async function generateMetadata({
     };
   }
 
+  const cuisine = restaurant.cuisineType ? ` - ${restaurant.cuisineType}` : "";
+  const title = `${restaurant.name} Menu${cuisine} | mydscvr Eats`;
+  const description =
+    restaurant.description ??
+    `Browse the full menu for ${restaurant.name}${restaurant.location ? ` in ${restaurant.location}` : ""}. Dish photos, prices, and descriptions on mydscvr Eats.`;
+
   return {
-    title: `${restaurant.name} | mydscvr Eats`,
-    description:
-      restaurant.description ??
-      `Browse the live menu for ${restaurant.name} on mydscvr Eats.`,
+    title,
+    description,
+    alternates: {
+      canonical: `https://mydscvr.ai/${slug}`,
+    },
     openGraph: {
-      title: `${restaurant.name} | mydscvr Eats`,
-      description: restaurant.description ?? undefined,
+      title,
+      description,
+      url: `https://mydscvr.ai/${slug}`,
+      type: "restaurant.menu" as "website",
+      siteName: "mydscvr Eats",
+      locale: "en_AE",
+      images: restaurant.coverImageUrl
+        ? [
+            {
+              url: restaurant.coverImageUrl,
+              alt: `${restaurant.name} cover photo`,
+              width: 1200,
+              height: 630,
+            },
+          ]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
       images: restaurant.coverImageUrl ? [restaurant.coverImageUrl] : [],
     },
   };
@@ -52,6 +79,8 @@ export default async function RestaurantPage({
 
   const theme = getRestaurantTheme(restaurant.themeKey);
 
+  const jsonLd = buildRestaurantJsonLd(restaurant);
+
   return (
     <main
       className="px-4 py-5 md:px-8 md:py-8"
@@ -59,6 +88,10 @@ export default async function RestaurantPage({
         background: `radial-gradient(circle at top right, ${theme.glowA}, transparent 34%), radial-gradient(circle at bottom left, ${theme.glowB}, transparent 30%), ${theme.pageBackground}`,
       }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <RestaurantTracker restaurantId={restaurant.id} />
       <div className="mx-auto max-w-7xl space-y-6">
         <section

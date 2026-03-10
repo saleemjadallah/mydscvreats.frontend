@@ -1,7 +1,45 @@
 
+import type { Metadata } from "next";
 import { RestaurantCard } from "@/components/public/restaurant-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiClient } from "@/lib/api-client";
+
+export const revalidate = 60;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ cuisine?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const cuisine = params.cuisine;
+
+  const title = cuisine
+    ? `${cuisine} Restaurants in Dubai | mydscvr Eats`
+    : "Explore Restaurant Menus in Dubai | mydscvr Eats";
+
+  const description = cuisine
+    ? `Browse ${cuisine} restaurant menus in Dubai. Dish photos, prices, and descriptions on mydscvr Eats.`
+    : "Discover Dubai restaurant menus with dish photos, prices, and descriptions. Browse all published menus on mydscvr Eats.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: "https://mydscvr.ai/explore",
+    },
+    openGraph: {
+      title,
+      description,
+      url: "https://mydscvr.ai/explore",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function ExplorePage({
   searchParams,
