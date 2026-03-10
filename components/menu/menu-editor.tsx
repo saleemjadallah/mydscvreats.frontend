@@ -321,6 +321,7 @@ export function MenuEditor({
   }
 
   return (
+    <>
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-col gap-4 border-l-4 border-l-saffron md:flex-row md:items-center md:justify-between">
         <div>
@@ -668,34 +669,39 @@ export function MenuEditor({
         ) : null}
       </CardContent>
 
-      {/* Image preview lightbox */}
-      {previewImage ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div
-            className="relative w-80 overflow-hidden rounded-2xl border border-[#E7DAC5] bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="absolute right-2 top-2 z-10 rounded-full bg-black/40 p-1.5 text-white transition-colors hover:bg-black/60"
+    </Card>
+
+      {/* Image preview lightbox — portaled to body so it's truly viewport-fixed */}
+      {previewImage
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
               onClick={() => setPreviewImage(null)}
             >
-              <X className="h-4 w-4" />
-            </button>
-            <img
-              src={previewImage.url}
-              alt={previewImage.name}
-              className="w-full object-contain"
-            />
-            <div className="border-t border-[#F0E5D4] px-4 py-3">
-              <p className="text-sm font-medium text-ink">{previewImage.name}</p>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </Card>
+              <div
+                className="relative w-80 overflow-hidden rounded-2xl border border-[#E7DAC5] bg-white shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="absolute right-2 top-2 z-10 rounded-full bg-black/40 p-1.5 text-white transition-colors hover:bg-black/60"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <img
+                  src={previewImage.url}
+                  alt={previewImage.name}
+                  className="w-full object-contain"
+                />
+                <div className="border-t border-[#F0E5D4] px-4 py-3">
+                  <p className="text-sm font-medium text-ink">{previewImage.name}</p>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   );
 }
