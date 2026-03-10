@@ -43,6 +43,7 @@ export default function BillingPage() {
   const { getToken } = useAuth();
   const { restaurant } = useRestaurant();
   const entitlements = getRestaurantEntitlements(restaurant);
+  const hasStripeSubscription = Boolean(restaurant?.subscription?.stripeSubscriptionId);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -105,7 +106,7 @@ export default function BillingPage() {
             Less than your monthly cleaning bill.
           </h2>
           <p className="mt-2 text-sm text-white/60">
-            14-day free trial on all plans. No credit card required.
+            14-day free trial on both plans. No card required to start.
           </p>
         </div>
 
@@ -152,10 +153,25 @@ export default function BillingPage() {
                       ? "bg-saffron text-ink hover:bg-saffron/90"
                       : "border-white/20 bg-white/10 text-white hover:bg-white/15"
                   }`}
-                  onClick={() => void checkout(plan.id)}
-                  disabled={loadingPlan === plan.id || !restaurant}
+                  onClick={() =>
+                    void (hasStripeSubscription ? openPortal() : checkout(plan.id))
+                  }
+                  disabled={
+                    loadingPlan === plan.id ||
+                    portalLoading ||
+                    !restaurant ||
+                    (hasStripeSubscription && !restaurant.subscription?.stripeCustomerId)
+                  }
                 >
-                  {loadingPlan === plan.id ? "Redirecting..." : `Choose ${plan.name}`}
+                  {loadingPlan === plan.id
+                    ? "Redirecting..."
+                    : hasStripeSubscription
+                      ? portalLoading
+                        ? "Opening portal..."
+                        : restaurant?.subscription?.plan === plan.id
+                          ? "Current plan"
+                          : "Manage in portal"
+                      : `Choose ${plan.name}`}
                 </Button>
               </div>
             </div>
@@ -192,7 +208,11 @@ export default function BillingPage() {
             <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
               <div className="mb-1 text-xs uppercase tracking-[0.2em] text-stone">Trial ends</div>
               <div className="font-medium text-ink">
-                {restaurant?.trialEndsAt ? new Date(restaurant.trialEndsAt).toLocaleDateString() : "n/a"}
+                {restaurant?.trialEndsAt
+                  ? new Date(restaurant.trialEndsAt).toLocaleDateString()
+                  : restaurant?.subscription?.stripeSubscriptionId
+                    ? "Completed"
+                    : "Starts after checkout"}
               </div>
             </div>
           </div>

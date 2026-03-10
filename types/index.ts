@@ -75,6 +75,7 @@ export interface Restaurant {
     status: SubscriptionStatus;
     currentPeriodEnd: string | null;
     stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
   } | null;
 }
 

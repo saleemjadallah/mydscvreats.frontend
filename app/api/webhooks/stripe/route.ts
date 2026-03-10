@@ -5,18 +5,46 @@ import { constructWebhookEvent, getStripe } from "@/lib/stripe";
 
 function mapStripeStatus(status: Stripe.Subscription.Status) {
   switch (status) {
-    case "active":
     case "trialing":
+      return "trial" as const;
+    case "active":
       return "active" as const;
     case "canceled":
     case "incomplete_expired":
       return "cancelled" as const;
+    case "incomplete":
     case "past_due":
     case "unpaid":
       return "paused" as const;
     default:
       return "trial" as const;
   }
+}
+
+function mapPriceIdToPlan(priceId?: string | null) {
+  if (!priceId) {
+    return undefined;
+  }
+
+  if (priceId === process.env.STRIPE_STARTER_PRICE_ID) {
+    return "starter" as const;
+  }
+
+  if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
+    return "pro" as const;
+  }
+
+  return undefined;
+}
+
+function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
+  if (subscription.status === "trialing" && subscription.trial_end) {
+    return new Date(subscription.trial_end * 1000).toISOString();
+  }
+
+  return subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : null;
 }
 
 async function forwardToBackend(payload: Record<string, unknown>) {
@@ -57,18 +85,37 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const client = getStripe();
+    if (!client) {
+      throw new Error("Stripe not configured");
+    }
+
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        const subscriptionId =
+          typeof session.subscription === "string" ? session.subscription : undefined;
+        const subscription = subscriptionId
+          ? await client.subscriptions.retrieve(subscriptionId)
+          : null;
+
         await forwardToBackend({
           type: event.type,
           data: {
             restaurantId: session.metadata?.restaurant_id,
-            plan: session.metadata?.plan,
+            plan:
+              mapPriceIdToPlan(subscription?.items.data[0]?.price.id) ??
+              (subscription?.metadata.plan === "starter" || subscription?.metadata.plan === "pro"
+                ? subscription.metadata.plan
+                : undefined) ??
+              (session.metadata?.plan === "starter" || session.metadata?.plan === "pro"
+                ? session.metadata.plan
+                : undefined),
             stripeCustomerId:
               typeof session.customer === "string" ? session.customer : undefined,
-            stripeSubscriptionId:
-              typeof session.subscription === "string" ? session.subscription : undefined,
+            stripeSubscriptionId: subscriptionId,
+            status: subscription ? mapStripeStatus(subscription.status) : "trial",
+            currentPeriodEnd: subscription ? getCurrentPeriodEnd(subscription) : null,
           },
         });
         break;
@@ -84,21 +131,26 @@ export async function POST(request: NextRequest) {
         });
         break;
       }
+      case "customer.subscription.created":
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         await forwardToBackend({
           type: event.type,
           data: {
+            restaurantId: subscription.metadata.restaurant_id,
             stripeSubscriptionId: subscription.id,
             stripeCustomerId:
               typeof subscription.customer === "string"
                 ? subscription.customer
                 : undefined,
+            plan:
+              mapPriceIdToPlan(subscription.items.data[0]?.price.id) ??
+              (subscription.metadata.plan === "starter" || subscription.metadata.plan === "pro"
+                ? subscription.metadata.plan
+                : undefined),
             status: mapStripeStatus(subscription.status),
-            currentPeriodEnd: subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000).toISOString()
-              : null,
+            currentPeriodEnd: getCurrentPeriodEnd(subscription),
           },
         });
         break;

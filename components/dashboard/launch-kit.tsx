@@ -26,10 +26,12 @@ export function LaunchKit({
   restaurantId,
   restaurantName,
   slug,
+  widgetEnabled,
 }: {
   restaurantId: string;
   restaurantName: string;
   slug: string;
+  widgetEnabled: boolean;
 }) {
   const { getToken } = useAuth();
   const [viewsThisWeek, setViewsThisWeek] = useState<number | null>(null);
@@ -103,21 +105,23 @@ export function LaunchKit({
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
-              <Code2 className="h-4 w-4 text-saffron" />
-              Widget snippet
+          {widgetEnabled ? (
+            <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
+                <Code2 className="h-4 w-4 text-saffron" />
+                Widget snippet
+              </div>
+              <pre className="overflow-x-auto rounded-[20px] bg-[#201A17] p-4 text-xs text-[#F7F1E8]">
+                {widgetSnippet}
+              </pre>
+              <div className="mt-4">
+                <Button variant="secondary" onClick={() => void copy(widgetSnippet, "Widget snippet")}>
+                  <Copy className="h-4 w-4" />
+                  Copy embed
+                </Button>
+              </div>
             </div>
-            <pre className="overflow-x-auto rounded-[20px] bg-[#201A17] p-4 text-xs text-[#F7F1E8]">
-              {widgetSnippet}
-            </pre>
-            <div className="mt-4">
-              <Button variant="secondary" onClick={() => void copy(widgetSnippet, "Widget snippet")}>
-                <Copy className="h-4 w-4" />
-                Copy embed
-              </Button>
-            </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">

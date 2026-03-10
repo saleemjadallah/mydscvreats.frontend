@@ -63,6 +63,9 @@ export default function DashboardPage() {
 
   const setup = getRestaurantSetupState(restaurant);
   const audit = setup.audit;
+  const hasStartedStripeTrial = Boolean(
+    restaurant.subscription?.stripeSubscriptionId && restaurant.trialEndsAt
+  );
   const trialDaysLeft = restaurant.trialEndsAt
     ? Math.max(
         0,
@@ -111,11 +114,19 @@ export default function DashboardPage() {
           />
           <StatCard
             label={restaurant.subscriptionStatus === "active" ? "Live status" : "Trial remaining"}
-            value={restaurant.subscriptionStatus === "active" ? "Live" : `${trialDaysLeft} days`}
+            value={
+              restaurant.subscriptionStatus === "active"
+                ? "Live"
+                : hasStartedStripeTrial
+                  ? `${trialDaysLeft} days`
+                  : "Not started"
+            }
             hint={
               restaurant.subscriptionStatus === "active"
                 ? `Published at mydscvr.ai/${restaurant.slug}.`
-                : "No card required until you are ready to publish."
+                : hasStartedStripeTrial
+                  ? "Your trial is live. Add a payment method in billing before it ends."
+                  : "Choose Starter or Pro in billing to start the 14-day trial."
             }
             icon={restaurant.subscriptionStatus === "active" ? Eye : Timer}
             accent="stone"
@@ -280,6 +291,7 @@ export default function DashboardPage() {
           restaurantId={restaurant.id}
           restaurantName={restaurant.name}
           slug={restaurant.slug}
+          widgetEnabled={Boolean(restaurant.entitlements?.widgetEnabled)}
         />
       ) : null}
     </div>
