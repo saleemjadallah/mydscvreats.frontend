@@ -231,6 +231,7 @@ export default function AppearancePage() {
                 </label>
               )}
             </div>
+            <p className="text-xs text-stone">Recommended: 512 x 512px, PNG or JPG, max 2 MB</p>
           </div>
           <div className="space-y-3">
             <Label>Cover image</Label>
@@ -276,6 +277,7 @@ export default function AppearancePage() {
                 </label>
               )}
             </div>
+            <p className="text-xs text-stone">Recommended: 1200 x 400px, PNG or JPG, max 5 MB</p>
           </div>
         </CardContent>
       </Card>
