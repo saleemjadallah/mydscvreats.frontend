@@ -35,25 +35,25 @@ export default async function HomePage() {
       {/* Sticky header */}
       <header className="sticky top-4 z-50 mx-4 md:mx-8">
         <div className="mx-auto max-w-7xl">
-          <div className="glass-panel flex items-center justify-between rounded-[36px] border border-[#E7DAC5] px-6 py-4">
-            <div className="flex items-center gap-8">
+          <div className="glass-panel flex items-center justify-between rounded-[36px] border border-[#E7DAC5] px-6 py-5">
+            <div className="flex items-center gap-10">
               <Link href="/">
                 <Image src="/logo.png" alt="MyDscvr Eats" width={140} height={56} className="h-14 w-auto" />
               </Link>
-              <nav className="hidden items-center gap-5 text-sm text-ink/60 md:flex">
-                <a href="#how-it-works" className="hover:text-ink">
+              <nav className="hidden items-center gap-6 text-base font-medium text-ink/70 md:flex">
+                <a href="#how-it-works" className="transition-colors hover:text-ink">
                   How it works
                 </a>
-                <a href="#pricing" className="hover:text-ink">
+                <a href="#pricing" className="transition-colors hover:text-ink">
                   Pricing
                 </a>
               </nav>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Link
                 href="/explore"
-                className="hidden text-sm font-medium text-ink/60 sm:block"
+                className="hidden text-base font-medium text-ink/70 transition-colors hover:text-ink sm:block"
               >
                 Explore
               </Link>
@@ -65,18 +65,18 @@ export default async function HomePage() {
                       forceRedirectUrl="/dashboard/onboarding"
                       fallbackRedirectUrl="/dashboard/onboarding"
                     >
-                      <Button size="sm" variant="secondary">Sign up</Button>
+                      <Button variant="secondary">Sign up</Button>
                     </SignUpButton>
                     <SignInButton
                       mode="modal"
                       forceRedirectUrl="/dashboard"
                       fallbackRedirectUrl="/dashboard"
                     >
-                      <Button size="sm">Sign in</Button>
+                      <Button>Sign in</Button>
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
-                    <Button asChild size="sm">
+                    <Button asChild>
                       <Link href="/dashboard">
                         Dashboard
                         <ArrowRight className="h-4 w-4" />
@@ -85,7 +85,7 @@ export default async function HomePage() {
                   </SignedIn>
                 </>
               ) : (
-                <Button asChild size="sm">
+                <Button asChild>
                   <Link href="/dashboard">
                     Dashboard
                     <ArrowRight className="h-4 w-4" />
