@@ -6,18 +6,20 @@ import { Separator } from "@/components/ui/separator";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency } from "@/lib/utils";
-import type { Restaurant } from "@/types";
+import type { Restaurant, RestaurantThemeKey } from "@/types";
 
 export function RestaurantPageView({
   restaurant,
   trackPageView = false,
   previewBanner,
+  themeKeyOverride,
 }: {
   restaurant: Restaurant;
   trackPageView?: boolean;
   previewBanner?: React.ReactNode;
+  themeKeyOverride?: RestaurantThemeKey | null;
 }) {
-  const theme = getRestaurantTheme(restaurant.themeKey);
+  const theme = getRestaurantTheme(themeKeyOverride ?? restaurant.themeKey);
   const jsonLd = buildRestaurantJsonLd(restaurant);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
 

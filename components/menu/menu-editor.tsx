@@ -18,7 +18,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ImagePlus, Plus, Save, Trash2, X, ZoomIn } from "lucide-react";
+import { Eye, GripVertical, ImagePlus, Plus, Save, Trash2, X, ZoomIn } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
@@ -363,6 +363,12 @@ export function MenuEditor({
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <Button asChild variant="secondary">
+            <Link href={`/dashboard/preview${restaurant.themeKey ? `?theme=${restaurant.themeKey}` : ""}`}>
+              <Eye className="h-4 w-4" />
+              Preview menu page
+            </Link>
+          </Button>
           <Button
             variant="secondary"
             onClick={() => void queueImages("missing")}

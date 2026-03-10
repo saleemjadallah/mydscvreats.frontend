@@ -60,7 +60,7 @@ export function DashboardTopbar() {
               >
                 <Link href="/dashboard/preview">
                   <Eye className="h-4 w-4" />
-                  Preview draft page
+                  Preview menu page
                 </Link>
               </Button>
               <Button asChild variant="secondary" className="transition-all duration-200 hover:-translate-y-0.5">

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { RestaurantDraftPreview } from "@/components/dashboard/restaurant-draft-preview";
 import { ThemePicker } from "@/components/dashboard/theme-picker";
@@ -237,6 +237,12 @@ export function OwnerOnboarding() {
                 <div className="flex gap-3">
                   <Button asChild variant="secondary">
                     <Link href="/dashboard/appearance">More appearance options</Link>
+                  </Button>
+                  <Button asChild variant="secondary">
+                    <Link href={`/dashboard/preview?theme=${selectedTheme}`}>
+                      <Eye className="h-4 w-4" />
+                      Preview menu page
+                    </Link>
                   </Button>
                   <Button onClick={() => void saveTheme()} disabled={savingTheme}>
                     {savingTheme ? "Saving..." : "Finish onboarding"}

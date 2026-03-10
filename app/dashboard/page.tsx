@@ -227,7 +227,7 @@ export default function DashboardPage() {
                 <div className="mt-4">
                   <Button asChild variant="secondary">
                     <Link href={restaurant.isPublished ? `/${restaurant.slug}` : "/dashboard/preview"}>
-                      {restaurant.isPublished ? "View public page" : "Preview draft page"}
+                      {restaurant.isPublished ? "View public page" : "Preview menu page"}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -255,7 +255,15 @@ export default function DashboardPage() {
                   <div className="mb-2 text-xs uppercase tracking-[0.3em] text-stone">Recommended move</div>
                   <div className="text-lg font-semibold text-ink">{setup.nextStep.label}</div>
                   <p className="mt-2 text-sm text-stone">{setup.nextStep.summary}</p>
-                  <div className="mt-4">
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {setup.nextStep.id === "publish" ? (
+                      <Button asChild variant="secondary">
+                        <Link href="/dashboard/preview">
+                          <Eye className="h-4 w-4" />
+                          Preview menu page
+                        </Link>
+                      </Button>
+                    ) : null}
                     <Button asChild>
                       <Link href={setup.nextStep.href}>
                         {setup.nextStep.cta}
