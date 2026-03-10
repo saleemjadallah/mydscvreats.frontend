@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Eye } from "lucide-react";
 import { RestaurantPageView } from "@/components/public/restaurant-page-view";
@@ -10,7 +11,7 @@ import { useRestaurant } from "@/hooks/use-restaurant";
 import { restaurantThemes } from "@/lib/restaurant-theme";
 import type { RestaurantThemeKey } from "@/types";
 
-export default function DashboardPreviewPage() {
+function PreviewContent() {
   const { restaurant, loading } = useRestaurant();
   const searchParams = useSearchParams();
   const themeParam = searchParams.get("theme");
@@ -50,5 +51,13 @@ export default function DashboardPreviewPage() {
         </div>
       }
     />
+  );
+}
+
+export default function DashboardPreviewPage() {
+  return (
+    <Suspense fallback={<Card><CardContent className="p-8">Loading preview...</CardContent></Card>}>
+      <PreviewContent />
+    </Suspense>
   );
 }
