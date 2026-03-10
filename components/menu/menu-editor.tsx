@@ -306,7 +306,9 @@ export function MenuEditor({
     setBulkImageMode(mode);
     try {
       await withToken(async (token) => {
-        await Promise.all(targetIds.map((itemId) => apiClient.queueImageGeneration(token, itemId)));
+        for (const itemId of targetIds) {
+          await apiClient.queueImageGeneration(token, itemId);
+        }
       });
 
       toast.success(
