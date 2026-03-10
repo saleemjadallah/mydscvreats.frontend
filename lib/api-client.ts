@@ -167,11 +167,24 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
-  queueImageGeneration(token: string, menuItemId: string, promptModifier?: string) {
+  queueImageGeneration(
+    token: string,
+    menuItemId: string,
+    options?: {
+      promptModifier?: string;
+      allowFallback?: boolean;
+      replaceImageId?: string;
+    }
+  ) {
     return request<{ queued: boolean; imageId: string }>("/api/menu/generate-image", {
       method: "POST",
       token,
-      body: JSON.stringify({ menuItemId, promptModifier }),
+      body: JSON.stringify({
+        menuItemId,
+        promptModifier: options?.promptModifier,
+        allowFallback: options?.allowFallback,
+        replaceImageId: options?.replaceImageId,
+      }),
     });
   },
   selectMenuItemImage(token: string, itemId: string, imageId: string) {

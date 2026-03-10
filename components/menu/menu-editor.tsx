@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { BulkDescriptionDialog } from "@/components/menu/bulk-description-dialog";
 import { DescriptionEnhancer } from "@/components/menu/description-enhancer";
 import { DietaryTagManager } from "@/components/menu/dietary-tag-manager";
+import { ImageRetryDialog } from "@/components/menu/image-retry-dialog";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -115,6 +116,13 @@ export function MenuEditor({
   const [showBulkDescriptions, setShowBulkDescriptions] = useState(false);
   const [showDietaryTags, setShowDietaryTags] = useState(false);
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
+  const [imageRetryChoice, setImageRetryChoice] = useState<{
+    itemId: string;
+    itemName: string;
+    imageId?: string;
+    promptModifier?: string | null;
+  } | null>(null);
+  const [retryDialogLoading, setRetryDialogLoading] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor));
   const audit = auditSections(sections);
   const entitlements = getRestaurantEntitlements(restaurant);
@@ -288,14 +296,22 @@ export function MenuEditor({
     });
   }
 
-  async function queueImage(itemId: string, promptModifier?: string) {
+  async function queueImage(
+    itemId: string,
+    options?: {
+      promptModifier?: string;
+      allowFallback?: boolean;
+      replaceImageId?: string;
+    }
+  ) {
     try {
       await withToken(async (token) => {
-        await apiClient.queueImageGeneration(token, itemId, promptModifier);
+        await apiClient.queueImageGeneration(token, itemId, options);
         await onRefresh();
       });
       setImageComposerItemId(null);
       setImagePromptByItem((prev) => ({ ...prev, [itemId]: "" }));
+      setImageRetryChoice(null);
       toast.success(
         entitlements.priorityImageGeneration
           ? "Priority image generation queued."
@@ -319,17 +335,32 @@ export function MenuEditor({
   }
 
   async function queueImages(mode: "missing" | "failed") {
-    const targetIds = sections.flatMap((section) =>
-      section.items
-        .filter((item) =>
-          mode === "missing"
-            ? !item.imageUrl && item.imageStatus !== "generating"
-            : item.imageStatus === "failed"
-        )
-        .map((item) => item.id)
+    const targets: Array<{
+      itemId: string;
+      imageId?: string;
+      promptModifier?: string | null;
+    }> = sections.flatMap((section) =>
+      section.items.flatMap((item) => {
+        if (mode === "missing") {
+          return !item.imageUrl && item.imageStatus !== "generating"
+            ? [{ itemId: item.id }]
+            : [];
+        }
+
+        const failedImage = getDisplayImages(item).find((image) => image.imageStatus === "failed");
+        return failedImage
+          ? [
+              {
+                itemId: item.id,
+                imageId: failedImage.id,
+                promptModifier: failedImage.promptModifier,
+              },
+            ]
+          : [];
+      })
     );
 
-    if (!targetIds.length) {
+    if (!targets.length) {
       toast.message(
         mode === "missing"
           ? "No missing dish images left to queue."
@@ -341,19 +372,39 @@ export function MenuEditor({
     setBulkImageMode(mode);
     try {
       await withToken(async (token) => {
-        for (const itemId of targetIds) {
-          await apiClient.queueImageGeneration(token, itemId);
+        for (const target of targets) {
+          await apiClient.queueImageGeneration(token, target.itemId, {
+            promptModifier: target.promptModifier ?? undefined,
+            replaceImageId: target.imageId,
+          });
         }
       });
 
       toast.success(
-        `${entitlements.priorityImageGeneration ? "Priority" : "Standard"} queue: ${targetIds.length} image job${targetIds.length === 1 ? "" : "s"} added.`
+        `${entitlements.priorityImageGeneration ? "Priority" : "Standard"} queue: ${targets.length} image job${targets.length === 1 ? "" : "s"} added.`
       );
       await onRefresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to queue image jobs.");
     } finally {
       setBulkImageMode(null);
+    }
+  }
+
+  async function resolveFailedImage(allowFallback: boolean) {
+    if (!imageRetryChoice) {
+      return;
+    }
+
+    setRetryDialogLoading(true);
+    try {
+      await queueImage(imageRetryChoice.itemId, {
+        promptModifier: imageRetryChoice.promptModifier ?? undefined,
+        allowFallback,
+        replaceImageId: imageRetryChoice.imageId,
+      });
+    } finally {
+      setRetryDialogLoading(false);
     }
   }
 
@@ -604,6 +655,23 @@ export function MenuEditor({
                                             {image.promptModifier}
                                           </p>
                                         ) : null}
+                                        {image.imageStatus === "failed" ? (
+                                          <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="w-full"
+                                            onClick={() =>
+                                              setImageRetryChoice({
+                                                itemId: item.id,
+                                                itemName: item.name,
+                                                imageId: image.id,
+                                                promptModifier: image.promptModifier,
+                                              })
+                                            }
+                                          >
+                                            Retry options
+                                          </Button>
+                                        ) : null}
                                         {!image.isSynthetic &&
                                         image.imageUrl &&
                                         !image.isPrimary &&
@@ -647,7 +715,9 @@ export function MenuEditor({
                                         <Button
                                           size="sm"
                                           onClick={() =>
-                                            void queueImage(item.id, imagePromptByItem[item.id] ?? "")
+                                            void queueImage(item.id, {
+                                              promptModifier: imagePromptByItem[item.id] ?? "",
+                                            })
                                           }
                                         >
                                           <ImagePlus className="h-4 w-4" />
@@ -755,6 +825,21 @@ export function MenuEditor({
                                     Generate
                                   </Button>
                                 ) : null}
+                                {item.imageStatus === "failed" ? (
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() =>
+                                      setImageRetryChoice({
+                                        itemId: item.id,
+                                        itemName: item.name,
+                                      })
+                                    }
+                                  >
+                                    <ImagePlus className="h-4 w-4" />
+                                    Retry options
+                                  </Button>
+                                ) : null}
                               </div>
                             </div>
                             <div className="flex items-end gap-2">
@@ -819,6 +904,20 @@ export function MenuEditor({
           sections={sections}
           onClose={() => setShowDietaryTags(false)}
           onApplied={onRefresh}
+        />
+      )}
+
+      {imageRetryChoice && (
+        <ImageRetryDialog
+          itemName={imageRetryChoice.itemName}
+          loading={retryDialogLoading}
+          onClose={() => {
+            if (!retryDialogLoading) {
+              setImageRetryChoice(null);
+            }
+          }}
+          onRetryPrimary={() => void resolveFailedImage(false)}
+          onRetryFallback={() => void resolveFailedImage(true)}
         />
       )}
 
