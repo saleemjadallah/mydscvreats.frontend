@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useAuth } from "@clerk/nextjs";
@@ -29,6 +30,11 @@ export function RestaurantProvider({
   const { getToken, isSignedIn } = useAuth();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
+  const restaurantRef = useRef<Restaurant | null>(null);
+
+  useEffect(() => {
+    restaurantRef.current = restaurant;
+  }, [restaurant]);
 
   const refresh = useCallback(async () => {
     if (!isSignedIn) {
@@ -37,7 +43,10 @@ export function RestaurantProvider({
       return;
     }
 
-    setLoading(true);
+    if (!restaurantRef.current) {
+      setLoading(true);
+    }
+
     try {
       const token = await getToken();
       if (!token) {

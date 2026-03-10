@@ -31,7 +31,7 @@ function MenuSkeleton() {
 export default function DashboardMenuPage() {
   const { restaurant, loading, refresh } = useRestaurant();
 
-  if (loading) {
+  if (loading && !restaurant) {
     return <MenuSkeleton />;
   }
 
