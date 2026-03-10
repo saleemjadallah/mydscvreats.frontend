@@ -502,27 +502,27 @@ export function MenuEditor({
       {/* Image preview lightbox */}
       {previewImage ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           onClick={() => setPreviewImage(null)}
         >
-          <button
-            type="button"
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-            onClick={() => setPreviewImage(null)}
-          >
-            <X className="h-5 w-5" />
-          </button>
           <div
-            className="relative max-h-[85vh] max-w-[85vw] overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+            className="relative w-80 overflow-hidden rounded-2xl border border-[#E7DAC5] bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              type="button"
+              className="absolute right-2 top-2 z-10 rounded-full bg-black/40 p-1.5 text-white transition-colors hover:bg-black/60"
+              onClick={() => setPreviewImage(null)}
+            >
+              <X className="h-4 w-4" />
+            </button>
             <img
               src={previewImage.url}
               alt={previewImage.name}
-              className="max-h-[85vh] max-w-[85vw] object-contain"
+              className="w-full object-contain"
             />
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3">
-              <p className="text-sm font-medium text-white">{previewImage.name}</p>
+            <div className="border-t border-[#F0E5D4] px-4 py-3">
+              <p className="text-sm font-medium text-ink">{previewImage.name}</p>
             </div>
           </div>
         </div>
