@@ -1,7 +1,8 @@
 import type { Restaurant, SubscriptionPlan } from "@/types";
 
 export interface PlanEntitlements {
-  plan: SubscriptionPlan;
+  plan: SubscriptionPlan | null;
+  hasSelectedPlan: boolean;
   menuItemLimit: number | null;
   widgetEnabled: boolean;
   customDomainEnabled: boolean;
@@ -10,7 +11,10 @@ export interface PlanEntitlements {
   priorityImageGeneration: boolean;
 }
 
-const PLAN_ENTITLEMENTS: Record<SubscriptionPlan, Omit<PlanEntitlements, "plan">> = {
+const PLAN_ENTITLEMENTS: Record<
+  SubscriptionPlan,
+  Omit<PlanEntitlements, "plan" | "hasSelectedPlan">
+> = {
   starter: {
     menuItemLimit: 30,
     widgetEnabled: false,
@@ -29,6 +33,17 @@ const PLAN_ENTITLEMENTS: Record<SubscriptionPlan, Omit<PlanEntitlements, "plan">
   },
 };
 
+const DRAFT_ENTITLEMENTS: PlanEntitlements = {
+  plan: null,
+  hasSelectedPlan: false,
+  menuItemLimit: null,
+  widgetEnabled: false,
+  customDomainEnabled: false,
+  analyticsTier: "basic",
+  imageGenerationPriority: 0,
+  priorityImageGeneration: false,
+};
+
 type SectionLike = {
   items: unknown[];
 };
@@ -36,6 +51,7 @@ type SectionLike = {
 export function getPlanEntitlements(plan: SubscriptionPlan): PlanEntitlements {
   return {
     plan,
+    hasSelectedPlan: true,
     ...PLAN_ENTITLEMENTS[plan],
   };
 }
@@ -43,13 +59,15 @@ export function getPlanEntitlements(plan: SubscriptionPlan): PlanEntitlements {
 export function getRestaurantPlan(
   restaurant: Pick<Restaurant, "entitlements" | "subscription"> | null | undefined
 ) {
-  return restaurant?.entitlements?.plan ?? restaurant?.subscription?.plan ?? "starter";
+  return restaurant?.entitlements?.plan ??
+    (restaurant?.subscription?.stripeSubscriptionId ? restaurant.subscription.plan : null);
 }
 
 export function getRestaurantEntitlements(
   restaurant: Pick<Restaurant, "entitlements" | "subscription"> | null | undefined
 ) {
-  return restaurant?.entitlements ?? getPlanEntitlements(getRestaurantPlan(restaurant));
+  const plan = getRestaurantPlan(restaurant);
+  return restaurant?.entitlements ?? (plan ? getPlanEntitlements(plan) : DRAFT_ENTITLEMENTS);
 }
 
 export function countMenuItems(sections: SectionLike[] | null | undefined) {

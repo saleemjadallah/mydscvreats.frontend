@@ -9,6 +9,7 @@ import { useRestaurant } from "@/hooks/use-restaurant";
 
 export function DashboardTopbar() {
   const { restaurant } = useRestaurant();
+  const hasStripeSubscription = Boolean(restaurant?.subscription?.stripeSubscriptionId);
 
   return (
     <div className="glass-panel relative overflow-hidden rounded-[28px] border border-[#E5D7C0]">
@@ -21,8 +22,14 @@ export function DashboardTopbar() {
               {restaurant?.name ?? "Set up your restaurant"}
             </h1>
             {restaurant?.subscriptionStatus ? (
-              <Badge variant={restaurant.subscriptionStatus === "active" ? "success" : "default"}>
-                {restaurant.subscriptionStatus}
+              <Badge
+                variant={
+                  hasStripeSubscription && restaurant.subscriptionStatus === "active"
+                    ? "success"
+                    : "default"
+                }
+              >
+                {hasStripeSubscription ? restaurant.subscriptionStatus : "draft"}
               </Badge>
             ) : null}
           </div>

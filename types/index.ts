@@ -61,7 +61,8 @@ export interface Restaurant {
   updatedAt: string;
   menuSections?: MenuSection[];
   entitlements?: {
-    plan: SubscriptionPlan;
+    plan: SubscriptionPlan | null;
+    hasSelectedPlan: boolean;
     menuItemLimit: number | null;
     widgetEnabled: boolean;
     customDomainEnabled: boolean;

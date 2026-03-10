@@ -113,7 +113,13 @@ export default function DashboardPage() {
             accent="emerald"
           />
           <StatCard
-            label={restaurant.subscriptionStatus === "active" ? "Live status" : "Trial remaining"}
+            label={
+              restaurant.subscriptionStatus === "active"
+                ? "Live status"
+                : hasStartedStripeTrial
+                  ? "Trial remaining"
+                  : "Billing status"
+            }
             value={
               restaurant.subscriptionStatus === "active"
                 ? "Live"

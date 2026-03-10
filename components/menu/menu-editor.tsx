@@ -30,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
 import {
+  getPlanEntitlements,
   getMenuItemLimitMessage,
   getMenuItemUsage,
   getRestaurantEntitlements,
@@ -115,7 +116,12 @@ export function MenuEditor({
   const usage = getMenuItemUsage(restaurant, sections);
   const menuItemLimitMessage =
     usage.limit !== null ? getMenuItemLimitMessage(usage.limit) : null;
-  const addItemDisabled = usage.atLimit;
+  const starterLimit = getPlanEntitlements("starter").menuItemLimit;
+  const exceedsStarterDraftLimit =
+    !entitlements.hasSelectedPlan &&
+    starterLimit !== null &&
+    usage.totalItems > starterLimit;
+  const addItemDisabled = entitlements.hasSelectedPlan && usage.atLimit;
 
   useEffect(() => {
     setSections(initialSections);
@@ -387,10 +393,12 @@ export function MenuEditor({
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge variant="muted">{audit.totalSections} sections</Badge>
               <Badge variant="muted">{audit.totalItems} dishes</Badge>
-              {usage.limit !== null ? (
+              {entitlements.hasSelectedPlan && usage.limit !== null ? (
                 <Badge variant={usage.atLimit ? "accent" : "muted"}>
                   {usage.totalItems}/{usage.limit} dishes used
                 </Badge>
+              ) : !entitlements.hasSelectedPlan ? (
+                <Badge variant="muted">Draft mode</Badge>
               ) : (
                 <Badge variant="success">Unlimited dishes</Badge>
               )}
@@ -414,7 +422,7 @@ export function MenuEditor({
                 <p>
                   Pricing and menu structure look clean. Finish any optional polish, then move to publish.
                 </p>
-                {menuItemLimitMessage ? (
+                {entitlements.hasSelectedPlan && menuItemLimitMessage ? (
                   <p className={usage.atLimit ? "font-medium text-[#9E3B2D]" : ""}>
                     {menuItemLimitMessage}
                   </p>
@@ -449,7 +457,7 @@ export function MenuEditor({
           </div>
         </div>
 
-        {usage.atLimit && menuItemLimitMessage ? (
+        {usage.atLimit && entitlements.hasSelectedPlan && menuItemLimitMessage ? (
           <div className="mb-6 flex flex-col gap-3 rounded-[24px] border border-[#F2CFC7] bg-[#FFF4F1] p-5 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-sm font-semibold text-ink">Starter limit reached</div>
@@ -457,6 +465,20 @@ export function MenuEditor({
             </div>
             <Button asChild className="shrink-0">
               <Link href="/dashboard/billing">Upgrade to Pro</Link>
+            </Button>
+          </div>
+        ) : null}
+
+        {exceedsStarterDraftLimit && starterLimit !== null ? (
+          <div className="mb-6 flex flex-col gap-3 rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-ink">This draft will need Pro at launch</div>
+              <p className="mt-1 text-sm text-stone">
+                Your menu has {usage.totalItems} dishes. Starter supports up to {starterLimit}, so if you publish this version you&apos;ll want Pro.
+              </p>
+            </div>
+            <Button asChild variant="secondary" className="shrink-0">
+              <Link href="/dashboard/billing">Choose a plan later</Link>
             </Button>
           </div>
         ) : null}

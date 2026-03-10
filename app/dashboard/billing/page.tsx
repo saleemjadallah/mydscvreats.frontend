@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
-import { getRestaurantEntitlements } from "@/lib/entitlements";
+import { countMenuItems, getRestaurantEntitlements } from "@/lib/entitlements";
 import { plans } from "@/lib/plans";
 
 const starterFeatures = [
@@ -44,6 +44,11 @@ export default function BillingPage() {
   const { restaurant } = useRestaurant();
   const entitlements = getRestaurantEntitlements(restaurant);
   const hasStripeSubscription = Boolean(restaurant?.subscription?.stripeSubscriptionId);
+  const menuItemCount = countMenuItems(restaurant?.menuSections);
+  const starterNeedsTrim =
+    !hasStripeSubscription &&
+    plans.starter.itemLimit !== null &&
+    menuItemCount > plans.starter.itemLimit;
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -110,6 +115,15 @@ export default function BillingPage() {
           </p>
         </div>
 
+        {!hasStripeSubscription && starterNeedsTrim ? (
+          <div className="mx-auto mb-6 max-w-3xl rounded-[24px] border border-[#F2CFC7] bg-[#FFF4F1] px-5 py-4 text-left">
+            <div className="text-sm font-semibold text-white">This draft needs Pro</div>
+            <p className="mt-1 text-sm text-white/80">
+              Your current menu has {menuItemCount} dishes. Starter supports up to {plans.starter.itemLimit}, so this version will need Pro when you start your trial.
+            </p>
+          </div>
+        ) : null}
+
         <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
           {planCards.map(({ plan, features, highlighted }) => (
             <div
@@ -160,7 +174,8 @@ export default function BillingPage() {
                     loadingPlan === plan.id ||
                     portalLoading ||
                     !restaurant ||
-                    (hasStripeSubscription && !restaurant.subscription?.stripeCustomerId)
+                    (hasStripeSubscription && !restaurant.subscription?.stripeCustomerId) ||
+                    (!hasStripeSubscription && plan.id === "starter" && starterNeedsTrim)
                   }
                 >
                   {loadingPlan === plan.id
@@ -171,6 +186,8 @@ export default function BillingPage() {
                         : restaurant?.subscription?.plan === plan.id
                           ? "Current plan"
                           : "Manage in portal"
+                      : plan.id === "starter" && starterNeedsTrim
+                        ? "Needs 30 items or fewer"
                       : `Choose ${plan.name}`}
                 </Button>
               </div>
@@ -198,12 +215,16 @@ export default function BillingPage() {
                 <div className={`h-2 w-2 rounded-full ${
                   restaurant?.subscriptionStatus === "active" ? "bg-[#2E8B57]" : "bg-saffron"
                 }`} />
-                {restaurant?.subscriptionStatus ?? "trial"}
+                {hasStripeSubscription ? restaurant?.subscriptionStatus ?? "trial" : "draft"}
               </div>
             </div>
             <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
               <div className="mb-1 text-xs uppercase tracking-[0.2em] text-stone">Plan</div>
-              <div className="font-medium text-ink">{restaurant?.subscription?.plan ?? "starter"}</div>
+              <div className="font-medium text-ink">
+                {hasStripeSubscription
+                  ? restaurant?.subscription?.plan ?? "n/a"
+                  : "No plan selected"}
+              </div>
             </div>
             <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
               <div className="mb-1 text-xs uppercase tracking-[0.2em] text-stone">Trial ends</div>
