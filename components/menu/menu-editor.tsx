@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import {
   closestCenter,
   DndContext,
@@ -25,9 +26,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
 import { auditSections } from "@/lib/menu-audit";
-import type { MenuItem, MenuSection } from "@/types";
+import type { MenuItem, MenuItemImage, MenuSection } from "@/types";
 
 function SortableSection({
   id,
@@ -59,6 +61,32 @@ function SortableSection({
   );
 }
 
+type DisplayMenuImage = MenuItemImage & {
+  isSynthetic?: boolean;
+};
+
+function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
+  if (item.images?.length) {
+    return [...item.images].sort((a, b) => a.slot - b.slot);
+  }
+
+  if (!item.imageUrl) {
+    return [];
+  }
+
+  return [
+    {
+      id: `legacy-${item.id}`,
+      slot: 0,
+      imageUrl: item.imageUrl,
+      imageStatus: item.imageStatus,
+      promptModifier: null,
+      isPrimary: true,
+      isSynthetic: true,
+    },
+  ];
+}
+
 export function MenuEditor({
   restaurantId,
   initialSections,
@@ -73,6 +101,8 @@ export function MenuEditor({
   const [isPending, startTransition] = useTransition();
   const [bulkImageMode, setBulkImageMode] = useState<"missing" | "failed" | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+  const [imagePromptByItem, setImagePromptByItem] = useState<Record<string, string>>({});
+  const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
   const audit = auditSections(sections);
 
@@ -96,9 +126,22 @@ export function MenuEditor({
           ...section,
           items: section.items.map((item) => {
             const update = map.get(item.id);
-            if (update && (update.imageStatus !== item.imageStatus || update.imageUrl !== item.imageUrl)) {
+            const imagesChanged =
+              JSON.stringify(update?.images ?? []) !== JSON.stringify(item.images ?? []);
+
+            if (
+              update &&
+              (update.imageStatus !== item.imageStatus ||
+                update.imageUrl !== item.imageUrl ||
+                imagesChanged)
+            ) {
               changed = true;
-              return { ...item, imageStatus: update.imageStatus as typeof item.imageStatus, imageUrl: update.imageUrl };
+              return {
+                ...item,
+                imageStatus: update.imageStatus as typeof item.imageStatus,
+                imageUrl: update.imageUrl,
+                images: update.images,
+              };
             }
             return item;
           }),
@@ -214,15 +257,29 @@ export function MenuEditor({
     });
   }
 
-  async function queueImage(itemId: string) {
+  async function queueImage(itemId: string, promptModifier?: string) {
     try {
       await withToken(async (token) => {
-        await apiClient.queueImageGeneration(token, itemId);
+        await apiClient.queueImageGeneration(token, itemId, promptModifier);
         await onRefresh();
       });
+      setImageComposerItemId(null);
+      setImagePromptByItem((prev) => ({ ...prev, [itemId]: "" }));
       toast.success("Image generation queued.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to queue image generation.");
+    }
+  }
+
+  async function selectPrimaryImage(itemId: string, imageId: string) {
+    try {
+      await withToken(async (token) => {
+        await apiClient.selectMenuItemImage(token, itemId, imageId);
+        await onRefresh();
+      });
+      toast.success("Primary dish image updated.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update the primary image.");
     }
   }
 
@@ -385,101 +442,211 @@ export function MenuEditor({
                     </div>
 
                     <div className="space-y-3">
-                      {section.items.map((item, itemIndex) => (
-                        <div
-                          key={item.id}
-                          className="group grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[auto,1.2fr,1.5fr,0.6fr,auto,auto]"
-                        >
-                          <div className="flex items-start pt-6">
-                            {item.imageUrl ? (
-                              <button
-                                type="button"
-                                className="group/img relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-[#E7DAC5]"
-                                onClick={() => setPreviewImage({ url: item.imageUrl!, name: item.name })}
-                              >
-                                <img
-                                  src={item.imageUrl}
-                                  alt={item.name}
-                                  className="h-full w-full object-cover"
-                                />
-                                <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
-                                  <ZoomIn className="h-4 w-4 text-white" />
-                                </span>
-                              </button>
-                            ) : (
-                              <div className="h-12 w-12 shrink-0 rounded-xl border border-dashed border-[#E7DAC5] bg-[#F9F3EA]" />
-                            )}
-                          </div>
-                          <div>
-                            <Label>Name</Label>
-                            <Input
-                              value={item.name}
-                              onChange={(event) => {
-                                const next = structuredClone(sections);
-                                next[sectionIndex].items[itemIndex].name = event.target.value;
-                                setSections(next);
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Description</Label>
-                            <Input
-                              value={item.description ?? ""}
-                              onChange={(event) => {
-                                const next = structuredClone(sections);
-                                next[sectionIndex].items[itemIndex].description =
-                                  event.target.value;
-                                setSections(next);
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Price</Label>
-                            <Input
-                              type="number"
-                              value={item.price}
-                              onChange={(event) => {
-                                const next = structuredClone(sections);
-                                next[sectionIndex].items[itemIndex].price = Number(
-                                  event.target.value
-                                );
-                                setSections(next);
-                              }}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Image</Label>
-                            <div className="flex items-center gap-3">
-                              <ImageStatusBadge status={item.imageStatus} />
+                      {section.items.map((item, itemIndex) => {
+                        const displayImages = getDisplayImages(item);
+                        const canAddVariant = displayImages.length > 0 && displayImages.length < 3;
+                        const isComposingVariant = imageComposerItemId === item.id;
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="group grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1.2fr,1.5fr,0.6fr,1.1fr,auto]"
+                          >
+                            <div className="space-y-3 md:col-span-5">
+                              <Label>Images</Label>
+                              <div className="flex flex-wrap items-start gap-3">
+                                {displayImages.length ? (
+                                  displayImages.map((image) => (
+                                    <div key={image.id} className="w-[88px] space-y-2">
+                                      <button
+                                        type="button"
+                                        className={`group/img relative h-[88px] w-[88px] overflow-hidden rounded-2xl border ${
+                                          image.isPrimary
+                                            ? "border-[#2E8B57] ring-2 ring-[#2E8B57]/15"
+                                            : "border-[#E7DAC5]"
+                                        }`}
+                                        onClick={() =>
+                                          image.imageUrl
+                                            ? setPreviewImage({ url: image.imageUrl, name: item.name })
+                                            : undefined
+                                        }
+                                      >
+                                        {image.imageUrl ? (
+                                          <>
+                                            <img
+                                              src={image.imageUrl}
+                                              alt={item.name}
+                                              className="h-full w-full object-cover"
+                                            />
+                                            <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
+                                              <ZoomIn className="h-4 w-4 text-white" />
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <div className="flex h-full w-full items-center justify-center bg-[#F9F3EA] text-xs text-stone">
+                                            {image.imageStatus}
+                                          </div>
+                                        )}
+                                      </button>
+                                      <div className="space-y-1">
+                                        {image.isPrimary ? (
+                                          <Badge variant="success" className="w-full justify-center">
+                                            Primary
+                                          </Badge>
+                                        ) : null}
+                                        {image.promptModifier ? (
+                                          <p className="line-clamp-2 text-[11px] leading-4 text-stone">
+                                            {image.promptModifier}
+                                          </p>
+                                        ) : null}
+                                        {!image.isSynthetic &&
+                                        image.imageUrl &&
+                                        !image.isPrimary &&
+                                        image.imageStatus !== "generating" ? (
+                                          <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="w-full"
+                                            onClick={() => void selectPrimaryImage(item.id, image.id)}
+                                          >
+                                            Use
+                                          </Button>
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="flex h-[88px] w-[88px] items-center justify-center rounded-2xl border border-dashed border-[#E7DAC5] bg-[#F9F3EA] text-xs text-stone">
+                                    No image
+                                  </div>
+                                )}
+
+                                {canAddVariant ? (
+                                  isComposingVariant ? (
+                                    <div className="min-w-[240px] flex-1 rounded-2xl border border-dashed border-[#E7DAC5] bg-white p-3">
+                                      <Label className="text-xs text-stone">
+                                        What should look different in the next image?
+                                      </Label>
+                                      <Textarea
+                                        value={imagePromptByItem[item.id] ?? ""}
+                                        onChange={(event) =>
+                                          setImagePromptByItem((prev) => ({
+                                            ...prev,
+                                            [item.id]: event.target.value,
+                                          }))
+                                        }
+                                        placeholder="Examples: darker ceramic plate, overhead shot, more dramatic lighting, tighter crop"
+                                        className="mt-2 min-h-[96px]"
+                                      />
+                                      <div className="mt-3 flex flex-wrap gap-2">
+                                        <Button
+                                          size="sm"
+                                          onClick={() =>
+                                            void queueImage(item.id, imagePromptByItem[item.id] ?? "")
+                                          }
+                                        >
+                                          <ImagePlus className="h-4 w-4" />
+                                          Generate variation
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => setImageComposerItemId(null)}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#D8C7AF] bg-[#FFF8EE] text-stone transition-colors hover:border-saffron hover:text-saffron"
+                                      onClick={() => setImageComposerItemId(item.id)}
+                                    >
+                                      <Plus className="h-5 w-5" />
+                                      <span className="mt-1 text-xs">Add</span>
+                                    </button>
+                                  )
+                                ) : null}
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label>Name</Label>
+                              <Input
+                                value={item.name}
+                                onChange={(event) => {
+                                  const next = structuredClone(sections);
+                                  next[sectionIndex].items[itemIndex].name = event.target.value;
+                                  setSections(next);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label>Description</Label>
+                              <Input
+                                value={item.description ?? ""}
+                                onChange={(event) => {
+                                  const next = structuredClone(sections);
+                                  next[sectionIndex].items[itemIndex].description =
+                                    event.target.value;
+                                  setSections(next);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label>Price</Label>
+                              <Input
+                                type="number"
+                                value={item.price}
+                                onChange={(event) => {
+                                  const next = structuredClone(sections);
+                                  next[sectionIndex].items[itemIndex].price = Number(
+                                    event.target.value
+                                  );
+                                  setSections(next);
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Image</Label>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <ImageStatusBadge status={item.imageStatus} />
+                                <Badge variant="muted">
+                                  {displayImages.length}/3 image{displayImages.length === 1 ? "" : "s"}
+                                </Badge>
+                                {!displayImages.length ? (
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => void queueImage(item.id)}
+                                  >
+                                    <ImagePlus className="h-4 w-4" />
+                                    Generate
+                                  </Button>
+                                ) : null}
+                              </div>
+                            </div>
+                            <div className="flex items-end gap-2">
+                              <Button variant="secondary" onClick={() => void saveItem(item)}>
+                                Save
+                              </Button>
                               <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => void queueImage(item.id)}
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  void withToken(async (token) => {
+                                    await apiClient.deleteItem(token, item.id);
+                                    await onRefresh();
+                                  })
+                                }
                               >
-                                <ImagePlus className="h-4 w-4" />
-                                Generate
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
-                          <div className="flex items-end gap-2">
-                            <Button variant="secondary" onClick={() => void saveItem(item)}>
-                              Save
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                void withToken(async (token) => {
-                                  await apiClient.deleteItem(token, item.id);
-                                  await onRefresh();
-                                })
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     <Button

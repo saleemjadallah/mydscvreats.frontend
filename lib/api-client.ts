@@ -1,6 +1,7 @@
 import type {
   AnalyticsSummary,
   MenuExtractionDraft,
+  MenuItemImage,
   MenuSection,
   Restaurant,
 } from "@/types";
@@ -68,7 +69,12 @@ export const apiClient = {
     return request<MenuSection[]>(`/api/menu/${restaurantId}`);
   },
   getImageStatuses(token: string, restaurantId: string) {
-    return request<{ id: string; imageStatus: string; imageUrl: string | null }[]>(
+    return request<{
+      id: string;
+      imageStatus: string;
+      imageUrl: string | null;
+      images: MenuItemImage[];
+    }[]>(
       `/api/menu/${restaurantId}/image-statuses`,
       { token }
     );
@@ -147,11 +153,17 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
-  queueImageGeneration(token: string, menuItemId: string) {
-    return request<{ queued: boolean }>("/api/menu/generate-image", {
+  queueImageGeneration(token: string, menuItemId: string, promptModifier?: string) {
+    return request<{ queued: boolean; imageId: string }>("/api/menu/generate-image", {
       method: "POST",
       token,
-      body: JSON.stringify({ menuItemId }),
+      body: JSON.stringify({ menuItemId, promptModifier }),
+    });
+  },
+  selectMenuItemImage(token: string, itemId: string, imageId: string) {
+    return request<{ ok: boolean }>(`/api/menu/items/${itemId}/images/${imageId}/select`, {
+      method: "POST",
+      token,
     });
   },
   upload(token: string, payload: {

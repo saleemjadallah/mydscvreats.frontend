@@ -8,6 +8,15 @@ export type ImageStatus =
   | "uploaded"
   | "failed";
 
+export interface MenuItemImage {
+  id: string;
+  slot: number;
+  imageUrl: string | null;
+  imageStatus: ImageStatus;
+  promptModifier: string | null;
+  isPrimary: boolean;
+}
+
 export interface MenuItem {
   id: string;
   sectionId: string;
@@ -18,6 +27,7 @@ export interface MenuItem {
   currency: string;
   imageUrl: string | null;
   imageStatus: ImageStatus;
+  images?: MenuItemImage[];
   isAvailable: boolean;
   displayOrder: number;
 }
