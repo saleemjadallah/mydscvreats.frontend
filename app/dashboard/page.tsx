@@ -224,6 +224,14 @@ export default function DashboardPage() {
                     ? "This page is already public and ready to share."
                     : "This URL is the destination you are working toward. It becomes public after publish."}
                 </p>
+                <div className="mt-4">
+                  <Button asChild variant="secondary">
+                    <Link href={restaurant.isPublished ? `/${restaurant.slug}` : "/dashboard/preview"}>
+                      {restaurant.isPublished ? "View public page" : "Preview draft page"}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
 
               {!setup.onboardingComplete ? (

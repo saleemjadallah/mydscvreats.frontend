@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { ArrowUpRight, Globe2 } from "lucide-react";
+import { ArrowUpRight, Eye, Globe2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRestaurant } from "@/hooks/use-restaurant";
@@ -52,9 +52,21 @@ export function DashboardTopbar() {
               </Link>
             </Button>
           ) : restaurant ? (
-            <Button asChild variant="secondary" className="transition-all duration-200 hover:-translate-y-0.5">
-              <Link href="/dashboard">Launch checklist</Link>
-            </Button>
+            <>
+              <Button
+                asChild
+                variant="secondary"
+                className="transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <Link href="/dashboard/preview">
+                  <Eye className="h-4 w-4" />
+                  Preview draft page
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" className="transition-all duration-200 hover:-translate-y-0.5">
+                <Link href="/dashboard">Launch checklist</Link>
+              </Button>
+            </>
           ) : null}
           <UserButton afterSignOutUrl="/" />
         </div>
