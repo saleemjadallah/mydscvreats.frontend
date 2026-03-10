@@ -67,6 +67,12 @@ export const apiClient = {
   getMenu(restaurantId: string) {
     return request<MenuSection[]>(`/api/menu/${restaurantId}`);
   },
+  getImageStatuses(token: string, restaurantId: string) {
+    return request<{ id: string; imageStatus: string; imageUrl: string | null }[]>(
+      `/api/menu/${restaurantId}/image-statuses`,
+      { token }
+    );
+  },
   createSection(token: string, payload: {
     restaurantId: string;
     name: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   closestCenter,
   DndContext,
@@ -79,19 +79,45 @@ export function MenuEditor({
     setSections(initialSections);
   }, [initialSections]);
 
-  // Poll for image status updates when any items are generating
+  // Lightweight poll: only fetch image statuses and patch in-place
+  const pollRef = useRef(false);
+  const pollStatuses = useCallback(async () => {
+    if (pollRef.current) return;
+    pollRef.current = true;
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const statuses = await apiClient.getImageStatuses(token, restaurantId);
+      const map = new Map(statuses.map((s) => [s.id, s]));
+      setSections((prev) => {
+        let changed = false;
+        const next = prev.map((section) => ({
+          ...section,
+          items: section.items.map((item) => {
+            const update = map.get(item.id);
+            if (update && (update.imageStatus !== item.imageStatus || update.imageUrl !== item.imageUrl)) {
+              changed = true;
+              return { ...item, imageStatus: update.imageStatus as typeof item.imageStatus, imageUrl: update.imageUrl };
+            }
+            return item;
+          }),
+        }));
+        return changed ? next : prev;
+      });
+    } finally {
+      pollRef.current = false;
+    }
+  }, [getToken, restaurantId]);
+
   useEffect(() => {
     const hasGenerating = sections.some((s) =>
       s.items.some((i) => i.imageStatus === "generating")
     );
     if (!hasGenerating) return;
 
-    const interval = setInterval(() => {
-      void onRefresh();
-    }, 5000);
-
+    const interval = setInterval(() => void pollStatuses(), 5000);
     return () => clearInterval(interval);
-  }, [sections, onRefresh]);
+  }, [sections, pollStatuses]);
 
   async function withToken<T>(callback: (token: string) => Promise<T>) {
     const token = await getToken();
