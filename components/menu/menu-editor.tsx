@@ -392,15 +392,17 @@ export function MenuEditor({
                           </div>
                           <div className="space-y-2">
                             <Label>Image</Label>
-                            <ImageStatusBadge status={item.imageStatus} />
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => void queueImage(item.id)}
-                            >
-                              <ImagePlus className="h-4 w-4" />
-                              Generate
-                            </Button>
+                            <div className="flex items-center gap-3">
+                              <ImageStatusBadge status={item.imageStatus} />
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => void queueImage(item.id)}
+                              >
+                                <ImagePlus className="h-4 w-4" />
+                                Generate
+                              </Button>
+                            </div>
                           </div>
                           <div className="flex items-end gap-2">
                             <Button variant="secondary" onClick={() => void saveItem(item)}>
