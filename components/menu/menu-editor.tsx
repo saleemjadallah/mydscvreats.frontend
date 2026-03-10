@@ -79,6 +79,20 @@ export function MenuEditor({
     setSections(initialSections);
   }, [initialSections]);
 
+  // Poll for image status updates when any items are generating
+  useEffect(() => {
+    const hasGenerating = sections.some((s) =>
+      s.items.some((i) => i.imageStatus === "generating")
+    );
+    if (!hasGenerating) return;
+
+    const interval = setInterval(() => {
+      void onRefresh();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [sections, onRefresh]);
+
   async function withToken<T>(callback: (token: string) => Promise<T>) {
     const token = await getToken();
     if (!token) {
