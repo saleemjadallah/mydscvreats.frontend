@@ -388,10 +388,10 @@ export function MenuEditor({
                       {section.items.map((item, itemIndex) => (
                         <div
                           key={item.id}
-                          className="group grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1.2fr,1.5fr,0.6fr,auto,auto]"
+                          className="group grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[auto,1.2fr,1.5fr,0.6fr,auto,auto]"
                         >
-                          {item.imageUrl ? (
-                            <div className="flex items-center gap-3 md:col-span-5 md:col-start-1 md:row-start-1 md:col-span-1">
+                          <div className="flex items-start pt-6">
+                            {item.imageUrl ? (
                               <button
                                 type="button"
                                 className="group/img relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-[#E7DAC5]"
@@ -406,9 +406,11 @@ export function MenuEditor({
                                   <ZoomIn className="h-4 w-4 text-white" />
                                 </span>
                               </button>
-                            </div>
-                          ) : null}
-                          <div className={item.imageUrl ? "" : ""}>
+                            ) : (
+                              <div className="h-12 w-12 shrink-0 rounded-xl border border-dashed border-[#E7DAC5] bg-[#F9F3EA]" />
+                            )}
+                          </div>
+                          <div>
                             <Label>Name</Label>
                             <Input
                               value={item.name}
