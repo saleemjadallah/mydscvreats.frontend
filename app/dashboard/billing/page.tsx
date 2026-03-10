@@ -117,8 +117,8 @@ export default function BillingPage() {
 
         {!hasStripeSubscription && starterNeedsTrim ? (
           <div className="mx-auto mb-6 max-w-3xl rounded-[24px] border border-[#F2CFC7] bg-[#FFF4F1] px-5 py-4 text-left">
-            <div className="text-sm font-semibold text-white">This draft needs Pro</div>
-            <p className="mt-1 text-sm text-white/80">
+            <div className="text-sm font-semibold text-[#9B2C2C]">This draft needs Pro</div>
+            <p className="mt-1 text-sm text-[#9B2C2C]/80">
               Your current menu has {menuItemCount} dishes. Starter supports up to {plans.starter.itemLimit}, so this version will need Pro when you start your trial.
             </p>
           </div>
