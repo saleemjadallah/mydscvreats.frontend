@@ -3,6 +3,7 @@ import type {
   DietaryTag,
   ItemTagSuggestions,
   MenuAnalysisResult,
+  MenuAssistantMessage,
   MenuExtractionDraft,
   MenuItemImage,
   MenuSection,
@@ -70,6 +71,16 @@ export const apiClient = {
   },
   getMenu(restaurantId: string) {
     return request<MenuSection[]>(`/api/menu/${restaurantId}`);
+  },
+  chatWithMenuAI(
+    restaurantId: string,
+    message: string,
+    history: MenuAssistantMessage[]
+  ) {
+    return request<{ reply: string }>(`/api/chat/${restaurantId}`, {
+      method: "POST",
+      body: JSON.stringify({ message, history }),
+    });
   },
   getImageStatuses(token: string, restaurantId: string) {
     return request<{

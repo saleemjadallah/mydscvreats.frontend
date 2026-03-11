@@ -1,10 +1,10 @@
-
 "use client";
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Globe2, MapPin, Phone } from "lucide-react";
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
+import { MenuAIChat } from "@/components/public/menu-ai-chat";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -351,6 +351,9 @@ export function RestaurantPageView({
           ))}
         </section>
       </div>
+      {restaurant.entitlements?.menuAssistantEnabled ? (
+        <MenuAIChat restaurantId={restaurant.id} restaurantName={restaurant.name} />
+      ) : null}
     </main>
   );
 }

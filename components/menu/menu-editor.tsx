@@ -18,7 +18,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Eye, GripVertical, ImagePlus, Plus, Save, Sparkles, Tag, Trash2, X, ZoomIn } from "lucide-react";
+import { Eye, GripVertical, ImagePlus, Info, Plus, Save, Sparkles, Tag, Trash2, X, ZoomIn } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { BulkDescriptionDialog } from "@/components/menu/bulk-description-dialog";
@@ -32,6 +32,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api-client";
 import {
   getPlanEntitlements,
@@ -266,6 +272,7 @@ export function MenuEditor({
           sectionId,
           name: "New dish",
           description: "",
+          ...(entitlements.menuAssistantEnabled ? { aiNotes: "" } : {}),
           price: 0,
           displayOrder: count,
         });
@@ -287,12 +294,18 @@ export function MenuEditor({
 
   async function saveItem(item: MenuItem) {
     await withToken(async (token) => {
-      await apiClient.updateItem(token, item.id, {
+      const payload: Record<string, unknown> = {
         name: item.name,
         description: item.description,
         price: item.price,
         isAvailable: item.isAvailable,
-      });
+      };
+
+      if (entitlements.menuAssistantEnabled) {
+        payload.aiNotes = item.aiNotes;
+      }
+
+      await apiClient.updateItem(token, item.id, payload);
       await onRefresh();
     });
   }
@@ -799,6 +812,53 @@ export function MenuEditor({
                                   setSections(next);
                                 }}
                               />
+                              <div className="mt-3 rounded-[20px] border border-[#E9DFD1] bg-[#FFFCF6] p-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Label className="text-[13px] font-medium text-stone">
+                                    Chef&apos;s Notes for AI
+                                  </Label>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          className="inline-flex h-5 w-5 items-center justify-center rounded-full text-stone/70 transition-colors hover:text-stone"
+                                          aria-label="About Chef's Notes for AI"
+                                        >
+                                          <Info className="h-3.5 w-3.5" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        These notes are private - diners won&apos;t see them directly.
+                                        Your AI assistant uses them to answer customer questions accurately.
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  {!entitlements.menuAssistantEnabled ? (
+                                    <span className="rounded-full bg-saffron/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-saffron">
+                                      Pro
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <Textarea
+                                  rows={3}
+                                  value={item.aiNotes ?? ""}
+                                  disabled={!entitlements.menuAssistantEnabled}
+                                  placeholder="e.g. Spice level 7/10, contains tree nuts, great for sharing, pairs well with garlic sauce"
+                                  className="mt-2 resize-none border-[#E7DAC5] bg-white"
+                                  onChange={(event) => {
+                                    const next = structuredClone(sections);
+                                    next[sectionIndex].items[itemIndex].aiNotes =
+                                      event.target.value;
+                                    setSections(next);
+                                  }}
+                                />
+                                <p className="mt-2 text-[11px] leading-4 text-stone">
+                                  {entitlements.menuAssistantEnabled
+                                    ? "Private kitchen context for the public AI menu assistant."
+                                    : "Upgrade to Pro to save private AI notes and unlock diner chat on your public menu."}
+                                </p>
+                              </div>
                               {item.dietaryTags && item.dietaryTags.length > 0 && (
                                 <div className="mt-1.5 flex flex-wrap gap-1">
                                   {item.dietaryTags.map((dt) => (
