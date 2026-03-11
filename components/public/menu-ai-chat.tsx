@@ -108,7 +108,7 @@ export function MenuAIChat({
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-[60]">
         {!isOpen && showHint ? (
           <div className="mb-3 flex justify-end">
             <div className="rounded-full border border-[#F2D58B] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#7A5510] shadow-lg backdrop-blur">
@@ -132,14 +132,14 @@ export function MenuAIChat({
         </button>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-end sm:inset-auto sm:bottom-6 sm:right-6">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-end sm:inset-auto sm:bottom-6 sm:right-6">
         <div
           className={cn(
             "flex h-[85vh] max-h-[32rem] w-full flex-col overflow-hidden border border-[#EEDFC1] bg-white shadow-2xl transition-all duration-300 sm:w-80 sm:rounded-2xl",
             "rounded-t-[28px] rounded-b-none sm:rounded-b-2xl",
             isOpen
-              ? "translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-8 opacity-0 sm:translate-y-4"
+              ? "pointer-events-auto translate-y-0 opacity-100"
+              : "translate-y-8 opacity-0 sm:translate-y-4"
           )}
         >
           <div className="border-b border-[#F3E7D4] bg-[linear-gradient(135deg,#FFF8EA,#FFFDF9)] px-5 py-4">
