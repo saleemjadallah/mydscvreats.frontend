@@ -4,6 +4,18 @@ import { notFound } from "next/navigation";
 import { RestaurantPageView } from "@/components/public/restaurant-page-view";
 import { apiClient } from "@/lib/api-client";
 
+function getSafeAssetUrl(url: string | null | undefined) {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    return encodeURI(url);
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -23,6 +35,7 @@ export async function generateMetadata({
   const description =
     restaurant.description ??
     `Browse the full menu for ${restaurant.name}${restaurant.location ? ` in ${restaurant.location}` : ""}. Dish photos, prices, and descriptions on mydscvr Eats.`;
+  const coverImageUrl = getSafeAssetUrl(restaurant.coverImageUrl);
 
   return {
     title,
@@ -34,13 +47,13 @@ export async function generateMetadata({
       title,
       description,
       url: `https://mydscvr.ai/${slug}`,
-      type: "restaurant.menu" as "website",
+      type: "website",
       siteName: "mydscvr Eats",
       locale: "en_AE",
-      images: restaurant.coverImageUrl
+      images: coverImageUrl
         ? [
             {
-              url: restaurant.coverImageUrl,
+              url: coverImageUrl,
               alt: `${restaurant.name} cover photo`,
               width: 1200,
               height: 630,
@@ -52,7 +65,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: restaurant.coverImageUrl ? [restaurant.coverImageUrl] : [],
+      images: coverImageUrl ? [coverImageUrl] : [],
     },
   };
 }
