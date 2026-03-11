@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, normalizeExternalUrl } from "@/lib/utils";
 import type { MenuItem, MenuItemImage, Restaurant, RestaurantThemeKey } from "@/types";
 
 type DisplayMenuImage = MenuItemImage & {
@@ -173,6 +173,7 @@ export function RestaurantPageView({
   const theme = getRestaurantTheme(themeKeyOverride ?? restaurant.themeKey);
   const jsonLd = buildRestaurantJsonLd(restaurant);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
+  const websiteUrl = normalizeExternalUrl(restaurant.website);
 
   return (
     <main
@@ -249,9 +250,9 @@ export function RestaurantPageView({
                     {restaurant.phone}
                   </a>
                 ) : null}
-                {restaurant.website ? (
+                {websiteUrl ? (
                   <a
-                    href={restaurant.website}
+                    href={websiteUrl}
                     className="inline-flex items-center gap-2 hover:text-white"
                     target="_blank"
                     rel="noopener noreferrer"

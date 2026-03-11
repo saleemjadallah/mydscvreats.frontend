@@ -1,6 +1,8 @@
 import type { Restaurant } from "@/types";
+import { normalizeExternalUrl } from "@/lib/utils";
 
 export function buildRestaurantJsonLd(restaurant: Restaurant) {
+  const websiteUrl = normalizeExternalUrl(restaurant.website);
   const menuSections = (restaurant.menuSections ?? []).map((section) => ({
     "@type": "MenuSection",
     name: section.name,
@@ -43,7 +45,7 @@ export function buildRestaurantJsonLd(restaurant: Restaurant) {
           },
         }
       : {}),
-    ...(restaurant.website ? { sameAs: [restaurant.website] } : {}),
+    ...(websiteUrl ? { sameAs: [websiteUrl] } : {}),
     hasMenu: {
       "@type": "Menu",
       ...(menuSections.length > 0
