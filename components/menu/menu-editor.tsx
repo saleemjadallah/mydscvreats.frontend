@@ -633,10 +633,10 @@ export function MenuEditor({
                         return (
                           <div
                             key={item.id}
-                            className="group grid gap-3 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[1.2fr,1.5fr,0.6fr,1.1fr,auto]"
+                            className="group grid gap-4 rounded-[24px] border border-[#F0E5D4] bg-[#FFFDF9] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:grid-cols-[auto,1fr]"
                           >
-                            <div className="space-y-3 md:col-span-5">
-                              <Label>Images</Label>
+                            {/* Left column: images */}
+                            <div className="space-y-2">
                               <div className="flex flex-wrap items-start gap-3">
                                 {displayImages.length ? (
                                   displayImages.map((image) => (
@@ -722,46 +722,7 @@ export function MenuEditor({
                                   </div>
                                 )}
 
-                                {canAddVariant ? (
-                                  isComposingVariant ? (
-                                    <div className="min-w-[240px] flex-1 rounded-2xl border border-dashed border-[#E7DAC5] bg-white p-3">
-                                      <Label className="text-xs text-stone">
-                                        What should look different in the next image?
-                                      </Label>
-                                      <Textarea
-                                        value={imagePromptByItem[item.id] ?? ""}
-                                        onChange={(event) =>
-                                          setImagePromptByItem((prev) => ({
-                                            ...prev,
-                                            [item.id]: event.target.value,
-                                          }))
-                                        }
-                                        placeholder="Examples: darker ceramic plate, overhead shot, more dramatic lighting, tighter crop"
-                                        className="mt-2 min-h-[96px]"
-                                      />
-                                      <div className="mt-3 flex flex-wrap gap-2">
-                                        <Button
-                                          size="sm"
-                                          disabled={isImageBusy}
-                                          onClick={() =>
-                                            void queueImage(item.id, {
-                                              promptModifier: imagePromptByItem[item.id] ?? "",
-                                            })
-                                          }
-                                        >
-                                          <ImagePlus className="h-4 w-4" />
-                                          {isQueueingImage ? "Queueing..." : "Generate variation"}
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => setImageComposerItemId(null)}
-                                        >
-                                          Cancel
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ) : (
+                                {canAddVariant && !isComposingVariant ? (
                                     <button
                                       type="button"
                                       disabled={isImageBusy}
@@ -773,46 +734,128 @@ export function MenuEditor({
                                         {isQueueingImage ? "..." : "Add"}
                                       </span>
                                     </button>
-                                  )
                                 ) : null}
                               </div>
                             </div>
 
-                            <div>
-                              <Label>Name</Label>
-                              <Input
-                                value={item.name}
-                                onChange={(event) => {
-                                  const next = structuredClone(sections);
-                                  next[sectionIndex].items[itemIndex].name = event.target.value;
-                                  setSections(next);
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1">
-                                <Label>Description</Label>
-                                <DescriptionEnhancer
-                                  menuItemId={item.id}
-                                  currentDescription={item.description}
-                                  onAccept={(desc) => {
+                            {/* Variant composer: spans full width when active */}
+                            {canAddVariant && isComposingVariant ? (
+                              <div className="rounded-2xl border border-dashed border-[#E7DAC5] bg-white p-3 md:col-span-2">
+                                <Label className="text-xs text-stone">
+                                  What should look different in the next image?
+                                </Label>
+                                <Textarea
+                                  value={imagePromptByItem[item.id] ?? ""}
+                                  onChange={(event) =>
+                                    setImagePromptByItem((prev) => ({
+                                      ...prev,
+                                      [item.id]: event.target.value,
+                                    }))
+                                  }
+                                  placeholder="Examples: darker ceramic plate, overhead shot, more dramatic lighting, tighter crop"
+                                  className="mt-2 min-h-[72px]"
+                                />
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <Button
+                                    size="sm"
+                                    disabled={isImageBusy}
+                                    onClick={() =>
+                                      void queueImage(item.id, {
+                                        promptModifier: imagePromptByItem[item.id] ?? "",
+                                      })
+                                    }
+                                  >
+                                    <ImagePlus className="h-4 w-4" />
+                                    {isQueueingImage ? "Queueing..." : "Generate variation"}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setImageComposerItemId(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : null}
+
+                            {/* Right column: all fields */}
+                            <div className="space-y-3">
+                              {/* Row 1: Name + Price + Actions */}
+                              <div className="flex items-end gap-3">
+                                <div className="min-w-0 flex-[2]">
+                                  <Label>Name</Label>
+                                  <Input
+                                    value={item.name}
+                                    onChange={(event) => {
+                                      const next = structuredClone(sections);
+                                      next[sectionIndex].items[itemIndex].name = event.target.value;
+                                      setSections(next);
+                                    }}
+                                  />
+                                </div>
+                                <div className="w-24 shrink-0">
+                                  <Label>Price</Label>
+                                  <Input
+                                    type="number"
+                                    value={item.price}
+                                    onChange={(event) => {
+                                      const next = structuredClone(sections);
+                                      next[sectionIndex].items[itemIndex].price = Number(
+                                        event.target.value
+                                      );
+                                      setSections(next);
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex shrink-0 items-end gap-1">
+                                  <Button variant="secondary" size="sm" onClick={() => void saveItem(item)}>
+                                    Save
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9"
+                                    onClick={() =>
+                                      void withToken(async (token) => {
+                                        await apiClient.deleteItem(token, item.id);
+                                        await onRefresh();
+                                      })
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Row 2: Description */}
+                              <div>
+                                <div className="flex items-center gap-1">
+                                  <Label>Description</Label>
+                                  <DescriptionEnhancer
+                                    menuItemId={item.id}
+                                    currentDescription={item.description}
+                                    onAccept={(desc) => {
+                                      const next = structuredClone(sections);
+                                      next[sectionIndex].items[itemIndex].description = desc;
+                                      setSections(next);
+                                      void saveItem({ ...item, description: desc });
+                                    }}
+                                  />
+                                </div>
+                                <Input
+                                  value={item.description ?? ""}
+                                  onChange={(event) => {
                                     const next = structuredClone(sections);
-                                    next[sectionIndex].items[itemIndex].description = desc;
+                                    next[sectionIndex].items[itemIndex].description =
+                                      event.target.value;
                                     setSections(next);
-                                    void saveItem({ ...item, description: desc });
                                   }}
                                 />
                               </div>
-                              <Input
-                                value={item.description ?? ""}
-                                onChange={(event) => {
-                                  const next = structuredClone(sections);
-                                  next[sectionIndex].items[itemIndex].description =
-                                    event.target.value;
-                                  setSections(next);
-                                }}
-                              />
-                              <div className="mt-3 rounded-[20px] border border-[#E9DFD1] bg-[#FFFCF6] p-3">
+
+                              {/* Row 3: Chef's Notes */}
+                              <div className="rounded-[16px] border border-[#E9DFD1] bg-[#FFFCF6] p-3">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <Label className="text-[13px] font-medium text-stone">
                                     Chef&apos;s Notes for AI
@@ -841,7 +884,7 @@ export function MenuEditor({
                                   ) : null}
                                 </div>
                                 <Textarea
-                                  rows={3}
+                                  rows={2}
                                   value={item.aiNotes ?? ""}
                                   disabled={!entitlements.menuAssistantEnabled}
                                   placeholder="e.g. Spice level 7/10, contains tree nuts, great for sharing, pairs well with garlic sauce"
@@ -853,92 +896,62 @@ export function MenuEditor({
                                     setSections(next);
                                   }}
                                 />
-                                <p className="mt-2 text-[11px] leading-4 text-stone">
+                                <p className="mt-1.5 text-[11px] leading-4 text-stone">
                                   {entitlements.menuAssistantEnabled
                                     ? "Private kitchen context for the public AI menu assistant."
                                     : "Upgrade to Pro to save private AI notes and unlock diner chat on your public menu."}
                                 </p>
                               </div>
-                              {item.dietaryTags && item.dietaryTags.length > 0 && (
-                                <div className="mt-1.5 flex flex-wrap gap-1">
-                                  {item.dietaryTags.map((dt) => (
-                                    <span
-                                      key={dt.id}
-                                      className="inline-flex items-center gap-0.5 rounded-full border border-[#E7DAC5] bg-[#F9F3EA] px-2 py-0.5 text-[11px] text-stone"
+
+                              {/* Row 4: Dietary tags + Image status */}
+                              <div className="flex flex-wrap items-center gap-2">
+                                {item.dietaryTags && item.dietaryTags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.dietaryTags.map((dt) => (
+                                      <span
+                                        key={dt.id}
+                                        className="inline-flex items-center gap-0.5 rounded-full border border-[#E7DAC5] bg-[#F9F3EA] px-2 py-0.5 text-[11px] text-stone"
+                                      >
+                                        {dt.tag.icon && <span>{dt.tag.icon}</span>}
+                                        {dt.tag.label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="flex flex-wrap items-center gap-2 ml-auto">
+                                  <ImageStatusBadge status={item.imageStatus} />
+                                  <Badge variant="muted">
+                                    {displayImages.length}/3 image{displayImages.length === 1 ? "" : "s"}
+                                  </Badge>
+                                  {!displayImages.length ? (
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      disabled={isImageBusy}
+                                      onClick={() => void queueImage(item.id)}
                                     >
-                                      {dt.tag.icon && <span>{dt.tag.icon}</span>}
-                                      {dt.tag.label}
-                                    </span>
-                                  ))}
+                                      <ImagePlus className="h-4 w-4" />
+                                      {isQueueingImage ? "Queueing..." : "Generate"}
+                                    </Button>
+                                  ) : null}
+                                  {item.imageStatus === "failed" ? (
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      disabled={isImageBusy}
+                                      onClick={() =>
+                                        setImageRetryChoice({
+                                          itemId: item.id,
+                                          itemName: item.name,
+                                        })
+                                      }
+                                    >
+                                      <ImagePlus className="h-4 w-4" />
+                                      Retry options
+                                    </Button>
+                                  ) : null}
                                 </div>
-                              )}
-                            </div>
-                            <div>
-                              <Label>Price</Label>
-                              <Input
-                                type="number"
-                                value={item.price}
-                                onChange={(event) => {
-                                  const next = structuredClone(sections);
-                                  next[sectionIndex].items[itemIndex].price = Number(
-                                    event.target.value
-                                  );
-                                  setSections(next);
-                                }}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Image</Label>
-                              <div className="flex flex-wrap items-center gap-3">
-                                <ImageStatusBadge status={item.imageStatus} />
-                                <Badge variant="muted">
-                                  {displayImages.length}/3 image{displayImages.length === 1 ? "" : "s"}
-                                </Badge>
-                                {!displayImages.length ? (
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    disabled={isImageBusy}
-                                    onClick={() => void queueImage(item.id)}
-                                  >
-                                    <ImagePlus className="h-4 w-4" />
-                                    {isQueueingImage ? "Queueing..." : "Generate"}
-                                  </Button>
-                                ) : null}
-                                {item.imageStatus === "failed" ? (
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    disabled={isImageBusy}
-                                    onClick={() =>
-                                      setImageRetryChoice({
-                                        itemId: item.id,
-                                        itemName: item.name,
-                                      })
-                                    }
-                                  >
-                                    <ImagePlus className="h-4 w-4" />
-                                    Retry options
-                                  </Button>
-                                ) : null}
                               </div>
-                            </div>
-                            <div className="flex items-end gap-2">
-                              <Button variant="secondary" onClick={() => void saveItem(item)}>
-                                Save
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() =>
-                                  void withToken(async (token) => {
-                                    await apiClient.deleteItem(token, item.id);
-                                    await onRefresh();
-                                  })
-                                }
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
                             </div>
                           </div>
                         );
