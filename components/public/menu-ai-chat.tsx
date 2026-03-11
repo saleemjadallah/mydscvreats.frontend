@@ -164,7 +164,7 @@ export function MenuAIChat({
                 />
                 <div>
                   <div className="text-sm font-semibold text-ink">{restaurantName}</div>
-                  <div className="text-xs text-stone">AI Menu Assistant</div>
+                <div className="text-xs text-stone">Sous Chef</div>
                 </div>
               </div>
               <button
