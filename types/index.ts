@@ -41,6 +41,7 @@ export interface MenuItem {
   restaurantId: string;
   name: string;
   description: string | null;
+  aiNotes?: string | null;
   price: number;
   currency: string;
   imageUrl: string | null;
@@ -92,6 +93,7 @@ export interface Restaurant {
     hasSelectedPlan: boolean;
     menuItemLimit: number | null;
     widgetEnabled: boolean;
+    menuAssistantEnabled: boolean;
     customDomainEnabled: boolean;
     shortLinksEnabled: boolean;
     analyticsTier: AnalyticsTier;
@@ -113,11 +115,22 @@ export interface Restaurant {
   } | null;
 }
 
+export interface MenuAssistantMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface AnalyticsSummary {
   tier: AnalyticsTier;
   totalViews: number;
   viewsToday: number;
   viewsThisWeek: number;
+  shortLink: {
+    code: string;
+    totalClicks: number;
+    clicksToday: number;
+    clicksThisWeek: number;
+  } | null;
   topPaths: Array<{
     path: string;
     views: number;

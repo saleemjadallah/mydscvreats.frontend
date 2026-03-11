@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 const API_URL =
@@ -9,10 +10,18 @@ export default async function ShortLinkRedirectPage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
+  const requestHeaders = await headers();
   const response = await fetch(
     `${API_URL}/api/short-links/resolve/${encodeURIComponent(code)}`,
     {
       cache: "no-store",
+      headers: {
+        "x-forwarded-user-agent": requestHeaders.get("user-agent") ?? "",
+        "x-forwarded-referrer":
+          requestHeaders.get("referer") ??
+          requestHeaders.get("referrer") ??
+          "",
+      },
     }
   );
 

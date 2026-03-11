@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { BarChart3, Calendar, Eye, Lock, TrendingUp } from "lucide-react";
+import { BarChart3, Calendar, Eye, Link2, Lock, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
 import { getRestaurantEntitlements } from "@/lib/entitlements";
+import { getRestaurantShortUrl } from "@/lib/share";
 import type { AnalyticsSummary } from "@/types";
 
 export default function AnalyticsPage() {
@@ -37,6 +38,7 @@ export default function AnalyticsPage() {
   const maxViews = summary?.topPaths?.length
     ? Math.max(...summary.topPaths.map((p) => p.views))
     : 0;
+  const shortLinkUrl = summary?.shortLink ? getRestaurantShortUrl(summary.shortLink.code) : null;
 
   return (
     <div className="space-y-6">
@@ -46,7 +48,7 @@ export default function AnalyticsPage() {
         <p className="mt-1 text-sm text-white/60">Track how your menu page is performing.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total views"
           value={String(summary?.totalViews ?? 0)}
@@ -68,7 +70,80 @@ export default function AnalyticsPage() {
           icon={TrendingUp}
           accent="emerald"
         />
+        <StatCard
+          label="Short link clicks"
+          value={String(summary?.shortLink?.totalClicks ?? 0)}
+          hint={
+            summary?.shortLink
+              ? "All-time redirect clicks on the active short link"
+              : "Create a short link to start tracking redirect clicks"
+          }
+          icon={Link2}
+          accent="stone"
+        />
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <Link2 className="h-5 w-5 text-saffron" />
+            </div>
+            <div>
+              <CardTitle>Short link performance</CardTitle>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!restaurant?.shortLink ? (
+            <div className="flex flex-col items-center gap-4 py-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-saffron/10">
+                <Link2 className="h-6 w-6 text-saffron" />
+              </div>
+              <div>
+                <p className="font-medium text-ink">No short link created yet</p>
+                <p className="mt-1 text-sm text-stone">
+                  Create a short link from the launch kit to measure flyer scans, bio clicks, and DM traffic separately from menu views.
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/dashboard">Go to Launch Kit</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
+                <div className="mb-2 text-xs uppercase tracking-[0.3em] text-stone">Active short link</div>
+                <div className="break-all text-sm font-medium text-ink">{shortLinkUrl}</div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+                  <div className="text-xs uppercase tracking-[0.2em] text-stone">All time</div>
+                  <div className="mt-2 text-3xl font-semibold text-ink">
+                    {summary?.shortLink?.totalClicks ?? 0}
+                  </div>
+                  <p className="mt-1 text-sm text-stone">Redirect clicks on the active short URL.</p>
+                </div>
+                <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+                  <div className="text-xs uppercase tracking-[0.2em] text-stone">Today</div>
+                  <div className="mt-2 text-3xl font-semibold text-ink">
+                    {summary?.shortLink?.clicksToday ?? 0}
+                  </div>
+                  <p className="mt-1 text-sm text-stone">Clicks in the last 24 hours.</p>
+                </div>
+                <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+                  <div className="text-xs uppercase tracking-[0.2em] text-stone">This week</div>
+                  <div className="mt-2 text-3xl font-semibold text-ink">
+                    {summary?.shortLink?.clicksThisWeek ?? 0}
+                  </div>
+                  <p className="mt-1 text-sm text-stone">Clicks in the last 7 days.</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
