@@ -7,18 +7,22 @@ import {
   ArrowUpRight,
   Code2,
   Copy,
+  Link2,
   QrCode,
   Share2,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
 import {
   getRestaurantPublicUrl,
   getRestaurantQrCodeUrl,
+  getRestaurantShortUrl,
   getRestaurantWidgetSnippet,
 } from "@/lib/share";
 
@@ -26,16 +30,26 @@ export function LaunchKit({
   restaurantId,
   restaurantName,
   slug,
+  shortLinkCode,
+  shortLinksEnabled,
   widgetEnabled,
 }: {
   restaurantId: string;
   restaurantName: string;
   slug: string;
+  shortLinkCode: string | null;
+  shortLinksEnabled: boolean;
   widgetEnabled: boolean;
 }) {
   const { getToken } = useAuth();
+  const { refresh } = useRestaurant();
   const [viewsThisWeek, setViewsThisWeek] = useState<number | null>(null);
+  const [shortLinkAction, setShortLinkAction] = useState<"generate" | "delete" | null>(null);
   const publicUrl = useMemo(() => getRestaurantPublicUrl(slug), [slug]);
+  const shortUrl = useMemo(
+    () => (shortLinkCode ? getRestaurantShortUrl(shortLinkCode) : null),
+    [shortLinkCode]
+  );
   const widgetSnippet = useMemo(() => getRestaurantWidgetSnippet(slug), [slug]);
   const qrCodeUrl = useMemo(() => getRestaurantQrCodeUrl(publicUrl), [publicUrl]);
 
@@ -60,6 +74,65 @@ export function LaunchKit({
   async function copy(text: string, label: string) {
     await navigator.clipboard.writeText(text);
     toast.success(`${label} copied.`);
+  }
+
+  async function generateShortLink() {
+    const isRegenerating = Boolean(shortLinkCode);
+
+    if (
+      isRegenerating &&
+      !window.confirm("Regenerating will disable the current short link. Continue?")
+    ) {
+      return;
+    }
+
+    setShortLinkAction("generate");
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error("Missing auth token");
+      }
+
+      const shortLink = await apiClient.generateShortLink(token, restaurantId);
+      await refresh();
+      toast.success(
+        isRegenerating
+          ? `Short link updated to /r/${shortLink.code}.`
+          : `Short link created at /r/${shortLink.code}.`
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to create short link.");
+    } finally {
+      setShortLinkAction(null);
+    }
+  }
+
+  async function deleteShortLink() {
+    if (!shortLinkCode) {
+      return;
+    }
+
+    if (!window.confirm("Delete this short link? The current /r code will stop working.")) {
+      return;
+    }
+
+    setShortLinkAction("delete");
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error("Missing auth token");
+      }
+
+      await apiClient.deleteShortLink(token, restaurantId);
+      await refresh();
+      toast.success("Short link deleted.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to delete short link.");
+    } finally {
+      setShortLinkAction(null);
+    }
   }
 
   return (
@@ -103,6 +176,80 @@ export function LaunchKit({
                 </Link>
               </Button>
             </div>
+          </div>
+
+          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-ink">
+                <Link2 className="h-4 w-4 text-saffron" />
+                Short link
+              </div>
+              <Badge variant={shortLinksEnabled ? "success" : "muted"}>
+                {shortLinksEnabled ? "Pro" : "Upgrade"}
+              </Badge>
+            </div>
+
+            {shortLinksEnabled ? (
+              <>
+                <p className="rounded-2xl bg-[#FFF8EE] px-4 py-3 text-sm text-stone">
+                  {shortUrl ?? "Create a shorter share link that redirects to the hosted page."}
+                </p>
+                <p className="mt-3 text-sm text-stone">
+                  The hosted page remains the permanent destination. The short link is a lightweight redirect for flyers, DMs, and bios.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {shortUrl ? (
+                    <>
+                      <Button onClick={() => void copy(shortUrl, "Short link")}>
+                        <Copy className="h-4 w-4" />
+                        Copy short link
+                      </Button>
+                      <Button asChild variant="secondary">
+                        <Link href={shortUrl} target="_blank">
+                          Open short link
+                          <ArrowUpRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => void generateShortLink()}
+                        disabled={shortLinkAction !== null}
+                      >
+                        <Link2 className="h-4 w-4" />
+                        {shortLinkAction === "generate" ? "Updating..." : "Regenerate"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => void deleteShortLink()}
+                        disabled={shortLinkAction !== null}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {shortLinkAction === "delete" ? "Deleting..." : "Delete"}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => void generateShortLink()}
+                      disabled={shortLinkAction !== null}
+                    >
+                      <Link2 className="h-4 w-4" />
+                      {shortLinkAction === "generate" ? "Creating..." : "Create short link"}
+                    </Button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="rounded-2xl bg-[#FFF8EE] px-4 py-3 text-sm text-stone">
+                  Upgrade to Pro to unlock a shorter `mydscvr.ai/r/...` share link for the hosted menu page.
+                </p>
+                <div className="mt-4">
+                  <Button asChild variant="secondary">
+                    <Link href="/dashboard/billing">See Pro features</Link>
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
 
           {widgetEnabled ? (

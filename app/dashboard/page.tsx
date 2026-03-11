@@ -317,6 +317,8 @@ export default function DashboardPage() {
           restaurantId={restaurant.id}
           restaurantName={restaurant.name}
           slug={restaurant.slug}
+          shortLinkCode={restaurant.shortLink?.code ?? null}
+          shortLinksEnabled={Boolean(restaurant.entitlements?.shortLinksEnabled)}
           widgetEnabled={Boolean(restaurant.entitlements?.widgetEnabled)}
         />
       ) : null}

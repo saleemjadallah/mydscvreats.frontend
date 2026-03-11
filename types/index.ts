@@ -79,6 +79,13 @@ export interface Restaurant {
   trialEndsAt: string | null;
   createdAt: string;
   updatedAt: string;
+  shortLink?: {
+    id: string;
+    restaurantId: string;
+    code: string;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
   menuSections?: MenuSection[];
   entitlements?: {
     plan: SubscriptionPlan | null;
@@ -86,6 +93,7 @@ export interface Restaurant {
     menuItemLimit: number | null;
     widgetEnabled: boolean;
     customDomainEnabled: boolean;
+    shortLinksEnabled: boolean;
     analyticsTier: AnalyticsTier;
     imageGenerationPriority: number;
     priorityImageGeneration: boolean;

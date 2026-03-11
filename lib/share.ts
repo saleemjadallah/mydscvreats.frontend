@@ -9,6 +9,10 @@ export function getRestaurantPublicUrl(slug: string, windowOrigin?: string) {
   return `${getAppUrl(windowOrigin)}/${slug}`;
 }
 
+export function getRestaurantShortUrl(code: string, windowOrigin?: string) {
+  return `${getAppUrl(windowOrigin)}/r/${code}`;
+}
+
 export function getRestaurantWidgetSnippet(slug: string, windowOrigin?: string) {
   const publicUrl = getRestaurantPublicUrl(slug, windowOrigin);
 

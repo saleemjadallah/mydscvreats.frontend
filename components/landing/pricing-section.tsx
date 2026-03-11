@@ -15,6 +15,7 @@ const proFeatures = [
   "Unlimited menu items",
   "Everything in Starter",
   "Priority image generation",
+  "Short share links",
   "Embeddable widget",
   "Advanced analytics",
 ];

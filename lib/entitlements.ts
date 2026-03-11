@@ -8,6 +8,7 @@ export interface PlanEntitlements {
   menuItemLimit: number | null;
   widgetEnabled: boolean;
   customDomainEnabled: boolean;
+  shortLinksEnabled: boolean;
   analyticsTier: "basic" | "advanced";
   imageGenerationPriority: number;
   priorityImageGeneration: boolean;
@@ -26,6 +27,7 @@ const PLAN_ENTITLEMENTS: Record<
     menuItemLimit: 30,
     widgetEnabled: false,
     customDomainEnabled: false,
+    shortLinksEnabled: false,
     analyticsTier: "basic",
     imageGenerationPriority: 0,
     priorityImageGeneration: false,
@@ -39,6 +41,7 @@ const PLAN_ENTITLEMENTS: Record<
     menuItemLimit: null,
     widgetEnabled: true,
     customDomainEnabled: false,
+    shortLinksEnabled: true,
     analyticsTier: "advanced",
     imageGenerationPriority: 10,
     priorityImageGeneration: true,
@@ -56,6 +59,7 @@ const DRAFT_ENTITLEMENTS: PlanEntitlements = {
   menuItemLimit: null,
   widgetEnabled: false,
   customDomainEnabled: false,
+  shortLinksEnabled: false,
   analyticsTier: "basic",
   imageGenerationPriority: 0,
   priorityImageGeneration: false,

@@ -224,6 +224,21 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
+  generateShortLink(token: string, restaurantId: string) {
+    return request<NonNullable<Restaurant["shortLink"]>>(
+      `/api/short-links/${restaurantId}/generate`,
+      {
+        method: "POST",
+        token,
+      }
+    );
+  },
+  deleteShortLink(token: string, restaurantId: string) {
+    return request<void>(`/api/short-links/${restaurantId}`, {
+      method: "DELETE",
+      token,
+    });
+  },
   getAnalytics(token: string, restaurantId: string) {
     return request<AnalyticsSummary>(`/api/analytics/${restaurantId}`, {
       token,
