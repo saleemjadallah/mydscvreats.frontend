@@ -81,7 +81,7 @@ export function LaunchKit({
 
     if (
       isRegenerating &&
-      !window.confirm("Regenerating will disable the current short link. Continue?")
+      !window.confirm("Regenerate the active short link? Older short links will keep redirecting.")
     ) {
       return;
     }
@@ -98,7 +98,7 @@ export function LaunchKit({
       await refresh();
       toast.success(
         isRegenerating
-          ? `Short link updated to /r/${shortLink.code}.`
+          ? `Short link updated to /r/${shortLink.code}. Older links still work.`
           : `Short link created at /r/${shortLink.code}.`
       );
     } catch (error) {
@@ -195,7 +195,7 @@ export function LaunchKit({
                   {shortUrl ?? "Create a shorter share link that redirects to the hosted page."}
                 </p>
                 <p className="mt-3 text-sm text-stone">
-                  The hosted page remains the permanent destination. The short link is a lightweight redirect for flyers, DMs, and bios.
+                  The hosted page remains the permanent destination. The short link is a lightweight redirect for flyers, DMs, and bios, and older codes keep forwarding after regeneration.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   {shortUrl ? (
