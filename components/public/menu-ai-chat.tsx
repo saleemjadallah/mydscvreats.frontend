@@ -124,7 +124,7 @@ export function MenuAIChat({
           type="button"
           onClick={() => setIsOpen(true)}
           className={cn(
-            "relative h-14 w-14 overflow-hidden rounded-full shadow-[0_20px_45px_rgba(129,83,14,0.28)] transition-all hover:scale-[1.02]",
+            "relative h-16 w-16 overflow-hidden rounded-full shadow-[0_20px_45px_rgba(129,83,14,0.28)] transition-all hover:scale-[1.02]",
             isOpen ? "pointer-events-none scale-95 opacity-0" : "opacity-100"
           )}
           aria-label="Open AI menu assistant"
@@ -135,8 +135,8 @@ export function MenuAIChat({
           <Image
             src={CHEF_AVATAR_URL}
             alt="AI Chef"
-            width={56}
-            height={56}
+            width={64}
+            height={64}
             className="h-full w-full object-cover"
           />
         </button>
