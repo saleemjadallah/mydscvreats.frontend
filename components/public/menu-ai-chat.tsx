@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X } from "lucide-react";
+import Image from "next/image";
+import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/api-client";
@@ -12,6 +13,8 @@ type ChatMessage = MenuAssistantMessage & {
   id: string;
 };
 
+const CHEF_AVATAR_URL =
+  "https://eats-images.mydscvr.ai/assets/chef-avatars/chef-avatar-friendly.jpg";
 const WELCOME_MESSAGE =
   "Hi! I can answer questions about our menu - ingredients, spice levels, portions, or help you decide what to order 😊";
 const FALLBACK_ERROR =
@@ -120,15 +123,21 @@ export function MenuAIChat({
           type="button"
           onClick={() => setIsOpen(true)}
           className={cn(
-            "relative flex h-14 w-14 items-center justify-center rounded-full bg-[#E8A317] text-white shadow-[0_20px_45px_rgba(129,83,14,0.28)] transition-all hover:scale-[1.02]",
+            "relative h-14 w-14 overflow-hidden rounded-full shadow-[0_20px_45px_rgba(129,83,14,0.28)] transition-all hover:scale-[1.02]",
             isOpen ? "pointer-events-none scale-95 opacity-0" : "opacity-100"
           )}
           aria-label="Open AI menu assistant"
         >
           {showPulse ? (
-            <span className="absolute inset-0 rounded-full bg-[#E8A317] animate-ping opacity-30" />
+            <span className="absolute inset-0 rounded-full bg-[#E8A317] animate-ping opacity-30 z-10" />
           ) : null}
-          <MessageCircle className="relative h-6 w-6" />
+          <Image
+            src={CHEF_AVATAR_URL}
+            alt="AI Chef"
+            width={56}
+            height={56}
+            className="h-full w-full object-cover"
+          />
         </button>
       </div>
 
@@ -144,9 +153,18 @@ export function MenuAIChat({
         >
           <div className="border-b border-[#F3E7D4] bg-[linear-gradient(135deg,#FFF8EA,#FFFDF9)] px-5 py-4">
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-sm font-semibold text-ink">{restaurantName}</div>
-                <div className="text-xs text-stone">AI Menu Assistant</div>
+              <div className="flex items-center gap-3">
+                <Image
+                  src={CHEF_AVATAR_URL}
+                  alt="AI Chef"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-[#F2D58B]"
+                />
+                <div>
+                  <div className="text-sm font-semibold text-ink">{restaurantName}</div>
+                  <div className="text-xs text-stone">AI Menu Assistant</div>
+                </div>
               </div>
               <button
                 type="button"
@@ -165,12 +183,21 @@ export function MenuAIChat({
                 key={message.id}
                 className={cn(
                   "flex",
-                  message.role === "user" ? "justify-end" : "justify-start"
+                  message.role === "user" ? "justify-end" : "items-end gap-2"
                 )}
               >
+                {message.role === "assistant" ? (
+                  <Image
+                    src={CHEF_AVATAR_URL}
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="mb-0.5 h-6 w-6 flex-shrink-0 rounded-full object-cover"
+                  />
+                ) : null}
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm",
+                    "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm",
                     message.role === "user"
                       ? "rounded-br-md bg-[#E8A317] text-white"
                       : "rounded-bl-md bg-[#F4F1EA] text-ink"
@@ -180,7 +207,18 @@ export function MenuAIChat({
                 </div>
               </div>
             ))}
-            {isTyping ? <TypingIndicator /> : null}
+            {isTyping ? (
+              <div className="flex items-end gap-2">
+                <Image
+                  src={CHEF_AVATAR_URL}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="mb-0.5 h-6 w-6 flex-shrink-0 rounded-full object-cover"
+                />
+                <TypingIndicator />
+              </div>
+            ) : null}
             <div ref={endRef} />
           </div>
 
