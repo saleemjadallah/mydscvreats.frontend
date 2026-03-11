@@ -146,7 +146,7 @@ export function LaunchKit({
             </div>
             <CardTitle className="text-white">{restaurantName} is live</CardTitle>
             <p className="mt-2 text-sm text-white/70">
-              Share the hosted link, drop the widget into a site, or print the QR code for tables.
+              Share the hosted link, embed the Pro widget on a site, or print the QR code for tables.
             </p>
           </div>
           <Badge variant="success" className="self-start bg-white/15 text-white">
@@ -258,6 +258,9 @@ export function LaunchKit({
                 <Code2 className="h-4 w-4 text-saffron" />
                 Widget snippet
               </div>
+              <p className="mb-3 text-sm text-stone">
+                Paste this snippet into your website to load the embeddable menu with automatic resizing.
+              </p>
               <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-[20px] bg-[#201A17] p-4 text-xs text-[#F7F1E8]">
                 {widgetSnippet}
               </pre>

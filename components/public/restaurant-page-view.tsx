@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Globe2, MapPin, Phone } from "lucide-react";
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
+import { EmbedHeightReporter } from "@/components/public/embed-height-reporter";
 import { MenuAIChat } from "@/components/public/menu-ai-chat";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
@@ -134,11 +135,13 @@ export function RestaurantPageView({
   trackPageView = false,
   previewBanner,
   themeKeyOverride,
+  isEmbedded = false,
 }: {
   restaurant: Restaurant;
   trackPageView?: boolean;
   previewBanner?: React.ReactNode;
   themeKeyOverride?: RestaurantThemeKey | null;
+  isEmbedded?: boolean;
 }) {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
 
@@ -177,25 +180,32 @@ export function RestaurantPageView({
 
   return (
     <main
-      className="px-4 py-5 md:px-8 md:py-8"
+      className={isEmbedded ? "px-0 py-0" : "px-4 py-5 md:px-8 md:py-8"}
       style={{
-        background: `radial-gradient(circle at top right, ${theme.glowA}, transparent 34%), radial-gradient(circle at bottom left, ${theme.glowB}, transparent 30%), ${theme.pageBackground}`,
+        background: isEmbedded
+          ? theme.pageBackground
+          : `radial-gradient(circle at top right, ${theme.glowA}, transparent 34%), radial-gradient(circle at bottom left, ${theme.glowB}, transparent 30%), ${theme.pageBackground}`,
       }}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      {!isEmbedded ? (
+        <>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+          />
+        </>
+      ) : null}
       {trackPageView ? <RestaurantTracker restaurantId={restaurant.id} /> : null}
-      <div className="mx-auto max-w-7xl space-y-6">
+      {isEmbedded ? <EmbedHeightReporter /> : null}
+      <div className={`mx-auto ${isEmbedded ? "max-w-none space-y-4" : "max-w-7xl space-y-6"}`}>
         {previewBanner}
 
         <section
-          className="overflow-hidden rounded-[40px] border text-white"
+          className={`overflow-hidden border text-white ${isEmbedded ? "rounded-[28px]" : "rounded-[40px]"}`}
           style={{
             borderColor: theme.divider,
             backgroundColor: theme.heroFrom,
@@ -207,66 +217,66 @@ export function RestaurantPageView({
           }}
         >
           <div className="space-y-5 p-8 lg:p-12">
-              <div className="flex flex-wrap items-center gap-4">
-                {restaurant.logoUrl ? (
-                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-[24px] border border-white/20 bg-white/95 p-3 shadow-lg">
-                    <img
-                      src={restaurant.logoUrl}
-                      alt={`${restaurant.name} logo`}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                ) : null}
-                <div
-                  className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
-                  style={{
-                    backgroundColor: theme.badgeBg,
-                    color: theme.badgeText,
-                  }}
-                >
-                  {restaurant.cuisineType ?? "Restaurant"}
+            <div className="flex flex-wrap items-center gap-4">
+              {restaurant.logoUrl ? (
+                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-[24px] border border-white/20 bg-white/95 p-3 shadow-lg">
+                  <img
+                    src={restaurant.logoUrl}
+                    alt={`${restaurant.name} logo`}
+                    className="h-full w-full object-contain"
+                  />
                 </div>
+              ) : null}
+              <div
+                className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
+                style={{
+                  backgroundColor: theme.badgeBg,
+                  color: theme.badgeText,
+                }}
+              >
+                {restaurant.cuisineType ?? "Restaurant"}
               </div>
-              <div>
-                <h1 className="text-5xl font-semibold tracking-tight">{restaurant.name}</h1>
-                {restaurant.description ? (
-                  <p className="mt-4 max-w-2xl text-lg text-white/90">{restaurant.description}</p>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm text-white/85">
-                {restaurant.location ? (
-                  <span className="inline-flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    {restaurant.location}
-                  </span>
-                ) : null}
-                {restaurant.phone ? (
-                  <a
-                    href={`tel:${restaurant.phone}`}
-                    className="inline-flex items-center gap-2 hover:text-white"
-                  >
-                    <Phone className="h-4 w-4" />
-                    {restaurant.phone}
-                  </a>
-                ) : null}
-                {websiteUrl ? (
-                  <a
-                    href={websiteUrl}
-                    className="inline-flex items-center gap-2 hover:text-white"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Globe2 className="h-4 w-4" />
-                    Website
-                  </a>
-                ) : null}
-              </div>
+            </div>
+            <div>
+              <h1 className="text-5xl font-semibold tracking-tight">{restaurant.name}</h1>
+              {restaurant.description ? (
+                <p className="mt-4 max-w-2xl text-lg text-white/90">{restaurant.description}</p>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap gap-4 text-sm text-white/85">
+              {restaurant.location ? (
+                <span className="inline-flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  {restaurant.location}
+                </span>
+              ) : null}
+              {restaurant.phone ? (
+                <a
+                  href={`tel:${restaurant.phone}`}
+                  className="inline-flex items-center gap-2 hover:text-white"
+                >
+                  <Phone className="h-4 w-4" />
+                  {restaurant.phone}
+                </a>
+              ) : null}
+              {websiteUrl ? (
+                <a
+                  href={websiteUrl}
+                  className="inline-flex items-center gap-2 hover:text-white"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Globe2 className="h-4 w-4" />
+                  Website
+                </a>
+              ) : null}
+            </div>
           </div>
         </section>
 
         <nav
           aria-label="Menu sections"
-          className="sticky top-3 z-10 space-y-2 rounded-[20px] border bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur"
+          className={`sticky z-10 space-y-2 rounded-[20px] border bg-[#FFFDF9]/90 px-3 py-3 backdrop-blur ${isEmbedded ? "top-0" : "top-3"}`}
           style={{ borderColor: theme.divider }}
         >
           <div className="flex gap-2 overflow-x-auto">
@@ -351,7 +361,7 @@ export function RestaurantPageView({
           ))}
         </section>
       </div>
-      {restaurant.entitlements?.menuAssistantEnabled ? (
+      {!isEmbedded && restaurant.entitlements?.menuAssistantEnabled ? (
         <MenuAIChat restaurantId={restaurant.id} restaurantName={restaurant.name} />
       ) : null}
     </main>

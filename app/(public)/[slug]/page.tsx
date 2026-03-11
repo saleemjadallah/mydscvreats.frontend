@@ -74,14 +74,21 @@ export const revalidate = 60;
 
 export default async function RestaurantPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ embed?: string }>;
 }) {
   const { slug } = await params;
+  const { embed } = await searchParams;
   const restaurant = await apiClient.getRestaurantBySlug(slug).catch(() => null);
 
   if (!restaurant) {
     notFound();
+  }
+
+  if (embed === "1") {
+    redirect(`/embed/${restaurant.slug}`);
   }
 
   if (restaurant.slug !== slug) {
