@@ -155,13 +155,13 @@ export function LaunchKit({
         </div>
       </CardHeader>
       <CardContent className="grid gap-6 p-6 lg:grid-cols-[1.05fr,0.95fr]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
               <Share2 className="h-4 w-4 text-saffron" />
               Hosted page
             </div>
-            <p className="rounded-2xl bg-[#FFF8EE] px-4 py-3 text-sm text-stone">
+            <p className="truncate rounded-2xl bg-[#FFF8EE] px-4 py-3 text-sm text-stone">
               {publicUrl}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
@@ -191,7 +191,7 @@ export function LaunchKit({
 
             {shortLinksEnabled ? (
               <>
-                <p className="rounded-2xl bg-[#FFF8EE] px-4 py-3 text-sm text-stone">
+                <p className="truncate rounded-2xl bg-[#FFF8EE] px-4 py-3 text-sm text-stone">
                   {shortUrl ?? "Create a shorter share link that redirects to the hosted page."}
                 </p>
                 <p className="mt-3 text-sm text-stone">
@@ -258,7 +258,7 @@ export function LaunchKit({
                 <Code2 className="h-4 w-4 text-saffron" />
                 Widget snippet
               </div>
-              <pre className="overflow-x-auto rounded-[20px] bg-[#201A17] p-4 text-xs text-[#F7F1E8]">
+              <pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-[20px] bg-[#201A17] p-4 text-xs text-[#F7F1E8]">
                 {widgetSnippet}
               </pre>
               <div className="mt-4">
@@ -271,7 +271,7 @@ export function LaunchKit({
           ) : null}
         </div>
 
-        <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
+        <div className="min-w-0 rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
             <QrCode className="h-4 w-4 text-saffron" />
             QR code for tables and print
