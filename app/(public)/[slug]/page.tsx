@@ -1,6 +1,6 @@
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { RestaurantPageView } from "@/components/public/restaurant-page-view";
 import { apiClient } from "@/lib/api-client";
 
@@ -41,12 +41,12 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `https://mydscvr.ai/${slug}`,
+      canonical: `https://mydscvr.ai/${restaurant.slug}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://mydscvr.ai/${slug}`,
+      url: `https://mydscvr.ai/${restaurant.slug}`,
       type: "website",
       siteName: "mydscvr Eats",
       locale: "en_AE",
@@ -82,6 +82,10 @@ export default async function RestaurantPage({
 
   if (!restaurant) {
     notFound();
+  }
+
+  if (restaurant.slug !== slug) {
+    redirect(`/${restaurant.slug}`);
   }
 
   return <RestaurantPageView restaurant={restaurant} trackPageView />;

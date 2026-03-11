@@ -123,6 +123,9 @@ export default function AppearancePage() {
               value={form.name ?? ""}
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
             />
+            <p className="text-sm text-stone">
+              Changing the restaurant name updates the URL slug. Older links keep redirecting to the latest page.
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Cuisine type</Label>
