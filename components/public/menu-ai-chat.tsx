@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Markdown from "react-markdown";
 import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -203,7 +204,56 @@ export function MenuAIChat({
                       : "rounded-bl-md bg-[#F4F1EA] text-ink"
                   )}
                 >
-                  {message.content}
+                  {message.role === "assistant" ? (
+                    <Markdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => (
+                          <strong className="font-semibold">{children}</strong>
+                        ),
+                        ul: ({ children }) => (
+                          <ul className="mb-2 ml-4 list-disc space-y-0.5 last:mb-0">{children}</ul>
+                        ),
+                        ol: ({ children }) => (
+                          <ol className="mb-2 ml-4 list-decimal space-y-0.5 last:mb-0">{children}</ol>
+                        ),
+                        li: ({ children }) => <li className="pl-0.5">{children}</li>,
+                        table: ({ children }) => (
+                          <div className="my-2 overflow-x-auto rounded-lg border border-[#E7DAC5] last:mb-0">
+                            <table className="w-full text-left text-xs">{children}</table>
+                          </div>
+                        ),
+                        thead: ({ children }) => (
+                          <thead className="border-b border-[#E7DAC5] bg-[#FAF5EC] text-[#7A5510]">
+                            {children}
+                          </thead>
+                        ),
+                        th: ({ children }) => (
+                          <th className="px-2.5 py-1.5 font-semibold">{children}</th>
+                        ),
+                        td: ({ children }) => (
+                          <td className="px-2.5 py-1.5">{children}</td>
+                        ),
+                        tr: ({ children }) => (
+                          <tr className="border-b border-[#F3E7D4] last:border-0">{children}</tr>
+                        ),
+                        h1: ({ children }) => (
+                          <p className="mb-1.5 font-semibold">{children}</p>
+                        ),
+                        h2: ({ children }) => (
+                          <p className="mb-1.5 font-semibold">{children}</p>
+                        ),
+                        h3: ({ children }) => (
+                          <p className="mb-1 font-semibold">{children}</p>
+                        ),
+                        hr: () => <hr className="my-2 border-[#E7DAC5]" />,
+                      }}
+                    >
+                      {message.content}
+                    </Markdown>
+                  ) : (
+                    message.content
+                  )}
                 </div>
               </div>
             ))}
