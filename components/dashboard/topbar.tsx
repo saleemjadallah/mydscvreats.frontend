@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { countMenuItems, getRestaurantEntitlements } from "@/lib/entitlements";
 import { plans } from "@/lib/plans";
+import { getRestaurantPublicUrl } from "@/lib/share";
 
 export function DashboardTopbar() {
   const { restaurant } = useRestaurant();
@@ -18,6 +19,7 @@ export function DashboardTopbar() {
     !hasSelectedPlan &&
     plans.starter.itemLimit !== null &&
     menuItemCount > plans.starter.itemLimit;
+  const publicUrl = restaurant ? getRestaurantPublicUrl(restaurant) : null;
 
   return (
     <div className="glass-panel relative overflow-hidden rounded-[28px] border border-[#E5D7C0]">
@@ -44,9 +46,9 @@ export function DashboardTopbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          {restaurant?.slug && restaurant.isPublished ? (
+          {restaurant?.slug && restaurant.isPublished && publicUrl ? (
             <Button asChild variant="secondary" className="transition-all duration-200 hover:-translate-y-0.5">
-              <Link href={`/${restaurant.slug}`} target="_blank">
+              <Link href={publicUrl} target="_blank">
                 <Globe2 className="h-4 w-4" />
                 View public page
                 <ArrowUpRight className="h-4 w-4" />

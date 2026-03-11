@@ -78,7 +78,7 @@ export default function DashboardPage() {
         )
       )
     : 0;
-  const reservedUrl = getRestaurantPublicUrl(restaurant.slug);
+  const reservedUrl = getRestaurantPublicUrl(restaurant);
 
   return (
     <div className="space-y-6">
@@ -133,7 +133,7 @@ export default function DashboardPage() {
             }
             hint={
               restaurant.subscriptionStatus === "active"
-                ? `Published at mydscvr.ai/${restaurant.slug}.`
+                ? `Published at ${reservedUrl}.`
                 : hasStartedTrial
                   ? "Your trial is live. Add a payment method in billing before it ends."
                   : "Choose Starter or Pro in billing to start the 14-day trial."
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-4">
                   <Button asChild variant="secondary">
-                    <Link href={restaurant.isPublished ? `/${restaurant.slug}` : "/dashboard/preview"}>
+                    <Link href={restaurant.isPublished ? reservedUrl : "/dashboard/preview"} target={restaurant.isPublished ? "_blank" : undefined}>
                       {restaurant.isPublished ? "View public page" : "Preview menu page"}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -316,7 +316,7 @@ export default function DashboardPage() {
         <LaunchKit
           restaurantId={restaurant.id}
           restaurantName={restaurant.name}
-          slug={restaurant.slug}
+          restaurant={restaurant}
           widgetEnabled={Boolean(restaurant.entitlements?.widgetEnabled)}
         />
       ) : null}

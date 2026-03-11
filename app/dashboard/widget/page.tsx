@@ -13,7 +13,7 @@ import { getRestaurantWidgetSnippet } from "@/lib/share";
 export default function WidgetPage() {
   const { restaurant } = useRestaurant();
   const entitlements = getRestaurantEntitlements(restaurant);
-  const snippet = restaurant?.slug ? getRestaurantWidgetSnippet(restaurant.slug) : "";
+  const snippet = restaurant ? getRestaurantWidgetSnippet(restaurant) : "";
   const [copied, setCopied] = useState(false);
 
   async function copySnippet() {

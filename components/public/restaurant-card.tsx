@@ -4,13 +4,14 @@ import { ArrowUpRight, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
+import { getRestaurantPublicUrl } from "@/lib/share";
 import type { Restaurant } from "@/types";
 
 export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   const theme = getRestaurantTheme(restaurant.themeKey);
 
   return (
-    <Link href={`/${restaurant.slug}`}>
+    <Link href={getRestaurantPublicUrl(restaurant)}>
       <Card className="group overflow-hidden transition-transform duration-300 hover:-translate-y-1">
         <div className="relative h-44">
           {restaurant.coverImageUrl ? (

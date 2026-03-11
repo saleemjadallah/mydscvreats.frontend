@@ -64,6 +64,11 @@ export const apiClient = {
   getRestaurantBySlug(slug: string) {
     return request<Restaurant>(`/api/restaurants/${slug}`);
   },
+  getRestaurantByHostname(hostname: string) {
+    return request<Restaurant>(
+      `/api/restaurants/resolve/by-host?hostname=${encodeURIComponent(hostname)}`
+    );
+  },
   listRestaurants(cuisine?: string) {
     const search = cuisine ? `?cuisine=${encodeURIComponent(cuisine)}` : "";
     return request<Restaurant[]>(`/api/restaurants${search}`);
@@ -224,20 +229,31 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
-  getAnalytics(token: string, restaurantId: string) {
-    return request<AnalyticsSummary>(`/api/analytics/${restaurantId}`, {
+  upsertCustomDomain(token: string, restaurantId: string, payload: { hostname: string }) {
+    return request<Restaurant["customDomain"]>(`/api/restaurants/${restaurantId}/custom-domain`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  verifyCustomDomain(token: string, restaurantId: string) {
+    return request<Restaurant["customDomain"]>(
+      `/api/restaurants/${restaurantId}/custom-domain/verify`,
+      {
+        method: "POST",
+        token,
+      }
+    );
+  },
+  deleteCustomDomain(token: string, restaurantId: string) {
+    return request<void>(`/api/restaurants/${restaurantId}/custom-domain`, {
+      method: "DELETE",
       token,
     });
   },
-  trackPageView(payload: {
-    restaurantId: string;
-    path: string;
-    userAgent?: string | null;
-    referrer?: string | null;
-  }) {
-    return request<{ ok: boolean }>("/api/analytics/page-view", {
-      method: "POST",
-      body: JSON.stringify(payload),
+  getAnalytics(token: string, restaurantId: string) {
+    return request<AnalyticsSummary>(`/api/analytics/${restaurantId}`, {
+      token,
     });
   },
 

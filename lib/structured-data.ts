@@ -1,7 +1,7 @@
 import type { Restaurant } from "@/types";
 import { normalizeExternalUrl } from "@/lib/utils";
 
-export function buildRestaurantJsonLd(restaurant: Restaurant) {
+export function buildRestaurantJsonLd(restaurant: Restaurant, publicUrl: string) {
   const websiteUrl = normalizeExternalUrl(restaurant.website);
   const menuSections = (restaurant.menuSections ?? []).map((section) => ({
     "@type": "MenuSection",
@@ -24,7 +24,7 @@ export function buildRestaurantJsonLd(restaurant: Restaurant) {
     "@type": "Restaurant",
     name: restaurant.name,
     ...(restaurant.description ? { description: restaurant.description } : {}),
-    url: `https://mydscvr.ai/${restaurant.slug}`,
+    url: publicUrl,
     ...(restaurant.coverImageUrl ? { image: restaurant.coverImageUrl } : {}),
     ...(restaurant.logoUrl ? { logo: restaurant.logoUrl } : {}),
     ...(restaurant.phone ? { telephone: restaurant.phone } : {}),
@@ -55,7 +55,12 @@ export function buildRestaurantJsonLd(restaurant: Restaurant) {
   };
 }
 
-export function buildBreadcrumbJsonLd(restaurantName: string, slug: string) {
+export function buildBreadcrumbJsonLd(input: {
+  homeUrl: string;
+  exploreUrl: string;
+  restaurantName: string;
+  restaurantUrl: string;
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -64,19 +69,19 @@ export function buildBreadcrumbJsonLd(restaurantName: string, slug: string) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://mydscvr.ai",
+        item: input.homeUrl,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Explore",
-        item: "https://mydscvr.ai/explore",
+        item: input.exploreUrl,
       },
       {
         "@type": "ListItem",
         position: 3,
-        name: restaurantName,
-        item: `https://mydscvr.ai/${slug}`,
+        name: input.restaurantName,
+        item: input.restaurantUrl,
       },
     ],
   };

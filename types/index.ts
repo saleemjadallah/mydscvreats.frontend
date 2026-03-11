@@ -2,6 +2,7 @@ export type SubscriptionStatus = "trial" | "active" | "paused" | "cancelled";
 export type SubscriptionPlan = "starter" | "pro";
 export type AnalyticsTier = "basic" | "advanced";
 export type RestaurantThemeKey = "saffron" | "midnight" | "rose";
+export type DomainStatus = "pending" | "verifying" | "active" | "failed";
 export type ImageStatus =
   | "none"
   | "generating"
@@ -61,6 +62,18 @@ export interface MenuSection {
   items: MenuItem[];
 }
 
+export interface RestaurantDomain {
+  id: string;
+  restaurantId: string;
+  hostname: string;
+  status: DomainStatus;
+  verificationTarget: string;
+  verifiedAt: string | null;
+  lastCheckedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Restaurant {
   id: string;
   slug: string;
@@ -79,6 +92,7 @@ export interface Restaurant {
   trialEndsAt: string | null;
   createdAt: string;
   updatedAt: string;
+  customDomain?: RestaurantDomain | null;
   menuSections?: MenuSection[];
   entitlements?: {
     plan: SubscriptionPlan | null;

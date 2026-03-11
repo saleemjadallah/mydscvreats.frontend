@@ -38,7 +38,7 @@ const PLAN_ENTITLEMENTS: Record<
   pro: {
     menuItemLimit: null,
     widgetEnabled: true,
-    customDomainEnabled: false,
+    customDomainEnabled: true,
     analyticsTier: "advanced",
     imageGenerationPriority: 10,
     priorityImageGeneration: true,

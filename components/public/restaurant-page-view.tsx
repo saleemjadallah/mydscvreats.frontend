@@ -8,6 +8,7 @@ import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { getAppUrl, getRestaurantPublicUrl } from "@/lib/domains";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency, normalizeExternalUrl } from "@/lib/utils";
@@ -134,11 +135,15 @@ export function RestaurantPageView({
   trackPageView = false,
   previewBanner,
   themeKeyOverride,
+  canonicalUrl,
+  showExploreBreadcrumb = true,
 }: {
   restaurant: Restaurant;
   trackPageView?: boolean;
   previewBanner?: React.ReactNode;
   themeKeyOverride?: RestaurantThemeKey | null;
+  canonicalUrl?: string;
+  showExploreBreadcrumb?: boolean;
 }) {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
 
@@ -171,8 +176,16 @@ export function RestaurantPageView({
     })).filter((section) => section.items.length > 0);
   }, [restaurant.menuSections, activeFilters]);
   const theme = getRestaurantTheme(themeKeyOverride ?? restaurant.themeKey);
-  const jsonLd = buildRestaurantJsonLd(restaurant);
-  const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
+  const publicUrl = canonicalUrl ?? getRestaurantPublicUrl(restaurant);
+  const jsonLd = buildRestaurantJsonLd(restaurant, publicUrl);
+  const breadcrumbJsonLd = showExploreBreadcrumb
+    ? buildBreadcrumbJsonLd({
+        homeUrl: getAppUrl(),
+        exploreUrl: `${getAppUrl()}/explore`,
+        restaurantName: restaurant.name,
+        restaurantUrl: publicUrl,
+      })
+    : null;
   const websiteUrl = normalizeExternalUrl(restaurant.website);
 
   return (
@@ -186,10 +199,12 @@ export function RestaurantPageView({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      {breadcrumbJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        />
+      ) : null}
       {trackPageView ? <RestaurantTracker restaurantId={restaurant.id} /> : null}
       <div className="mx-auto max-w-7xl space-y-6">
         {previewBanner}
@@ -206,8 +221,7 @@ export function RestaurantPageView({
             backgroundPosition: "center",
           }}
         >
-          <div className="grid gap-8 p-8 lg:grid-cols-[1.2fr,0.8fr] lg:p-12">
-            <div className="space-y-5">
+          <div className="space-y-5 p-8 lg:p-12">
               <div className="flex flex-wrap items-center gap-4">
                 {restaurant.logoUrl ? (
                   <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-[24px] border border-white/20 bg-white/95 p-3 shadow-lg">
@@ -262,29 +276,6 @@ export function RestaurantPageView({
                   </a>
                 ) : null}
               </div>
-            </div>
-
-            <Card className="self-end p-5">
-              <div className="text-xs uppercase tracking-[0.24em] text-stone">
-                Browse by category
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {restaurant.menuSections?.map((section) => (
-                  <a
-                    key={section.id}
-                    href={`#section-${section.id}`}
-                    className="rounded-full border px-4 py-2 text-sm font-medium"
-                    style={{
-                      backgroundColor: theme.chipBg,
-                      color: theme.chipText,
-                      borderColor: theme.chipBorder,
-                    }}
-                  >
-                    {section.name}
-                  </a>
-                ))}
-              </div>
-            </Card>
           </div>
         </section>
 
