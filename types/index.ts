@@ -1,7 +1,7 @@
 export type SubscriptionStatus = "trial" | "active" | "paused" | "cancelled";
 export type SubscriptionPlan = "starter" | "pro";
 export type AnalyticsTier = "basic" | "advanced";
-export type RestaurantThemeKey = "saffron" | "midnight" | "rose";
+export type RestaurantThemeKey = "saffron" | "midnight" | "rose" | "noir" | "aegean" | "neon";
 export type ImageStatus =
   | "none"
   | "generating"

@@ -320,6 +320,7 @@ export default function AppearancePage() {
             <ThemePicker
               value={form.themeKey ?? null}
               onChange={(themeKey) => setForm((current) => ({ ...current, themeKey }))}
+              isPro={restaurant.entitlements?.plan === "pro"}
             />
           </div>
         </CardContent>
