@@ -1,20 +1,16 @@
-import type { Restaurant } from "@/types";
-import { getRestaurantPublicUrl as getResolvedRestaurantPublicUrl } from "@/lib/domains";
-
-export { getAppUrl } from "@/lib/domains";
-
-export function getRestaurantPublicUrl(
-  restaurant: Pick<Restaurant, "slug" | "customDomain"> | string,
-  windowOrigin?: string
-) {
-  return getResolvedRestaurantPublicUrl(restaurant, windowOrigin);
+export function getAppUrl(windowOrigin?: string) {
+  return (process.env.NEXT_PUBLIC_APP_URL ?? windowOrigin ?? "https://mydscvr.ai").replace(
+    /\/$/,
+    ""
+  );
 }
 
-export function getRestaurantWidgetSnippet(
-  restaurant: Pick<Restaurant, "slug" | "customDomain"> | string,
-  windowOrigin?: string
-) {
-  const publicUrl = getRestaurantPublicUrl(restaurant, windowOrigin);
+export function getRestaurantPublicUrl(slug: string, windowOrigin?: string) {
+  return `${getAppUrl(windowOrigin)}/${slug}`;
+}
+
+export function getRestaurantWidgetSnippet(slug: string, windowOrigin?: string) {
+  const publicUrl = getRestaurantPublicUrl(slug, windowOrigin);
 
   return `<iframe src="${publicUrl}?embed=1" width="100%" height="760" style="border:0;border-radius:24px;overflow:hidden" loading="lazy"></iframe>`;
 }

@@ -21,23 +21,22 @@ import {
   getRestaurantQrCodeUrl,
   getRestaurantWidgetSnippet,
 } from "@/lib/share";
-import type { Restaurant } from "@/types";
 
 export function LaunchKit({
   restaurantId,
   restaurantName,
-  restaurant,
+  slug,
   widgetEnabled,
 }: {
   restaurantId: string;
   restaurantName: string;
-  restaurant: Pick<Restaurant, "slug" | "customDomain">;
+  slug: string;
   widgetEnabled: boolean;
 }) {
   const { getToken } = useAuth();
   const [viewsThisWeek, setViewsThisWeek] = useState<number | null>(null);
-  const publicUrl = useMemo(() => getRestaurantPublicUrl(restaurant), [restaurant]);
-  const widgetSnippet = useMemo(() => getRestaurantWidgetSnippet(restaurant), [restaurant]);
+  const publicUrl = useMemo(() => getRestaurantPublicUrl(slug), [slug]);
+  const widgetSnippet = useMemo(() => getRestaurantWidgetSnippet(slug), [slug]);
   const qrCodeUrl = useMemo(() => getRestaurantQrCodeUrl(publicUrl), [publicUrl]);
 
   useEffect(() => {

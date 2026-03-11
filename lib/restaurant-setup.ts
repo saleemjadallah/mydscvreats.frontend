@@ -1,6 +1,5 @@
 import { auditSections } from "@/lib/menu-audit";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
-import { getRestaurantPublicUrl } from "@/lib/share";
 import type { Restaurant } from "@/types";
 
 export interface SetupStep {
@@ -21,7 +20,6 @@ export function getRestaurantSetupState(restaurant: Restaurant | null) {
   const isPublished = Boolean(restaurant?.isPublished);
   const onboardingComplete = Boolean(restaurant && hasMenu && hasTheme);
   const themeName = hasTheme ? getRestaurantTheme(restaurant?.themeKey).name : null;
-  const publicUrl = restaurant ? getRestaurantPublicUrl(restaurant) : null;
 
   const steps: SetupStep[] = [
     {
@@ -54,7 +52,7 @@ export function getRestaurantSetupState(restaurant: Restaurant | null) {
       cta: isPublished ? "Manage billing" : "Go live",
       completed: isPublished,
       summary: isPublished
-        ? `Live at ${publicUrl}.`
+        ? `Live at mydscvr.ai/${restaurant?.slug}.`
         : "Publishing is intentionally left out of onboarding to reduce drop-off.",
     },
   ];

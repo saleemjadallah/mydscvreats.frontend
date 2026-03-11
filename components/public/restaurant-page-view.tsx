@@ -8,7 +8,6 @@ import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getAppUrl, getRestaurantPublicUrl } from "@/lib/domains";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency, normalizeExternalUrl } from "@/lib/utils";
@@ -135,15 +134,11 @@ export function RestaurantPageView({
   trackPageView = false,
   previewBanner,
   themeKeyOverride,
-  canonicalUrl,
-  showExploreBreadcrumb = true,
 }: {
   restaurant: Restaurant;
   trackPageView?: boolean;
   previewBanner?: React.ReactNode;
   themeKeyOverride?: RestaurantThemeKey | null;
-  canonicalUrl?: string;
-  showExploreBreadcrumb?: boolean;
 }) {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
 
@@ -176,16 +171,8 @@ export function RestaurantPageView({
     })).filter((section) => section.items.length > 0);
   }, [restaurant.menuSections, activeFilters]);
   const theme = getRestaurantTheme(themeKeyOverride ?? restaurant.themeKey);
-  const publicUrl = canonicalUrl ?? getRestaurantPublicUrl(restaurant);
-  const jsonLd = buildRestaurantJsonLd(restaurant, publicUrl);
-  const breadcrumbJsonLd = showExploreBreadcrumb
-    ? buildBreadcrumbJsonLd({
-        homeUrl: getAppUrl(),
-        exploreUrl: `${getAppUrl()}/explore`,
-        restaurantName: restaurant.name,
-        restaurantUrl: publicUrl,
-      })
-    : null;
+  const jsonLd = buildRestaurantJsonLd(restaurant);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
   const websiteUrl = normalizeExternalUrl(restaurant.website);
 
   return (
@@ -199,12 +186,10 @@ export function RestaurantPageView({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {breadcrumbJsonLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-        />
-      ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {trackPageView ? <RestaurantTracker restaurantId={restaurant.id} /> : null}
       <div className="mx-auto max-w-7xl space-y-6">
         {previewBanner}

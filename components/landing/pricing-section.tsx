@@ -16,7 +16,6 @@ const proFeatures = [
   "Everything in Starter",
   "Priority image generation",
   "Embeddable widget",
-  "Custom domain",
   "Advanced analytics",
 ];
 
