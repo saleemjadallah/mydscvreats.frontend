@@ -6,15 +6,16 @@ import { ArrowUpRight, Eye, Globe2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRestaurant } from "@/hooks/use-restaurant";
-import { countMenuItems } from "@/lib/entitlements";
+import { countMenuItems, getRestaurantEntitlements } from "@/lib/entitlements";
 import { plans } from "@/lib/plans";
 
 export function DashboardTopbar() {
   const { restaurant } = useRestaurant();
-  const hasStripeSubscription = Boolean(restaurant?.subscription?.stripeSubscriptionId);
+  const entitlements = getRestaurantEntitlements(restaurant);
+  const hasSelectedPlan = entitlements.hasSelectedPlan;
   const menuItemCount = countMenuItems(restaurant?.menuSections);
   const draftNeedsPro =
-    !hasStripeSubscription &&
+    !hasSelectedPlan &&
     plans.starter.itemLimit !== null &&
     menuItemCount > plans.starter.itemLimit;
 
@@ -31,12 +32,12 @@ export function DashboardTopbar() {
             {restaurant?.subscriptionStatus ? (
               <Badge
                 variant={
-                  hasStripeSubscription && restaurant.subscriptionStatus === "active"
+                  hasSelectedPlan && restaurant.subscriptionStatus === "active"
                     ? "success"
                     : "default"
                 }
               >
-                {hasStripeSubscription ? restaurant.subscriptionStatus : "draft"}
+                {hasSelectedPlan ? restaurant.subscriptionStatus : "draft"}
               </Badge>
             ) : null}
           </div>
@@ -72,7 +73,7 @@ export function DashboardTopbar() {
         </div>
       </div>
 
-      {restaurant && !hasStripeSubscription ? (
+      {restaurant && !hasSelectedPlan ? (
         <div className="border-t border-[#E5D7C0] bg-[#FFF8EE] px-5 py-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>

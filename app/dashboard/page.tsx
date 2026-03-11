@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRestaurant } from "@/hooks/use-restaurant";
+import { getRestaurantEntitlements } from "@/lib/entitlements";
 import { getRestaurantPublicUrl } from "@/lib/share";
 import { getRestaurantSetupState } from "@/lib/restaurant-setup";
 
@@ -63,8 +64,11 @@ export default function DashboardPage() {
 
   const setup = getRestaurantSetupState(restaurant);
   const audit = setup.audit;
-  const hasStartedStripeTrial = Boolean(
-    restaurant.subscription?.stripeSubscriptionId && restaurant.trialEndsAt
+  const entitlements = getRestaurantEntitlements(restaurant);
+  const hasStartedTrial = Boolean(
+    entitlements.hasSelectedPlan &&
+      restaurant.subscriptionStatus === "trial" &&
+      restaurant.trialEndsAt
   );
   const trialDaysLeft = restaurant.trialEndsAt
     ? Math.max(
@@ -116,21 +120,21 @@ export default function DashboardPage() {
             label={
               restaurant.subscriptionStatus === "active"
                 ? "Live status"
-                : hasStartedStripeTrial
+                : hasStartedTrial
                   ? "Trial remaining"
                   : "Billing status"
             }
             value={
               restaurant.subscriptionStatus === "active"
                 ? "Live"
-                : hasStartedStripeTrial
+                : hasStartedTrial
                   ? `${trialDaysLeft} days`
                   : "Not started"
             }
             hint={
               restaurant.subscriptionStatus === "active"
                 ? `Published at mydscvr.ai/${restaurant.slug}.`
-                : hasStartedStripeTrial
+                : hasStartedTrial
                   ? "Your trial is live. Add a payment method in billing before it ends."
                   : "Choose Starter or Pro in billing to start the 14-day trial."
             }

@@ -43,10 +43,11 @@ export default function BillingPage() {
   const { getToken } = useAuth();
   const { restaurant } = useRestaurant();
   const entitlements = getRestaurantEntitlements(restaurant);
-  const hasStripeSubscription = Boolean(restaurant?.subscription?.stripeSubscriptionId);
+  const hasSelectedPlan = entitlements.hasSelectedPlan;
+  const hasBillingPortalAccess = Boolean(restaurant?.subscription?.stripeCustomerId);
   const menuItemCount = countMenuItems(restaurant?.menuSections);
   const starterNeedsTrim =
-    !hasStripeSubscription &&
+    !hasSelectedPlan &&
     plans.starter.itemLimit !== null &&
     menuItemCount > plans.starter.itemLimit;
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
@@ -115,7 +116,7 @@ export default function BillingPage() {
           </p>
         </div>
 
-        {!hasStripeSubscription && starterNeedsTrim ? (
+        {!hasSelectedPlan && starterNeedsTrim ? (
           <div className="mx-auto mb-6 max-w-3xl rounded-[24px] border border-[#F2CFC7] bg-[#FFF4F1] px-5 py-4 text-left">
             <div className="text-sm font-semibold text-[#9B2C2C]">This draft needs Pro</div>
             <p className="mt-1 text-sm text-[#9B2C2C]/80">
@@ -168,24 +169,26 @@ export default function BillingPage() {
                       : "border-white/20 bg-white/10 text-white hover:bg-white/15"
                   }`}
                   onClick={() =>
-                    void (hasStripeSubscription ? openPortal() : checkout(plan.id))
+                    void (hasBillingPortalAccess ? openPortal() : !hasSelectedPlan ? checkout(plan.id) : undefined)
                   }
                   disabled={
                     loadingPlan === plan.id ||
                     portalLoading ||
                     !restaurant ||
-                    (hasStripeSubscription && !restaurant.subscription?.stripeCustomerId) ||
-                    (!hasStripeSubscription && plan.id === "starter" && starterNeedsTrim)
+                    (hasSelectedPlan && !hasBillingPortalAccess) ||
+                    (!hasSelectedPlan && plan.id === "starter" && starterNeedsTrim)
                   }
                 >
                   {loadingPlan === plan.id
                     ? "Redirecting..."
-                    : hasStripeSubscription
+                    : hasSelectedPlan
                       ? portalLoading
                         ? "Opening portal..."
                         : restaurant?.subscription?.plan === plan.id
                           ? "Current plan"
-                          : "Manage in portal"
+                          : hasBillingPortalAccess
+                            ? "Manage in portal"
+                            : "Managed by support"
                       : plan.id === "starter" && starterNeedsTrim
                         ? "Needs 30 items or fewer"
                       : `Choose ${plan.name}`}
@@ -215,14 +218,14 @@ export default function BillingPage() {
                 <div className={`h-2 w-2 rounded-full ${
                   restaurant?.subscriptionStatus === "active" ? "bg-[#2E8B57]" : "bg-saffron"
                 }`} />
-                {hasStripeSubscription ? restaurant?.subscriptionStatus ?? "trial" : "draft"}
+                {hasSelectedPlan ? restaurant?.subscriptionStatus ?? "trial" : "draft"}
               </div>
             </div>
             <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
               <div className="mb-1 text-xs uppercase tracking-[0.2em] text-stone">Plan</div>
               <div className="font-medium text-ink">
-                {hasStripeSubscription
-                  ? restaurant?.subscription?.plan ?? "n/a"
+                {hasSelectedPlan
+                  ? restaurant?.subscription?.plan ?? entitlements.plan ?? "n/a"
                   : "No plan selected"}
               </div>
             </div>
@@ -231,7 +234,7 @@ export default function BillingPage() {
               <div className="font-medium text-ink">
                 {restaurant?.trialEndsAt
                   ? new Date(restaurant.trialEndsAt).toLocaleDateString()
-                  : restaurant?.subscription?.stripeSubscriptionId
+                  : hasSelectedPlan
                     ? "Completed"
                     : "Starts after checkout"}
               </div>
@@ -240,7 +243,7 @@ export default function BillingPage() {
           <Button
             variant="secondary"
             onClick={() => void openPortal()}
-            disabled={portalLoading || !restaurant?.subscription?.stripeCustomerId}
+            disabled={portalLoading || !hasBillingPortalAccess}
             className="transition-all duration-200 hover:-translate-y-0.5"
           >
             <Shield className="h-4 w-4" />

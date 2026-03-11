@@ -81,8 +81,14 @@ export function getPlanEntitlements(plan: SubscriptionPlan): PlanEntitlements {
 export function getRestaurantPlan(
   restaurant: Pick<Restaurant, "entitlements" | "subscription"> | null | undefined
 ) {
-  return restaurant?.entitlements?.plan ??
-    (restaurant?.subscription?.stripeSubscriptionId ? restaurant.subscription.plan : null);
+  const subscriptionStatus = restaurant?.subscription?.status ?? null;
+
+  return (
+    restaurant?.entitlements?.plan ??
+    (restaurant?.subscription?.plan && subscriptionStatus !== "cancelled"
+      ? restaurant.subscription.plan
+      : null)
+  );
 }
 
 export function getRestaurantEntitlements(
