@@ -26,8 +26,19 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs text-white/50">
-          Made in Dubai &middot; {new Date().getFullYear()} mydscvr
+        <div className="mt-8 flex flex-col items-center gap-4 border-t border-white/10 pt-6 md:flex-row md:justify-between">
+          <nav className="flex items-center gap-4 text-xs text-white/50">
+            <Link href="/terms" className="transition-colors hover:text-white/70">
+              Terms &amp; Conditions
+            </Link>
+            <span className="text-white/20">&middot;</span>
+            <Link href="/privacy" className="transition-colors hover:text-white/70">
+              Privacy Policy
+            </Link>
+          </nav>
+          <p className="text-xs text-white/50">
+            &copy; {new Date().getFullYear()} Jasmine Entertainment FZE &middot; Made in Dubai
+          </p>
         </div>
       </div>
     </footer>
