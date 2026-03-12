@@ -50,20 +50,23 @@ export default function AnalyticsPage() {
   const shortLinkUrl = summary?.shortLink ? getRestaurantShortUrl(summary.shortLink.code) : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="overflow-hidden rounded-[28px] bg-ink p-6 md:p-8">
         <div className="text-xs uppercase tracking-[0.3em] text-saffron">Analytics</div>
         <h2 className="mt-2 text-2xl font-semibold text-white">Page performance</h2>
         <p className="mt-1 text-sm text-white/60">Track how your menu page is performing.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-6">
+      {/* Traffic metrics — featured total + daily/weekly */}
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Total views"
           value={String(summary?.totalViews ?? 0)}
-          hint="All-time page views"
+          hint="All-time page views across all channels"
           icon={Eye}
           accent="saffron"
+          featured
         />
         <StatCard
           label="Today"
@@ -79,35 +82,47 @@ export default function AnalyticsPage() {
           icon={TrendingUp}
           accent="emerald"
         />
-        <StatCard
-          label="Short link clicks"
-          value={String(summary?.shortLink?.totalClicks ?? 0)}
-          hint={
-            summary?.shortLink
-              ? "All-time redirect clicks on the active short link"
-              : "Create a short link to start tracking redirect clicks"
-          }
-          icon={Link2}
-          accent="stone"
-        />
-        <StatCard
-          label="WhatsApp clicks"
-          value={String(summary?.whatsapp?.totalClicks ?? 0)}
-          hint={
-            restaurant?.whatsappNumber
-              ? "All-time opens of WhatsApp CTAs from the public menu"
-              : "Add a WhatsApp number in Appearance to track click-to-chat intent"
-          }
-          icon={MessageCircle}
-          accent="emerald"
-        />
-        <StatCard
-          label="Dish likes"
-          value={String(summary?.likes.total ?? 0)}
-          hint="All-time positive feedback from public menu cards"
-          icon={ThumbsUp}
-          accent="coral"
-        />
+      </div>
+
+      {/* Engagement metrics */}
+      <div>
+        <div className="mb-4 flex items-center gap-2.5 px-1">
+          <div className="h-1.5 w-1.5 rounded-full bg-saffron" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-stone">
+            Engagement
+          </span>
+        </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          <StatCard
+            label="Short link clicks"
+            value={String(summary?.shortLink?.totalClicks ?? 0)}
+            hint={
+              summary?.shortLink
+                ? "All-time redirect clicks on the active short link"
+                : "Create a short link to start tracking redirect clicks"
+            }
+            icon={Link2}
+            accent="stone"
+          />
+          <StatCard
+            label="WhatsApp clicks"
+            value={String(summary?.whatsapp?.totalClicks ?? 0)}
+            hint={
+              restaurant?.whatsappNumber
+                ? "All-time opens of WhatsApp CTAs from the public menu"
+                : "Add a WhatsApp number in Appearance to track click-to-chat intent"
+            }
+            icon={MessageCircle}
+            accent="emerald"
+          />
+          <StatCard
+            label="Dish likes"
+            value={String(summary?.likes.total ?? 0)}
+            hint="All-time positive feedback from public menu cards"
+            icon={ThumbsUp}
+            accent="coral"
+          />
+        </div>
       </div>
 
       <Card>
