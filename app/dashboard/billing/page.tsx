@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Check, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,8 +44,10 @@ const planCards = [
 ];
 
 export default function BillingPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { getToken } = useAuth();
-  const { restaurant } = useRestaurant();
+  const { restaurant, refresh } = useRestaurant();
   const entitlements = getRestaurantEntitlements(restaurant);
   const hasSelectedPlan = entitlements.hasSelectedPlan;
   const hasBillingPortalAccess = Boolean(restaurant?.subscription?.stripeCustomerId);
@@ -55,6 +58,25 @@ export default function BillingPage() {
     menuItemCount > plans.starter.itemLimit;
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const handledCheckoutParam = useRef<string | null>(null);
+
+  useEffect(() => {
+    const checkoutState = searchParams.get("checkout");
+
+    if (!checkoutState || handledCheckoutParam.current === checkoutState) {
+      return;
+    }
+
+    handledCheckoutParam.current = checkoutState;
+
+    void (async () => {
+      if (checkoutState === "success") {
+        await refresh();
+      }
+
+      router.replace("/dashboard/billing");
+    })();
+  }, [refresh, router, searchParams]);
 
   async function checkout(plan: "starter" | "pro") {
     if (!restaurant) {

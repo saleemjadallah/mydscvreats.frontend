@@ -27,18 +27,31 @@ export default function MenuInsightsPage() {
   const entitlements = getRestaurantEntitlements(restaurant);
 
   const loadCached = useCallback(async () => {
-    if (!restaurant) return;
+    if (!restaurant) {
+      setAnalysis(null);
+      setCachedAt(null);
+      setLoadingCached(false);
+      return;
+    }
+
+    setLoadingCached(true);
+
     try {
       const token = await getToken();
-      if (!token) return;
-      const result = await apiClient.getMenuAnalysis(token, restaurant.id);
-      if (result.analysis) {
-        setAnalysis(result.analysis);
-        setLevel(result.level);
-        setCachedAt(result.createdAt ?? null);
+      if (!token) {
+        setAnalysis(null);
+        setCachedAt(null);
+        return;
       }
+
+      const result = await apiClient.getMenuAnalysis(token, restaurant.id);
+      setAnalysis(result.analysis);
+      setLevel(result.level);
+      setCachedAt(result.createdAt ?? null);
     } catch {
       // No cached analysis available
+      setAnalysis(null);
+      setCachedAt(null);
     } finally {
       setLoadingCached(false);
     }
@@ -115,7 +128,7 @@ export default function MenuInsightsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {level === "basic" && entitlements.hasSelectedPlan && (
+          {entitlements.menuAnalysisLevel === "basic" && (
             <Badge variant="muted" className="bg-[#FFFBF0] text-[#8A7209]">
               Basic analysis — Upgrade to Pro for full insights
             </Badge>
