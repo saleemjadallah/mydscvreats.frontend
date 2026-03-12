@@ -46,12 +46,12 @@ export function HeroSection() {
                 <span className="text-xs text-ink/60">mydscvr.ai/zafran-house</span>
               </div>
               {/* Actual menu screenshot */}
-              <div className="overflow-hidden rounded-[20px]">
+              <div className="max-h-[520px] overflow-hidden rounded-[20px]">
                 <Image
                   src="/demo-zafran-house.png"
                   alt="Zafran House menu on mydscvr Eats"
-                  width={390}
-                  height={844}
+                  width={1040}
+                  height={1840}
                   className="h-auto w-full"
                   priority
                 />
