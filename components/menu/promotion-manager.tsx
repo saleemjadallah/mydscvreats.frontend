@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { Clock3, Percent, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Check, Clock3, Loader2, Percent, Plus, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -214,6 +214,9 @@ export function PromotionManager({
   const [deleting, setDeleting] = useState(false);
   const [userEditedFields, setUserEditedFields] = useState<AutoFillField[]>([]);
   const [autoFilledFields, setAutoFilledFields] = useState<AutoFillField[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<Record<Exclude<AutoFillField, "promoPrice">, string> | null>(null);
+  const [aiUsage, setAiUsage] = useState<{ used: number; limit: number | null } | null>(null);
 
   const allItems = useMemo(
     () =>
@@ -313,6 +316,8 @@ export function PromotionManager({
   function resetAutoFillTracking() {
     setUserEditedFields([]);
     setAutoFilledFields([]);
+    setAiSuggestion(null);
+    setAiUsage(null);
   }
 
   function updateTextField(field: AutoFillField, value: string) {
@@ -321,6 +326,63 @@ export function PromotionManager({
       current.includes(field) ? current : [...current, field]
     );
     setAutoFilledFields((current) => current.filter((entry) => entry !== field));
+  }
+
+  async function askSousChef() {
+    if (selectedItems.length === 0) {
+      toast.error("Select at least one dish first.");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error("Missing auth token");
+      }
+
+      const result = await apiClient.suggestPromotionContent(token, {
+        restaurantId: restaurant.id,
+        type: form.type,
+        itemIds: selectedItems.map((item) => item.id),
+        title: form.title || null,
+        subtitle: form.subtitle || null,
+        description: form.description || null,
+        badgeLabel: form.badgeLabel || null,
+        terms: form.terms || null,
+      });
+
+      setAiSuggestion(result.suggestion);
+      setAiUsage(result.usage);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Sous Chef could not draft offer copy.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  function applyAiSuggestion() {
+    if (!aiSuggestion) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      title: aiSuggestion.title,
+      subtitle: aiSuggestion.subtitle,
+      description: aiSuggestion.description,
+      badgeLabel: aiSuggestion.badgeLabel,
+      terms: aiSuggestion.terms,
+    }));
+    setAutoFilledFields((current) => {
+      const next = new Set(current);
+      ["title", "subtitle", "description", "badgeLabel", "terms"].forEach((field) =>
+        next.add(field as AutoFillField)
+      );
+      return Array.from(next);
+    });
+    setAiSuggestion(null);
+    toast.success("Sous Chef copied draft into the offer.");
   }
 
   function startNewPromotion(type: PromotionType) {
@@ -631,8 +693,93 @@ export function PromotionManager({
             </div>
 
             <div className="grid gap-4 rounded-[28px] border border-[#EADFCC] bg-[#FFFDF9] p-5 md:grid-cols-2">
-              <div className="md:col-span-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-                Messaging & pricing
+              <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
+                  Messaging & pricing
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void askSousChef()}
+                  disabled={aiLoading || selectedItems.length === 0}
+                  className="bg-[#FFFBF0] text-[#B8960C] hover:bg-[#FFF3D6]"
+                >
+                  {aiLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="h-4 w-4" />
+                  )}
+                  {aiLoading ? "Sous Chef thinking..." : "Sous Chef AI"}
+                </Button>
+              </div>
+
+              {aiSuggestion ? (
+                <div className="md:col-span-2 rounded-[22px] border border-[#E8C66A]/30 bg-[#FFFBF0] p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 text-xs font-medium text-[#B8960C]">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Sous Chef suggestion
+                      </div>
+                      <p className="mt-2 text-sm text-stone">
+                        Recommended copy based on the selected dishes and offer type.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={applyAiSuggestion} className="h-8 text-xs">
+                        <Check className="h-3.5 w-3.5" />
+                        Apply
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setAiSuggestion(null)}
+                        className="h-8 text-xs"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        Dismiss
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <div className="rounded-[18px] bg-white/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Title</div>
+                      <div className="mt-1 text-sm font-medium text-ink">{aiSuggestion.title}</div>
+                    </div>
+                    <div className="rounded-[18px] bg-white/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Subtitle</div>
+                      <div className="mt-1 text-sm font-medium text-ink">{aiSuggestion.subtitle}</div>
+                    </div>
+                    <div className="rounded-[18px] bg-white/80 p-3 md:col-span-2">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Description</div>
+                      <div className="mt-1 text-sm leading-6 text-ink">{aiSuggestion.description}</div>
+                    </div>
+                    <div className="rounded-[18px] bg-white/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Badge</div>
+                      <div className="mt-1 text-sm font-medium text-ink">{aiSuggestion.badgeLabel}</div>
+                    </div>
+                    <div className="rounded-[18px] bg-white/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Terms</div>
+                      <div className="mt-1 text-sm leading-6 text-ink">{aiSuggestion.terms}</div>
+                    </div>
+                  </div>
+                  {aiUsage && aiUsage.limit !== null ? (
+                    <p className="mt-3 text-[11px] text-stone">
+                      {aiUsage.used} of {aiUsage.limit} AI writing suggestions used this month
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {!aiSuggestion && aiUsage && aiUsage.limit !== null ? (
+                <div className="md:col-span-2 text-[11px] text-stone">
+                  {aiUsage.used} of {aiUsage.limit} AI writing suggestions used this month
+                </div>
+              ) : null}
+
+              <div className="md:col-span-2 text-xs leading-5 text-stone">
+                Sous Chef drafts offer copy from the selected dishes. It won&apos;t touch your promo price.
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Title</Label>

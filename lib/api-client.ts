@@ -313,6 +313,35 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
+  suggestPromotionContent(
+    token: string,
+    payload: {
+      restaurantId: string;
+      type: "discounted_item" | "deal" | "combo";
+      itemIds: string[];
+      title?: string | null;
+      subtitle?: string | null;
+      description?: string | null;
+      badgeLabel?: string | null;
+      terms?: string | null;
+      tone?: string;
+    }
+  ) {
+    return request<{
+      suggestion: {
+        title: string;
+        subtitle: string;
+        description: string;
+        badgeLabel: string;
+        terms: string;
+      };
+      usage: { used: number; limit: number | null };
+    }>("/api/ai/suggest-promotion-content", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
   acceptDescriptions(
     token: string,
     actions: Array<{ menuItemId: string; action: "accept" | "reject"; description?: string }>
