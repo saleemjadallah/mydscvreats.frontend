@@ -1,5 +1,7 @@
 import type { Promotion, PromotionMenuItemSummary } from "@/types";
 
+export type PromotionStatus = "inactive" | "scheduled" | "expired" | "live";
+
 function toAmount(value: number | string | null | undefined) {
   if (value === null || value === undefined) {
     return null;
@@ -11,7 +13,7 @@ function toAmount(value: number | string | null | undefined) {
 
 export function getPromotionStatus(
   promotion: Pick<Promotion, "isActive" | "startsAt" | "endsAt">
-) {
+): PromotionStatus {
   if (!promotion.isActive) {
     return "inactive";
   }

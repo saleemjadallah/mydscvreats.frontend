@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
-import { getPromotionBadge, getPromotionStatus } from "@/lib/promotions";
+import { getPromotionBadge, getPromotionStatus, type PromotionStatus } from "@/lib/promotions";
 import { formatCurrency } from "@/lib/utils";
 import type { MenuSection, Promotion, PromotionType, Restaurant } from "@/types";
 
@@ -185,6 +185,14 @@ function getStatusBadgeVariant(status: ReturnType<typeof getPromotionStatus>) {
   return "accent";
 }
 
+type PromotionStats = {
+  total: number;
+  live: number;
+  scheduled: number;
+  inactive: number;
+  expired: number;
+};
+
 function getTypeLabel(type: PromotionType) {
   if (type === "discounted_item") {
     return "Discounted item";
@@ -236,17 +244,25 @@ export function PromotionManager({
       .filter((item): item is (typeof allItems)[number] => Boolean(item));
   }, [allItems, form.itemIds]);
 
+  const promotionsWithStatus = useMemo(
+    () =>
+      promotions.map((promotion) => ({
+        promotion,
+        status: getPromotionStatus(promotion),
+      })),
+    [promotions]
+  );
+
   const stats = useMemo(() => {
-    return promotions.reduce(
-      (acc, promotion) => {
-        const status = getPromotionStatus(promotion);
+    return promotionsWithStatus.reduce(
+      (acc, entry) => {
         acc.total += 1;
-        acc[status] += 1;
+        acc[entry.status as PromotionStatus] += 1;
         return acc;
       },
-      { total: 0, live: 0, scheduled: 0, inactive: 0, expired: 0 }
+      { total: 0, live: 0, scheduled: 0, inactive: 0, expired: 0 } as PromotionStats
     );
-  }, [promotions]);
+  }, [promotionsWithStatus]);
   const previewCurrency = selectedItems[0]?.currency ?? "AED";
   const selectedItemsLabel =
     selectedItems.length > 0
@@ -566,8 +582,7 @@ export function PromotionManager({
               </div>
             ) : (
               <div className="space-y-3">
-                {promotions.map((promotion) => {
-                  const status = getPromotionStatus(promotion);
+                {promotionsWithStatus.map(({ promotion, status }) => {
                   const isSelected = promotion.id === form.id;
                   const primaryItem = promotion.items[0]?.menuItem;
 
