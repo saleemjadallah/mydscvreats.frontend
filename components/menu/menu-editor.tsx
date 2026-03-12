@@ -439,96 +439,123 @@ export function MenuEditor({
   return (
     <>
     <Card className="overflow-hidden">
-      <CardHeader className="flex flex-col gap-4 border-l-4 border-l-saffron md:flex-row md:items-center md:justify-between">
-        <div>
-          <CardTitle>Menu editor</CardTitle>
-          <p className="mt-2 text-sm text-stone">
-            Manage core dishes and the promotional layer that sits on top of them.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "menu" | "offers")}>
-            <TabsList>
-              <TabsTrigger value="menu">Menu</TabsTrigger>
-              <TabsTrigger value="offers">Offers</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <Button asChild variant="secondary">
-            <Link href={`/dashboard/preview${restaurant.themeKey ? `?theme=${restaurant.themeKey}` : ""}`}>
-              <Eye className="h-4 w-4" />
-              Preview menu page
-            </Link>
-          </Button>
-          {activeTab === "menu" ? (
-            <>
-              <Button
-                variant="secondary"
-                onClick={() => setShowBulkDescriptions(true)}
-                className="bg-[#FFFBF0] text-[#B8960C] hover:bg-[#FFF3D6]"
-              >
-                <Sparkles className="h-4 w-4" />
-                AI Descriptions
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setShowDietaryTags(true)}
-                className="bg-[#F0FFF4] text-[#2E8B57] hover:bg-[#D6FFE4]"
-              >
-                <Tag className="h-4 w-4" />
-                Dietary Tags
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => void queueImages("missing")}
-                disabled={bulkImageMode !== null}
-                className="bg-saffron/10 text-saffron hover:bg-saffron/20"
-              >
-                <ImagePlus className="h-4 w-4" />
-                {bulkImageMode === "missing" ? "Queueing..." : "Generate missing images"}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => void queueImages("failed")}
-                disabled={bulkImageMode !== null || audit.failedImages === 0}
-                className="bg-saffron/10 text-saffron hover:bg-saffron/20"
-              >
-                <ImagePlus className="h-4 w-4" />
-                {bulkImageMode === "failed" ? "Retrying..." : "Retry failed"}
-              </Button>
-              <Button onClick={() => void createSection()}>
-                <Plus className="h-4 w-4" />
+      <CardHeader className="space-y-4">
+        {/* Row 1: Title + Tab toggle + Primary actions */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+            <div>
+              <CardTitle>Menu editor</CardTitle>
+              <p className="mt-1 text-sm text-stone">
+                Manage core dishes and the promotional layer that sits on top of them.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "menu" | "offers")}>
+              <TabsList>
+                <TabsTrigger value="menu">Menu</TabsTrigger>
+                <TabsTrigger value="offers">Offers</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="mx-1 hidden h-6 w-px bg-[#E7DAC5] md:block" />
+            <Button asChild variant="secondary" className="h-9 text-[13px]">
+              <Link href={`/dashboard/preview${restaurant.themeKey ? `?theme=${restaurant.themeKey}` : ""}`}>
+                <Eye className="h-3.5 w-3.5" />
+                Preview
+              </Link>
+            </Button>
+            {activeTab === "menu" ? (
+              <Button onClick={() => void createSection()} className="h-9 text-[13px]">
+                <Plus className="h-3.5 w-3.5" />
                 Add section
               </Button>
-            </>
-          ) : null}
+            ) : null}
+          </div>
         </div>
+
+        {/* Row 2: AI & Image tools — secondary actions, shown only for menu tab */}
+        {activeTab === "menu" ? (
+          <div className="flex flex-wrap items-center gap-2 border-t border-[#E7DAC5]/60 pt-4">
+            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.15em] text-stone/60">Tools</span>
+            <button
+              type="button"
+              onClick={() => setShowBulkDescriptions(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#E8A317]/20 bg-[#E8A317]/6 px-3 py-1.5 text-[12.5px] font-medium text-[#9A7210] transition-colors hover:bg-[#E8A317]/12"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Descriptions
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDietaryTags(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#2E8B57]/15 bg-[#2E8B57]/6 px-3 py-1.5 text-[12.5px] font-medium text-[#206B48] transition-colors hover:bg-[#2E8B57]/12"
+            >
+              <Tag className="h-3.5 w-3.5" />
+              Dietary Tags
+            </button>
+            <div className="mx-0.5 hidden h-4 w-px bg-[#E7DAC5] md:block" />
+            <button
+              type="button"
+              onClick={() => void queueImages("missing")}
+              disabled={bulkImageMode !== null}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#E7DAC5] px-3 py-1.5 text-[12.5px] font-medium text-stone transition-colors hover:bg-oat/50 disabled:opacity-40"
+            >
+              <ImagePlus className="h-3.5 w-3.5" />
+              {bulkImageMode === "missing" ? "Queueing..." : "Generate images"}
+            </button>
+            {audit.failedImages > 0 ? (
+              <button
+                type="button"
+                onClick={() => void queueImages("failed")}
+                disabled={bulkImageMode !== null}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#FFDCD6] bg-[#FFF4F1] px-3 py-1.5 text-[12.5px] font-medium text-[#9E3B2D] transition-colors hover:bg-[#FFDCD6]/50 disabled:opacity-40"
+              >
+                <ImagePlus className="h-3.5 w-3.5" />
+                {bulkImageMode === "failed" ? "Retrying..." : "Retry failed"}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "menu" | "offers")}>
           <TabsContent value="menu" className="mt-0">
-        <div className="mb-6 grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
-          <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Badge variant="muted">{audit.totalSections} sections</Badge>
-              <Badge variant="muted">{audit.totalItems} dishes</Badge>
-              {entitlements.hasSelectedPlan && usage.limit !== null ? (
-                <Badge variant={usage.atLimit ? "accent" : "muted"}>
-                  {usage.totalItems}/{usage.limit} dishes used
-                </Badge>
-              ) : !entitlements.hasSelectedPlan ? (
-                <Badge variant="muted">Draft mode</Badge>
-              ) : (
-                <Badge variant="success">Unlimited dishes</Badge>
-              )}
-              <Badge variant={audit.blockingIssues.length ? "accent" : "success"}>
-                {audit.blockingIssues.length
-                  ? `${audit.blockingIssues.length} launch blocker${audit.blockingIssues.length === 1 ? "" : "s"}`
-                  : "Ready to publish"}
-              </Badge>
+        <div className="mb-6 grid gap-5 xl:grid-cols-2">
+          {/* Menu structure status */}
+          <div className="rounded-[20px] border border-[#E7DAC5]/70 bg-[rgba(255,248,238,0.5)] px-5 py-4">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex items-baseline gap-4">
+                <span className="text-[22px] font-bold leading-none text-ink">{audit.totalSections}</span>
+                <span className="text-[12px] text-stone/70">sections</span>
+                <span className="text-[12px] text-stone/40">/</span>
+                <span className="text-[22px] font-bold leading-none text-ink">{audit.totalItems}</span>
+                <span className="text-[12px] text-stone/70">dishes</span>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                {entitlements.hasSelectedPlan && usage.limit !== null ? (
+                  <span className={`text-[11.5px] font-medium ${usage.atLimit ? "text-[#9E3B2D]" : "text-stone/60"}`}>
+                    {usage.totalItems}/{usage.limit} used
+                  </span>
+                ) : !entitlements.hasSelectedPlan ? (
+                  <span className="text-[11.5px] font-medium text-stone/50">Draft</span>
+                ) : (
+                  <span className="text-[11.5px] font-medium text-[#2E8B57]/70">Unlimited</span>
+                )}
+                <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
+                  audit.blockingIssues.length
+                    ? "bg-[#FFDCD6]/50 text-[#9E3B2D]"
+                    : "bg-[#2E8B57]/8 text-[#206B48]"
+                }`}>
+                  <div className={`h-1.5 w-1.5 rounded-full ${audit.blockingIssues.length ? "bg-[#9E3B2D]" : "bg-[#2E8B57]"}`} />
+                  {audit.blockingIssues.length
+                    ? `${audit.blockingIssues.length} blocker${audit.blockingIssues.length === 1 ? "" : "s"}`
+                    : "Ready"}
+                </div>
+              </div>
             </div>
 
             {audit.blockingIssues.length ? (
-              <div className="space-y-2 text-sm text-stone">
+              <div className="space-y-1.5 text-[13px] text-stone">
                 {audit.blockingIssues.map((issue) => (
                   <div key={issue.id}>
                     <span className="font-medium text-ink">{issue.label}:</span> {issue.description}
@@ -536,7 +563,7 @@ export function MenuEditor({
                 ))}
               </div>
             ) : (
-              <div className="space-y-2 text-sm text-stone">
+              <div className="space-y-1 text-[13px] text-stone/70">
                 <p>
                   Pricing and menu structure look clean. Finish any optional polish, then move to publish.
                 </p>
@@ -549,18 +576,35 @@ export function MenuEditor({
             )}
           </div>
 
-          <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Badge variant="muted">{audit.imagesReady} visuals ready</Badge>
-              <Badge variant="muted">{audit.itemsWithoutImages} missing visuals</Badge>
-              {entitlements.priorityImageGeneration ? (
-                <Badge variant="success">Priority image queue</Badge>
-              ) : null}
-              {audit.failedImages > 0 ? <Badge variant="accent">{audit.failedImages} failed</Badge> : null}
+          {/* Visuals status */}
+          <div className="rounded-[20px] border border-[#E7DAC5]/70 bg-white/60 px-5 py-4">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex items-baseline gap-4">
+                <span className="text-[22px] font-bold leading-none text-ink">{audit.imagesReady}</span>
+                <span className="text-[12px] text-stone/70">visuals ready</span>
+                {audit.itemsWithoutImages > 0 ? (
+                  <>
+                    <span className="text-[12px] text-stone/40">/</span>
+                    <span className="text-[22px] font-bold leading-none text-stone/50">{audit.itemsWithoutImages}</span>
+                    <span className="text-[12px] text-stone/70">missing</span>
+                  </>
+                ) : null}
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                {entitlements.priorityImageGeneration ? (
+                  <span className="text-[11.5px] font-medium text-[#2E8B57]/70">Priority queue</span>
+                ) : null}
+                {audit.failedImages > 0 ? (
+                  <div className="flex items-center gap-1.5 rounded-full bg-[#FFDCD6]/50 px-2.5 py-1 text-[11.5px] font-semibold text-[#9E3B2D]">
+                    <div className="h-1.5 w-1.5 rounded-full bg-[#9E3B2D]" />
+                    {audit.failedImages} failed
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             {audit.improvementIssues.length ? (
-              <div className="space-y-2 text-sm text-stone">
+              <div className="space-y-1.5 text-[13px] text-stone">
                 {audit.improvementIssues.map((issue) => (
                   <div key={issue.id}>
                     <span className="font-medium text-ink">{issue.label}:</span> {issue.description}
@@ -568,7 +612,7 @@ export function MenuEditor({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-stone">
+              <p className="text-[13px] text-stone/70">
                 The page is already polished. Use bulk image generation only when you add new dishes.
               </p>
             )}
