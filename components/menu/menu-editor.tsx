@@ -26,11 +26,13 @@ import { DescriptionEnhancer } from "@/components/menu/description-enhancer";
 import { DietaryTagManager } from "@/components/menu/dietary-tag-manager";
 import { ImageRetryDialog } from "@/components/menu/image-retry-dialog";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
+import { PromotionManager } from "@/components/menu/promotion-manager";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -123,6 +125,7 @@ export function MenuEditor({
   const [showDietaryTags, setShowDietaryTags] = useState(false);
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
   const [queueingImageItemIds, setQueueingImageItemIds] = useState<Record<string, boolean>>({});
+  const [activeTab, setActiveTab] = useState<"menu" | "offers">("menu");
   const [imageRetryChoice, setImageRetryChoice] = useState<{
     itemId: string;
     itemName: string;
@@ -440,57 +443,69 @@ export function MenuEditor({
         <div>
           <CardTitle>Menu editor</CardTitle>
           <p className="mt-2 text-sm text-stone">
-            Reorder sections, update dishes, and queue AI imagery from one place.
+            Manage core dishes and the promotional layer that sits on top of them.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "menu" | "offers")}>
+            <TabsList>
+              <TabsTrigger value="menu">Menu</TabsTrigger>
+              <TabsTrigger value="offers">Offers</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Button asChild variant="secondary">
             <Link href={`/dashboard/preview${restaurant.themeKey ? `?theme=${restaurant.themeKey}` : ""}`}>
               <Eye className="h-4 w-4" />
               Preview menu page
             </Link>
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setShowBulkDescriptions(true)}
-            className="bg-[#FFFBF0] text-[#B8960C] hover:bg-[#FFF3D6]"
-          >
-            <Sparkles className="h-4 w-4" />
-            AI Descriptions
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setShowDietaryTags(true)}
-            className="bg-[#F0FFF4] text-[#2E8B57] hover:bg-[#D6FFE4]"
-          >
-            <Tag className="h-4 w-4" />
-            Dietary Tags
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => void queueImages("missing")}
-            disabled={bulkImageMode !== null}
-            className="bg-saffron/10 text-saffron hover:bg-saffron/20"
-          >
-            <ImagePlus className="h-4 w-4" />
-            {bulkImageMode === "missing" ? "Queueing..." : "Generate missing images"}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => void queueImages("failed")}
-            disabled={bulkImageMode !== null || audit.failedImages === 0}
-            className="bg-saffron/10 text-saffron hover:bg-saffron/20"
-          >
-            <ImagePlus className="h-4 w-4" />
-            {bulkImageMode === "failed" ? "Retrying..." : "Retry failed"}
-          </Button>
-          <Button onClick={() => void createSection()}>
-            <Plus className="h-4 w-4" />
-            Add section
-          </Button>
+          {activeTab === "menu" ? (
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setShowBulkDescriptions(true)}
+                className="bg-[#FFFBF0] text-[#B8960C] hover:bg-[#FFF3D6]"
+              >
+                <Sparkles className="h-4 w-4" />
+                AI Descriptions
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setShowDietaryTags(true)}
+                className="bg-[#F0FFF4] text-[#2E8B57] hover:bg-[#D6FFE4]"
+              >
+                <Tag className="h-4 w-4" />
+                Dietary Tags
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => void queueImages("missing")}
+                disabled={bulkImageMode !== null}
+                className="bg-saffron/10 text-saffron hover:bg-saffron/20"
+              >
+                <ImagePlus className="h-4 w-4" />
+                {bulkImageMode === "missing" ? "Queueing..." : "Generate missing images"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => void queueImages("failed")}
+                disabled={bulkImageMode !== null || audit.failedImages === 0}
+                className="bg-saffron/10 text-saffron hover:bg-saffron/20"
+              >
+                <ImagePlus className="h-4 w-4" />
+                {bulkImageMode === "failed" ? "Retrying..." : "Retry failed"}
+              </Button>
+              <Button onClick={() => void createSection()}>
+                <Plus className="h-4 w-4" />
+                Add section
+              </Button>
+            </>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "menu" | "offers")}>
+          <TabsContent value="menu" className="mt-0">
         <div className="mb-6 grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
           <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-5">
             <div className="mb-3 flex flex-wrap gap-2">
@@ -976,6 +991,16 @@ export function MenuEditor({
         {isPending ? (
           <div className="mt-4 text-sm text-stone">Saving menu order...</div>
         ) : null}
+          </TabsContent>
+          <TabsContent value="offers" className="mt-0">
+            <PromotionManager
+              restaurant={restaurant}
+              sections={sections}
+              promotions={restaurant.promotions ?? []}
+              onRefresh={onRefresh}
+            />
+          </TabsContent>
+        </Tabs>
       </CardContent>
 
     </Card>

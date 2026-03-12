@@ -6,9 +6,15 @@ import { ChevronLeft, ChevronRight, Globe2, MapPin, Phone } from "lucide-react";
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { EmbedHeightReporter } from "@/components/public/embed-height-reporter";
 import { MenuAIChat } from "@/components/public/menu-ai-chat";
+import { PromotionRail } from "@/components/public/promotion-rail";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  getDiscountedItemPromotionMap,
+  getPromotionsByItemId,
+  isPromotionLive,
+} from "@/lib/promotions";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { formatCurrency, normalizeExternalUrl } from "@/lib/utils";
@@ -177,6 +183,27 @@ export function RestaurantPageView({
   const jsonLd = buildRestaurantJsonLd(restaurant);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
   const websiteUrl = normalizeExternalUrl(restaurant.website);
+  const livePromotions = useMemo(
+    () =>
+      (restaurant.promotions ?? [])
+        .filter(isPromotionLive)
+        .sort((a, b) => {
+          if (a.isFeatured !== b.isFeatured) {
+            return a.isFeatured ? -1 : 1;
+          }
+
+          return a.displayOrder - b.displayOrder;
+        }),
+    [restaurant.promotions]
+  );
+  const discountedItemPromotions = useMemo(
+    () => getDiscountedItemPromotionMap(livePromotions),
+    [livePromotions]
+  );
+  const promotionsByItemId = useMemo(
+    () => getPromotionsByItemId(livePromotions),
+    [livePromotions]
+  );
 
   return (
     <main
@@ -280,6 +307,15 @@ export function RestaurantPageView({
           style={{ borderColor: theme.divider }}
         >
           <div className="flex gap-2 overflow-x-auto">
+            {livePromotions.length > 0 ? (
+              <a
+                href="#offers"
+                className="whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium"
+                style={{ borderColor: theme.divider }}
+              >
+                Offers
+              </a>
+            ) : null}
             {restaurant.menuSections?.map((section) => (
               <a
                 key={section.id}
@@ -303,6 +339,8 @@ export function RestaurantPageView({
           )}
         </nav>
 
+        <PromotionRail promotions={livePromotions} theme={theme} />
+
         <section className="space-y-8">
           {filteredSections?.map((section) => (
             <div key={section.id} id={`section-${section.id}`} className="space-y-4 scroll-mt-28">
@@ -315,46 +353,81 @@ export function RestaurantPageView({
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {section.items.map((item) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <div className="relative h-52">
-                      <MenuItemImageGallery
-                        item={item}
-                        sectionName={section.name}
-                        restaurantName={restaurant.name}
-                        placeholderFrom={theme.placeholderFrom}
-                        placeholderTo={theme.placeholderTo}
-                      />
-                    </div>
-                    <div className="space-y-3 p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <h3 className="text-xl font-semibold">{item.name}</h3>
-                        <div className="text-sm font-semibold" style={{ color: theme.price }}>
-                          {formatCurrency(item.price, item.currency)}
+                  (() => {
+                    const discountedPromotion = discountedItemPromotions.get(item.id);
+                    const itemPromotions = promotionsByItemId.get(item.id) ?? [];
+
+                    return (
+                      <Card key={item.id} className="overflow-hidden">
+                        <div className="relative h-52">
+                          <MenuItemImageGallery
+                            item={item}
+                            sectionName={section.name}
+                            restaurantName={restaurant.name}
+                            placeholderFrom={theme.placeholderFrom}
+                            placeholderTo={theme.placeholderTo}
+                          />
                         </div>
-                      </div>
-                      {item.description ? (
-                        <p className="text-sm text-stone">{item.description}</p>
-                      ) : null}
-                      {item.dietaryTags && item.dietaryTags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {item.dietaryTags.map((dt) => (
-                            <span
-                              key={dt.id}
-                              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-                              style={{
-                                borderColor: theme.chipBorder,
-                                backgroundColor: theme.chipBg,
-                                color: theme.chipText,
-                              }}
-                            >
-                              {dt.tag.icon && <span>{dt.tag.icon}</span>}
-                              {dt.tag.label}
-                            </span>
-                          ))}
+                        <div className="space-y-3 p-5">
+                          <div className="flex items-start justify-between gap-4">
+                            <h3 className="text-xl font-semibold">{item.name}</h3>
+                            {discountedPromotion?.promoPrice ? (
+                              <div className="text-right">
+                                <div className="text-xs font-medium text-stone line-through">
+                                  {formatCurrency(item.price, item.currency)}
+                                </div>
+                                <div className="text-sm font-semibold" style={{ color: theme.price }}>
+                                  {formatCurrency(discountedPromotion.promoPrice, item.currency)}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-sm font-semibold" style={{ color: theme.price }}>
+                                {formatCurrency(item.price, item.currency)}
+                              </div>
+                            )}
+                          </div>
+                          {item.description ? (
+                            <p className="text-sm text-stone">{item.description}</p>
+                          ) : null}
+                          {itemPromotions.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {itemPromotions.slice(0, 2).map((promotion) => (
+                                <span
+                                  key={promotion.id}
+                                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium"
+                                  style={{
+                                    borderColor: theme.badgeBg,
+                                    backgroundColor: theme.badgeBg,
+                                    color: theme.badgeText,
+                                  }}
+                                >
+                                  {promotion.badgeLabel ?? promotion.title}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                          {item.dietaryTags && item.dietaryTags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.dietaryTags.map((dt) => (
+                                <span
+                                  key={dt.id}
+                                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+                                  style={{
+                                    borderColor: theme.chipBorder,
+                                    backgroundColor: theme.chipBg,
+                                    color: theme.chipText,
+                                  }}
+                                >
+                                  {dt.tag.icon && <span>{dt.tag.icon}</span>}
+                                  {dt.tag.label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </Card>
+                      </Card>
+                    );
+                  })()
                 ))}
               </div>
             </div>

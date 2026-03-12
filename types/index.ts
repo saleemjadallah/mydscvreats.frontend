@@ -2,6 +2,7 @@ export type SubscriptionStatus = "trial" | "active" | "paused" | "cancelled";
 export type SubscriptionPlan = "starter" | "pro";
 export type AnalyticsTier = "basic" | "advanced";
 export type RestaurantThemeKey = "saffron" | "midnight" | "rose" | "noir" | "aegean" | "neon";
+export type PromotionType = "discounted_item" | "deal" | "combo";
 export type ImageStatus =
   | "none"
   | "generating"
@@ -62,6 +63,52 @@ export interface MenuSection {
   items: MenuItem[];
 }
 
+export interface PromotionMenuItemSummary {
+  id: string;
+  sectionId: string;
+  restaurantId: string;
+  name: string;
+  description: string | null;
+  price: number | string;
+  currency: string;
+  imageUrl: string | null;
+  imageStatus: ImageStatus;
+  images?: MenuItemImage[];
+  isAvailable: boolean;
+  displayOrder: number;
+  dietaryTags?: MenuItemDietaryTag[];
+}
+
+export interface PromotionItem {
+  id: string;
+  promotionId: string;
+  menuItemId: string;
+  role: string;
+  displayOrder: number;
+  createdAt?: string;
+  menuItem: PromotionMenuItemSummary;
+}
+
+export interface Promotion {
+  id: string;
+  restaurantId: string;
+  type: PromotionType;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  badgeLabel: string | null;
+  terms: string | null;
+  promoPrice: number | string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  isActive: boolean;
+  isFeatured: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  items: PromotionItem[];
+}
+
 export interface Restaurant {
   id: string;
   slug: string;
@@ -88,6 +135,7 @@ export interface Restaurant {
     updatedAt: string;
   } | null;
   menuSections?: MenuSection[];
+  promotions?: Promotion[];
   entitlements?: {
     plan: SubscriptionPlan | null;
     hasSelectedPlan: boolean;

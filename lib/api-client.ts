@@ -7,6 +7,7 @@ import type {
   MenuExtractionDraft,
   MenuItemImage,
   MenuSection,
+  Promotion,
   Restaurant,
 } from "@/types";
 
@@ -133,6 +134,26 @@ export const apiClient = {
   },
   deleteItem(token: string, itemId: string) {
     return request<void>(`/api/menu/items/${itemId}`, {
+      method: "DELETE",
+      token,
+    });
+  },
+  createPromotion(token: string, payload: Record<string, unknown>) {
+    return request<Promotion>("/api/menu/promotions", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  updatePromotion(token: string, promotionId: string, payload: Record<string, unknown>) {
+    return request<Promotion>(`/api/menu/promotions/${promotionId}`, {
+      method: "PUT",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  deletePromotion(token: string, promotionId: string) {
+    return request<void>(`/api/menu/promotions/${promotionId}`, {
       method: "DELETE",
       token,
     });
