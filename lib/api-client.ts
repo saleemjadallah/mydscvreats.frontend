@@ -287,6 +287,18 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
+  trackMenuItemLike(payload: {
+    restaurantId: string;
+    menuItemId: string;
+    path: string;
+    userAgent?: string | null;
+    referrer?: string | null;
+  }) {
+    return request<{ ok: boolean }>("/api/analytics/menu-item-like", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
 
   // ── AI Description Writer ──────────────────────────────────
   enhanceDescription(token: string, menuItemId: string, tone?: string) {

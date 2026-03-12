@@ -2,8 +2,16 @@
 
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Globe2, MapPin, MessageCircle, Phone } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Globe2,
+  MapPin,
+  MessageCircle,
+  Phone,
+  ThumbsUp,
+} from "lucide-react";
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { EmbedHeightReporter } from "@/components/public/embed-height-reporter";
 import { MenuAIChat } from "@/components/public/menu-ai-chat";
@@ -12,7 +20,7 @@ import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getApiUrl } from "@/lib/api-client";
+import { apiClient, getApiUrl } from "@/lib/api-client";
 import {
   getDiscountedItemPromotionMap,
   getPromotionsByItemId,
@@ -47,6 +55,10 @@ function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
       isSynthetic: true,
     },
   ];
+}
+
+function getMenuItemLikesStorageKey(restaurantId: string) {
+  return `restaurant-menu-likes:${restaurantId}`;
 }
 
 function MenuItemImageGallery({
@@ -153,6 +165,8 @@ export function RestaurantPageView({
   isEmbedded?: boolean;
 }) {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
+  const [likedItemIds, setLikedItemIds] = useState<Set<string>>(new Set());
+  const [pendingLikeIds, setPendingLikeIds] = useState<Set<string>>(new Set());
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -166,6 +180,69 @@ export function RestaurantPageView({
       }
       return next;
     });
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined" || isEmbedded) {
+      return;
+    }
+
+    try {
+      const raw = window.localStorage.getItem(getMenuItemLikesStorageKey(restaurant.id));
+      if (!raw) {
+        setLikedItemIds(new Set());
+        return;
+      }
+
+      const parsed = JSON.parse(raw) as string[];
+      setLikedItemIds(new Set(parsed));
+    } catch {
+      setLikedItemIds(new Set());
+    }
+  }, [isEmbedded, restaurant.id]);
+
+  function persistLikedItems(next: Set<string>) {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      getMenuItemLikesStorageKey(restaurant.id),
+      JSON.stringify(Array.from(next))
+    );
+  }
+
+  async function likeMenuItem(menuItemId: string) {
+    if (isEmbedded || !pathname || likedItemIds.has(menuItemId) || pendingLikeIds.has(menuItemId)) {
+      return;
+    }
+
+    setPendingLikeIds((prev) => new Set(prev).add(menuItemId));
+
+    try {
+      await apiClient.trackMenuItemLike({
+        restaurantId: restaurant.id,
+        menuItemId,
+        path: pathname,
+        referrer: document.referrer || null,
+        userAgent: navigator.userAgent,
+      });
+
+      setLikedItemIds((prev) => {
+        const next = new Set(prev);
+        next.add(menuItemId);
+        persistLikedItems(next);
+        return next;
+      });
+    } catch (error) {
+      console.error("Failed to track menu item like", error);
+    } finally {
+      setPendingLikeIds((prev) => {
+        const next = new Set(prev);
+        next.delete(menuItemId);
+        return next;
+      });
+    }
   }
 
   // Filter sections based on active dietary filters
@@ -417,6 +494,8 @@ export function RestaurantPageView({
                   const discountedPromotion = discountedItemPromotions.get(item.id);
                   const itemPromotions = promotionsByItemId.get(item.id) ?? [];
                   const hasOffer = itemPromotions.length > 0;
+                  const isLiked = likedItemIds.has(item.id);
+                  const isLikePending = pendingLikeIds.has(item.id);
 
                   return (
                     <Card
@@ -528,6 +607,25 @@ export function RestaurantPageView({
                               Ask about this dish on WhatsApp
                             </a>
                           </Button>
+                        ) : null}
+                        {!isEmbedded ? (
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => void likeMenuItem(item.id)}
+                              disabled={isLiked || isLikePending}
+                              className={cn(
+                                "h-10 rounded-full border px-3 text-xs font-semibold",
+                                isLiked
+                                  ? "border-[#F3D8A2] bg-[#FFF4DA] text-[#8C6217] hover:bg-[#FFF4DA]"
+                                  : "border-[#E7DAC5] bg-white text-stone hover:bg-[#FAF5EC] hover:text-ink"
+                              )}
+                            >
+                              <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
+                              {isLiked ? "Liked" : isLikePending ? "Saving..." : "I like it"}
+                            </Button>
+                          </div>
                         ) : null}
                       </div>
                     </Card>

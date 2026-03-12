@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { BarChart3, Calendar, Eye, Link2, Lock, MessageCircle, TrendingUp } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  Eye,
+  Link2,
+  Lock,
+  MessageCircle,
+  ThumbsUp,
+  TrendingUp,
+} from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,7 +57,7 @@ export default function AnalyticsPage() {
         <p className="mt-1 text-sm text-white/60">Track how your menu page is performing.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-6">
         <StatCard
           label="Total views"
           value={String(summary?.totalViews ?? 0)}
@@ -92,7 +101,77 @@ export default function AnalyticsPage() {
           icon={MessageCircle}
           accent="emerald"
         />
+        <StatCard
+          label="Dish likes"
+          value={String(summary?.likes.total ?? 0)}
+          hint="All-time positive feedback from public menu cards"
+          icon={ThumbsUp}
+          accent="coral"
+        />
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <ThumbsUp className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>Dish feedback</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-stone">All time</div>
+              <div className="mt-2 text-3xl font-semibold text-ink">
+                {summary?.likes.total ?? 0}
+              </div>
+              <p className="mt-1 text-sm text-stone">Total “I like it” taps across menu items.</p>
+            </div>
+            <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-stone">Today</div>
+              <div className="mt-2 text-3xl font-semibold text-ink">
+                {summary?.likes.today ?? 0}
+              </div>
+              <p className="mt-1 text-sm text-stone">Likes captured in the last 24 hours.</p>
+            </div>
+            <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-stone">This week</div>
+              <div className="mt-2 text-3xl font-semibold text-ink">
+                {summary?.likes.thisWeek ?? 0}
+              </div>
+              <p className="mt-1 text-sm text-stone">Likes captured in the last 7 days.</p>
+            </div>
+          </div>
+
+          {summary?.likes.topItems.length ? (
+            <div className="space-y-3">
+              <div className="text-xs uppercase tracking-[0.2em] text-stone">Most liked dishes</div>
+              {summary.likes.topItems.map((item, index) => (
+                <div
+                  key={item.menuItemId}
+                  className="flex items-center justify-between rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
+                      {index + 1}
+                    </div>
+                    <div className="font-medium text-ink">{item.name}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-stone">{item.likes} likes</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[24px] border border-dashed border-[#E7DAC5] bg-[#FFFDF9] px-5 py-8 text-center">
+              <p className="font-medium text-ink">No dish feedback yet</p>
+              <p className="mt-1 text-sm text-stone">
+                Once diners tap “I like it” on public menu cards, the top dishes will show here.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

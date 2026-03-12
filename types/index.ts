@@ -175,6 +175,16 @@ export interface AnalyticsSummary {
   totalViews: number;
   viewsToday: number;
   viewsThisWeek: number;
+  likes: {
+    total: number;
+    today: number;
+    thisWeek: number;
+    topItems: Array<{
+      menuItemId: string;
+      name: string;
+      likes: number;
+    }>;
+  };
   whatsapp: {
     totalClicks: number;
     clicksToday: number;
