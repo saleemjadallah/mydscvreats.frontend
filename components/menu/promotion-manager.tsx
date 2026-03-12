@@ -556,11 +556,30 @@ export function PromotionManager({
                 New offer
               </Button>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="muted">{stats.total} total</Badge>
-              <Badge variant="success">{stats.live} live</Badge>
-              <Badge variant="muted">{stats.scheduled} scheduled</Badge>
-              <Badge variant="accent">{stats.inactive + stats.expired} inactive</Badge>
+            <div className="mt-4 flex items-baseline gap-4">
+              <span className="text-[22px] font-bold leading-none text-ink">{stats.total}</span>
+              <span className="text-[12px] text-stone/70">total</span>
+              {stats.live > 0 ? (
+                <>
+                  <span className="text-[12px] text-stone/40">/</span>
+                  <span className="text-[22px] font-bold leading-none text-[#2E8B57]">{stats.live}</span>
+                  <span className="text-[12px] text-[#2E8B57]/70">live</span>
+                </>
+              ) : null}
+              {stats.scheduled > 0 ? (
+                <>
+                  <span className="text-[12px] text-stone/40">/</span>
+                  <span className="text-[22px] font-bold leading-none text-stone/60">{stats.scheduled}</span>
+                  <span className="text-[12px] text-stone/70">scheduled</span>
+                </>
+              ) : null}
+              {(stats.inactive + stats.expired) > 0 ? (
+                <>
+                  <span className="text-[12px] text-stone/40">/</span>
+                  <span className="text-[22px] font-bold leading-none text-stone/40">{stats.inactive + stats.expired}</span>
+                  <span className="text-[12px] text-stone/50">inactive</span>
+                </>
+              ) : null}
             </div>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
@@ -603,11 +622,24 @@ export function PromotionManager({
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <Badge variant="muted">{getTypeLabel(promotion.type)}</Badge>
-                            <Badge variant={getStatusBadgeVariant(status)}>{status}</Badge>
-                            {promotion.isFeatured ? <Badge variant="success">Featured</Badge> : null}
+                            <span className="text-[11px] font-medium text-stone/60">{getTypeLabel(promotion.type)}</span>
+                            <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                              status === "live"
+                                ? "bg-[#2E8B57]/8 text-[#206B48]"
+                                : status === "scheduled"
+                                  ? "bg-[#E8A317]/8 text-[#9A7210]"
+                                  : "bg-stone/8 text-stone"
+                            }`}>
+                              <div className={`h-1.5 w-1.5 rounded-full ${
+                                status === "live" ? "bg-[#2E8B57]" : status === "scheduled" ? "bg-[#E8A317]" : "bg-stone/40"
+                              }`} />
+                              {status}
+                            </div>
+                            {promotion.isFeatured ? (
+                              <span className="text-[11px] font-medium text-[#2E8B57]/70">Featured</span>
+                            ) : null}
                           </div>
-                          <h3 className="mt-3 text-base font-semibold text-ink">{promotion.title}</h3>
+                          <h3 className="mt-2.5 text-base font-semibold text-ink">{promotion.title}</h3>
                           {promotion.subtitle ? (
                             <p className="mt-1 text-sm leading-6 text-stone">{promotion.subtitle}</p>
                           ) : null}
@@ -939,15 +971,24 @@ export function PromotionManager({
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="muted">{getTypeLabel(form.type)}</Badge>
-                {form.isFeatured ? <Badge variant="success">Featured</Badge> : null}
-                {form.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="accent">Paused</Badge>}
+            <div className="rounded-[20px] border border-[#E7DAC5]/70 bg-[rgba(255,248,238,0.5)] px-5 py-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-[12px] font-medium text-stone/60">{getTypeLabel(form.type)}</span>
+                <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                  form.isActive
+                    ? "bg-[#2E8B57]/8 text-[#206B48]"
+                    : "bg-[#FFDCD6]/50 text-[#9E3B2D]"
+                }`}>
+                  <div className={`h-1.5 w-1.5 rounded-full ${form.isActive ? "bg-[#2E8B57]" : "bg-[#9E3B2D]"}`} />
+                  {form.isActive ? "Active" : "Paused"}
+                </div>
+                {form.isFeatured ? (
+                  <span className="text-[11px] font-medium text-[#2E8B57]/70">Featured</span>
+                ) : null}
               </div>
-              <div className="mt-3 text-sm leading-6 text-stone">
+              <p className="mt-2 text-[13px] leading-relaxed text-stone/70">
                 {selectedItemsLabel}
-              </div>
+              </p>
             </div>
 
             <div className="flex flex-wrap justify-between gap-3">
