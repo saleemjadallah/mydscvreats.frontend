@@ -887,8 +887,7 @@ export function MenuEditor({
                                         </button>
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        These notes are private - diners won&apos;t see them directly.
-                                        Your AI assistant uses them to answer customer questions accurately.
+                                        These notes are private and never shown directly to diners.
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
@@ -913,8 +912,8 @@ export function MenuEditor({
                                 />
                                 <p className="mt-1.5 text-[11px] leading-4 text-stone">
                                   {entitlements.menuAssistantEnabled
-                                    ? "Private kitchen context for the public AI menu assistant."
-                                    : "Upgrade to Pro to save private AI notes and unlock diner chat on your public menu."}
+                                    ? "Private kitchen notes saved with the dish. Never shown publicly."
+                                    : "Upgrade to Pro to save private dish notes and unlock diner chat on your public menu."}
                                 </p>
                               </div>
 

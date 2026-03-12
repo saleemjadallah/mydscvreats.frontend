@@ -14,7 +14,7 @@ const starterFeatures = [
 const proFeatures = [
   "Unlimited menu items",
   "Everything in Starter",
-  "Private chef's notes for AI",
+  "Private dish notes",
   "AI menu assistant on your public page",
   "Priority image generation",
   "Short share links",
