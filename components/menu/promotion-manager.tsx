@@ -31,6 +31,14 @@ type PromotionFormState = {
   itemIds: string[];
 };
 
+type AutoFillField =
+  | "title"
+  | "subtitle"
+  | "description"
+  | "badgeLabel"
+  | "terms"
+  | "promoPrice";
+
 function toLocalDateTimeInput(value: string | null) {
   if (!value) {
     return "";
@@ -90,6 +98,81 @@ function createFormFromPromotion(promotion: Promotion): PromotionFormState {
   };
 }
 
+function formatSuggestedPrice(amount: number) {
+  return Number(amount.toFixed(2)).toString();
+}
+
+function joinDishNames(names: string[]) {
+  if (names.length <= 2) {
+    return names.join(" and ");
+  }
+
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}
+
+function buildAutoFillValues(
+  type: PromotionType,
+  items: Array<{
+    name: string;
+    description: string | null;
+    price: number;
+  }>
+): Record<AutoFillField, string> | null {
+  if (items.length === 0) {
+    return null;
+  }
+
+  const firstItem = items[0];
+  const itemNames = items.map((item) => item.name);
+  const combinedNames = joinDishNames(itemNames);
+  const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
+
+  if (type === "discounted_item") {
+    return {
+      title: firstItem.name,
+      subtitle: "Limited-time menu highlight",
+      description:
+        firstItem.description?.trim() || `A limited-time price on ${firstItem.name}.`,
+      badgeLabel: "Deal",
+      terms: "Available while this dish is in stock.",
+      promoPrice: formatSuggestedPrice(firstItem.price * 0.85),
+    };
+  }
+
+  if (type === "combo") {
+    return {
+      title:
+        items.length >= 2
+          ? `${items[0].name} + ${items[1].name} Combo`
+          : `${firstItem.name} Combo`,
+      subtitle:
+        items.length >= 2
+          ? `${items.length} dishes bundled together`
+          : "Add one more dish to complete the combo",
+      description:
+        items.length >= 2
+          ? `Bundle ${combinedNames} into one higher-converting combo offer.`
+          : `Start building a combo around ${firstItem.name}.`,
+      badgeLabel: "Combo",
+      terms: "Available while all selected dishes are in stock.",
+      promoPrice:
+        items.length >= 2 ? formatSuggestedPrice(totalPrice * 0.88) : "",
+    };
+  }
+
+  return {
+    title:
+      items.length === 1
+        ? `${firstItem.name} House Deal`
+        : `${items[0].name} & More`,
+    subtitle: "Merchandise this offer above the menu",
+    description: `Feature ${combinedNames} as a seasonal or time-bound deal.`,
+    badgeLabel: "Special",
+    terms: "Availability may vary by service window.",
+    promoPrice: "",
+  };
+}
+
 function getStatusBadgeVariant(status: ReturnType<typeof getPromotionStatus>) {
   if (status === "live") {
     return "success";
@@ -129,6 +212,8 @@ export function PromotionManager({
   const [form, setForm] = useState<PromotionFormState>(createEmptyForm());
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [userEditedFields, setUserEditedFields] = useState<AutoFillField[]>([]);
+  const [autoFilledFields, setAutoFilledFields] = useState<AutoFillField[]>([]);
 
   const allItems = useMemo(
     () =>
@@ -186,15 +271,65 @@ export function PromotionManager({
     }
   }, [form.id, promotions]);
 
+  useEffect(() => {
+    if (form.id || form.itemIds.length === 0) {
+      return;
+    }
+
+    const suggestions = buildAutoFillValues(form.type, selectedItems);
+    if (!suggestions) {
+      return;
+    }
+
+    const nextAutoFilled = new Set(autoFilledFields);
+    const updates: Partial<PromotionFormState> = {};
+
+    (Object.entries(suggestions) as Array<[AutoFillField, string]>).forEach(
+      ([field, suggestedValue]) => {
+        const currentValue = form[field];
+        const isManual = userEditedFields.includes(field);
+        const isAutoFilled = autoFilledFields.includes(field);
+        const isEmpty = !currentValue.trim();
+
+        if (!isManual && (isEmpty || isAutoFilled) && currentValue !== suggestedValue) {
+          updates[field] = suggestedValue;
+          nextAutoFilled.add(field);
+        }
+      }
+    );
+
+    if (Object.keys(updates).length === 0) {
+      return;
+    }
+
+    setForm((current) => ({ ...current, ...updates }));
+    setAutoFilledFields(Array.from(nextAutoFilled));
+  }, [autoFilledFields, form, selectedItems, userEditedFields]);
+
   function updateForm(patch: Partial<PromotionFormState>) {
     setForm((current) => ({ ...current, ...patch }));
   }
 
+  function resetAutoFillTracking() {
+    setUserEditedFields([]);
+    setAutoFilledFields([]);
+  }
+
+  function updateTextField(field: AutoFillField, value: string) {
+    updateForm({ [field]: value } as Partial<PromotionFormState>);
+    setUserEditedFields((current) =>
+      current.includes(field) ? current : [...current, field]
+    );
+    setAutoFilledFields((current) => current.filter((entry) => entry !== field));
+  }
+
   function startNewPromotion(type: PromotionType) {
+    resetAutoFillTracking();
     setForm(createEmptyForm(type));
   }
 
   function selectPromotion(promotion: Promotion) {
+    resetAutoFillTracking();
     setForm(createFormFromPromotion(promotion));
   }
 
@@ -310,6 +445,7 @@ export function PromotionManager({
 
       await apiClient.deletePromotion(token, form.id);
       await onRefresh();
+      resetAutoFillTracking();
       setForm(createEmptyForm());
       toast.success("Offer deleted.");
     } catch (error) {
@@ -503,7 +639,7 @@ export function PromotionManager({
                 <Input
                   value={form.title}
                   placeholder="Lunch combo for two"
-                  onChange={(event) => updateForm({ title: event.target.value })}
+                  onChange={(event) => updateTextField("title", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -511,7 +647,7 @@ export function PromotionManager({
                 <Input
                   value={form.subtitle}
                   placeholder="Available weekdays 12-4pm"
-                  onChange={(event) => updateForm({ subtitle: event.target.value })}
+                  onChange={(event) => updateTextField("subtitle", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -519,7 +655,7 @@ export function PromotionManager({
                 <Input
                   value={form.badgeLabel}
                   placeholder="Best seller"
-                  onChange={(event) => updateForm({ badgeLabel: event.target.value })}
+                  onChange={(event) => updateTextField("badgeLabel", event.target.value)}
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -528,7 +664,7 @@ export function PromotionManager({
                   rows={3}
                   value={form.description}
                   placeholder="Two mains, one side, and a soft drink at a sharper price."
-                  onChange={(event) => updateForm({ description: event.target.value })}
+                  onChange={(event) => updateTextField("description", event.target.value)}
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -536,7 +672,7 @@ export function PromotionManager({
                 <Input
                   value={form.terms}
                   placeholder="Dine-in only. Not combinable with other offers."
-                  onChange={(event) => updateForm({ terms: event.target.value })}
+                  onChange={(event) => updateTextField("terms", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -547,7 +683,7 @@ export function PromotionManager({
                   step="0.01"
                   value={form.promoPrice}
                   placeholder={form.type === "deal" ? "Optional" : "49"}
-                  onChange={(event) => updateForm({ promoPrice: event.target.value })}
+                  onChange={(event) => updateTextField("promoPrice", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -656,7 +792,10 @@ export function PromotionManager({
                 </Button>
                 <Button
                   variant="secondary"
-                  onClick={() => setForm(form.id ? createEmptyForm(form.type) : createEmptyForm())}
+                  onClick={() => {
+                    resetAutoFillTracking();
+                    setForm(form.id ? createEmptyForm(form.type) : createEmptyForm());
+                  }}
                 >
                   Reset
                 </Button>
