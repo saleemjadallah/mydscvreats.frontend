@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { Camera, Globe, ImageIcon, Palette, Save, User } from "lucide-react";
+import { Camera, Globe, ImageIcon, MessageCircle, Palette, Save, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -195,6 +195,65 @@ export default function AppearancePage() {
               }
             />
           </div>
+          <div className="space-y-2">
+            <Label>WhatsApp number</Label>
+            <Input
+              value={form.whatsappNumber ?? ""}
+              placeholder="+971501234567"
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  whatsappNumber: event.target.value,
+                }))
+              }
+            />
+            <p className="text-xs text-stone">
+              Use the full international number. When this is set, the public menu shows WhatsApp CTAs.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label>WhatsApp opener</Label>
+            <Input
+              value={form.whatsappPrefill ?? ""}
+              placeholder="Hi, I found your menu on MyDscvr Eats"
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  whatsappPrefill: event.target.value,
+                }))
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <MessageCircle className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>WhatsApp conversion</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-stone">
+          <p>
+            If a WhatsApp number is set, the public page will show:
+          </p>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
+              Floating WhatsApp CTA
+            </div>
+            <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
+              Per-dish “Ask on WhatsApp” CTA
+            </div>
+            <div className="rounded-[20px] border border-[#E7DAC5] bg-[#FFF8EE] p-4">
+              Offer CTA inside live promotions
+            </div>
+          </div>
+          <p className="text-xs">
+            Clicks are tracked separately from page views so you can see browsing vs conversation intent.
+          </p>
         </CardContent>
       </Card>
 

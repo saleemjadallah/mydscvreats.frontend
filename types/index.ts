@@ -120,6 +120,8 @@ export interface Restaurant {
   address: string | null;
   phone: string | null;
   website: string | null;
+  whatsappNumber: string | null;
+  whatsappPrefill: string | null;
   logoUrl: string | null;
   coverImageUrl: string | null;
   isPublished: boolean;
@@ -173,6 +175,11 @@ export interface AnalyticsSummary {
   totalViews: number;
   viewsToday: number;
   viewsThisWeek: number;
+  whatsapp: {
+    totalClicks: number;
+    clicksToday: number;
+    clicksThisWeek: number;
+  } | null;
   shortLink: {
     code: string;
     totalClicks: number;

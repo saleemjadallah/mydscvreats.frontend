@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { BarChart3, Calendar, Eye, Link2, Lock, TrendingUp } from "lucide-react";
+import { BarChart3, Calendar, Eye, Link2, Lock, MessageCircle, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export default function AnalyticsPage() {
         <p className="mt-1 text-sm text-white/60">Track how your menu page is performing.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
         <StatCard
           label="Total views"
           value={String(summary?.totalViews ?? 0)}
@@ -81,7 +81,71 @@ export default function AnalyticsPage() {
           icon={Link2}
           accent="stone"
         />
+        <StatCard
+          label="WhatsApp clicks"
+          value={String(summary?.whatsapp?.totalClicks ?? 0)}
+          hint={
+            restaurant?.whatsappNumber
+              ? "All-time opens of WhatsApp CTAs from the public menu"
+              : "Add a WhatsApp number in Appearance to track click-to-chat intent"
+          }
+          icon={MessageCircle}
+          accent="emerald"
+        />
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <MessageCircle className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>WhatsApp conversion</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!restaurant?.whatsappNumber ? (
+            <div className="flex flex-col items-center gap-4 py-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-saffron/10">
+                <MessageCircle className="h-6 w-6 text-saffron" />
+              </div>
+              <div>
+                <p className="font-medium text-ink">WhatsApp is not configured yet</p>
+                <p className="mt-1 text-sm text-stone">
+                  Add a WhatsApp number in Appearance to turn menu browsing into tracked chat intent.
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/dashboard/appearance">Set up WhatsApp</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-stone">All time</div>
+                <div className="mt-2 text-3xl font-semibold text-ink">
+                  {summary?.whatsapp?.totalClicks ?? 0}
+                </div>
+                <p className="mt-1 text-sm text-stone">Tracked clicks to WhatsApp from the public menu.</p>
+              </div>
+              <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-stone">Today</div>
+                <div className="mt-2 text-3xl font-semibold text-ink">
+                  {summary?.whatsapp?.clicksToday ?? 0}
+                </div>
+                <p className="mt-1 text-sm text-stone">Clicks in the last 24 hours.</p>
+              </div>
+              <div className="rounded-[20px] border border-[#E7DAC5] bg-white p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-stone">This week</div>
+                <div className="mt-2 text-3xl font-semibold text-ink">
+                  {summary?.whatsapp?.clicksThisWeek ?? 0}
+                </div>
+                <p className="mt-1 text-sm text-stone">Clicks in the last 7 days.</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

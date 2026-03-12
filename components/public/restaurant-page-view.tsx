@@ -1,15 +1,18 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Globe2, MapPin, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe2, MapPin, MessageCircle, Phone } from "lucide-react";
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { EmbedHeightReporter } from "@/components/public/embed-height-reporter";
 import { MenuAIChat } from "@/components/public/menu-ai-chat";
 import { PromotionRail } from "@/components/public/promotion-rail";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { getApiUrl } from "@/lib/api-client";
 import {
   getDiscountedItemPromotionMap,
   getPromotionsByItemId,
@@ -17,7 +20,7 @@ import {
 } from "@/lib/promotions";
 import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
-import { formatCurrency, normalizeExternalUrl } from "@/lib/utils";
+import { cn, formatCurrency, normalizeExternalUrl } from "@/lib/utils";
 import type { MenuItem, MenuItemImage, Restaurant, RestaurantThemeKey } from "@/types";
 
 type DisplayMenuImage = MenuItemImage & {
@@ -150,6 +153,8 @@ export function RestaurantPageView({
   isEmbedded?: boolean;
 }) {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   function toggleFilter(tagKey: string) {
     setActiveFilters((prev) => {
@@ -183,6 +188,8 @@ export function RestaurantPageView({
   const jsonLd = buildRestaurantJsonLd(restaurant);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
   const websiteUrl = normalizeExternalUrl(restaurant.website);
+  const whatsappEnabled = !isEmbedded && Boolean(restaurant.whatsappNumber);
+  const campaign = searchParams.get("utm_campaign");
   const livePromotions = useMemo(
     () =>
       (restaurant.promotions ?? [])
@@ -204,6 +211,37 @@ export function RestaurantPageView({
     () => getPromotionsByItemId(livePromotions),
     [livePromotions]
   );
+  const buildWhatsAppHref = useMemo(() => {
+    if (!whatsappEnabled) {
+      return null;
+    }
+
+    return (options: {
+      source: "floating" | "contact" | "menu_item" | "promotion";
+      menuItemId?: string;
+      promotionId?: string;
+    }) => {
+      const url = new URL(
+        `${getApiUrl().replace(/\/$/, "")}/api/whatsapp/redirect/${restaurant.id}`
+      );
+
+      url.searchParams.set("source", options.source);
+      if (pathname) {
+        url.searchParams.set("path", pathname);
+      }
+      if (campaign) {
+        url.searchParams.set("campaign", campaign);
+      }
+      if (options.menuItemId) {
+        url.searchParams.set("menuItemId", options.menuItemId);
+      }
+      if (options.promotionId) {
+        url.searchParams.set("promotionId", options.promotionId);
+      }
+
+      return url.toString();
+    };
+  }, [campaign, pathname, restaurant.id, whatsappEnabled]);
 
   return (
     <main
@@ -297,6 +335,17 @@ export function RestaurantPageView({
                   Website
                 </a>
               ) : null}
+              {buildWhatsAppHref ? (
+                <a
+                  href={buildWhatsAppHref({ source: "contact" })}
+                  className="inline-flex items-center gap-2 hover:text-white"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </a>
+              ) : null}
             </div>
           </div>
         </section>
@@ -339,7 +388,19 @@ export function RestaurantPageView({
           )}
         </nav>
 
-        <PromotionRail promotions={livePromotions} theme={theme} />
+        <PromotionRail
+          promotions={livePromotions}
+          theme={theme}
+          buildWhatsAppHref={
+            buildWhatsAppHref
+              ? (promotionId) =>
+                  buildWhatsAppHref({
+                    source: "promotion",
+                    promotionId,
+                  })
+              : undefined
+          }
+        />
 
         <section className="space-y-8">
           {filteredSections?.map((section) => (
@@ -449,6 +510,25 @@ export function RestaurantPageView({
                             ))}
                           </div>
                         )}
+                        {buildWhatsAppHref ? (
+                          <Button
+                            asChild
+                            variant="secondary"
+                            className="w-full border-[#D9F4E5] bg-[#F3FFF8] text-[#156B45] hover:bg-[#E8F9F0]"
+                          >
+                            <a
+                              href={buildWhatsAppHref({
+                                source: "menu_item",
+                                menuItemId: item.id,
+                              })}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                              Ask about this dish on WhatsApp
+                            </a>
+                          </Button>
+                        ) : null}
                       </div>
                     </Card>
                   );
@@ -458,8 +538,26 @@ export function RestaurantPageView({
           ))}
         </section>
       </div>
+      {buildWhatsAppHref ? (
+        <a
+          href={buildWhatsAppHref({ source: "floating" })}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            "fixed bottom-6 right-4 z-40 inline-flex items-center gap-2 rounded-full border px-4 py-3 text-sm font-semibold shadow-[0_20px_50px_rgba(21,107,69,0.24)] backdrop-blur transition-transform hover:-translate-y-0.5 sm:right-6",
+            "border-[#BFE8D0] bg-[#1FAF63] text-white hover:bg-[#169653]"
+          )}
+        >
+          <MessageCircle className="h-4 w-4" />
+          WhatsApp
+        </a>
+      ) : null}
       {!isEmbedded && restaurant.entitlements?.menuAssistantEnabled ? (
-        <MenuAIChat restaurantId={restaurant.id} restaurantName={restaurant.name} />
+        <MenuAIChat
+          restaurantId={restaurant.id}
+          restaurantName={restaurant.name}
+          side={buildWhatsAppHref ? "left" : "right"}
+        />
       ) : null}
     </main>
   );

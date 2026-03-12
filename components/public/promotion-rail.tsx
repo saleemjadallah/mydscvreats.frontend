@@ -2,6 +2,7 @@
 
 import { Clock3, Package2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { type RestaurantTheme } from "@/lib/restaurant-theme";
 import {
   getPromotionBadge,
@@ -50,9 +51,11 @@ function formatSchedule(start: string | null, end: string | null) {
 export function PromotionRail({
   promotions,
   theme,
+  buildWhatsAppHref,
 }: {
   promotions: Promotion[];
   theme: RestaurantTheme;
+  buildWhatsAppHref?: (promotionId: string) => string;
 }) {
   if (promotions.length === 0) {
     return null;
@@ -227,6 +230,21 @@ export function PromotionRail({
                   {schedule ? <p>{schedule}</p> : null}
                   {promotion.terms ? <p>{promotion.terms}</p> : null}
                 </div>
+                {buildWhatsAppHref ? (
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="w-full border-[#D9F4E5] bg-[#F3FFF8] text-[#156B45] hover:bg-[#E8F9F0]"
+                  >
+                    <a
+                      href={buildWhatsAppHref(promotion.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ask about this offer on WhatsApp
+                    </a>
+                  </Button>
+                ) : null}
               </div>
             </Card>
           );
