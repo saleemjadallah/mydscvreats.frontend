@@ -229,7 +229,11 @@ export function OwnerOnboarding() {
               </p>
             </CardHeader>
             <CardContent className="space-y-5">
-              <ThemePicker value={selectedTheme} onChange={setSelectedTheme} />
+              <ThemePicker
+                value={selectedTheme}
+                onChange={setSelectedTheme}
+                isPro={restaurant.entitlements?.plan === "pro"}
+              />
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-[#E7DAC5] bg-[#FFF8EE] px-5 py-4">
                 <div className="text-sm text-stone">
                   You can refine copy, uploads, and publish timing later from the main dashboard.
