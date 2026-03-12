@@ -352,83 +352,107 @@ export function RestaurantPageView({
                 />
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {section.items.map((item) => (
-                  (() => {
-                    const discountedPromotion = discountedItemPromotions.get(item.id);
-                    const itemPromotions = promotionsByItemId.get(item.id) ?? [];
+                {section.items.map((item) => {
+                  const discountedPromotion = discountedItemPromotions.get(item.id);
+                  const itemPromotions = promotionsByItemId.get(item.id) ?? [];
+                  const hasOffer = itemPromotions.length > 0;
 
-                    return (
-                      <Card key={item.id} className="overflow-hidden">
-                        <div className="relative h-52">
-                          <MenuItemImageGallery
-                            item={item}
-                            sectionName={section.name}
-                            restaurantName={restaurant.name}
-                            placeholderFrom={theme.placeholderFrom}
-                            placeholderTo={theme.placeholderTo}
-                          />
-                        </div>
-                        <div className="space-y-3 p-5">
-                          <div className="flex items-start justify-between gap-4">
-                            <h3 className="text-xl font-semibold">{item.name}</h3>
-                            {discountedPromotion?.promoPrice ? (
-                              <div className="text-right">
-                                <div className="text-xs font-medium text-stone line-through">
-                                  {formatCurrency(item.price, item.currency)}
-                                </div>
-                                <div className="text-sm font-semibold" style={{ color: theme.price }}>
-                                  {formatCurrency(discountedPromotion.promoPrice, item.currency)}
-                                </div>
+                  return (
+                    <Card
+                      key={item.id}
+                      className={`overflow-hidden border-white/60 shadow-[0_14px_40px_rgba(25,20,15,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(25,20,15,0.12)] ${
+                        hasOffer ? "ring-1 ring-[#F1DFC0]" : ""
+                      }`}
+                    >
+                      <div className="relative h-52">
+                        <MenuItemImageGallery
+                          item={item}
+                          sectionName={section.name}
+                          restaurantName={restaurant.name}
+                          placeholderFrom={theme.placeholderFrom}
+                          placeholderTo={theme.placeholderTo}
+                        />
+                        {hasOffer ? (
+                          <div className="absolute inset-x-0 top-0 flex justify-end p-3">
+                            <div
+                              className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur"
+                              style={{
+                                backgroundColor: "rgba(255,253,249,0.9)",
+                                color: theme.badgeText,
+                              }}
+                            >
+                              Offer attached
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="space-y-4 p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-1">
+                            <h3 className="text-xl font-semibold tracking-[-0.02em]">{item.name}</h3>
+                            {hasOffer ? (
+                              <div className="text-[11px] uppercase tracking-[0.18em] text-stone">
+                                Featured in {itemPromotions.length} offer{itemPromotions.length === 1 ? "" : "s"}
                               </div>
-                            ) : (
-                              <div className="text-sm font-semibold" style={{ color: theme.price }}>
+                            ) : null}
+                          </div>
+                          {discountedPromotion?.promoPrice ? (
+                            <div className="rounded-[18px] bg-[#FFF7E8] px-3 py-2 text-right">
+                              <div className="text-xs font-medium text-stone line-through">
                                 {formatCurrency(item.price, item.currency)}
                               </div>
-                            )}
-                          </div>
-                          {item.description ? (
-                            <p className="text-sm text-stone">{item.description}</p>
-                          ) : null}
-                          {itemPromotions.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5">
-                              {itemPromotions.slice(0, 2).map((promotion) => (
-                                <span
-                                  key={promotion.id}
-                                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium"
-                                  style={{
-                                    borderColor: theme.badgeBg,
-                                    backgroundColor: theme.badgeBg,
-                                    color: theme.badgeText,
-                                  }}
-                                >
-                                  {promotion.badgeLabel ?? promotion.title}
-                                </span>
-                              ))}
+                              <div className="text-sm font-semibold" style={{ color: theme.price }}>
+                                {formatCurrency(discountedPromotion.promoPrice, item.currency)}
+                              </div>
                             </div>
-                          ) : null}
-                          {item.dietaryTags && item.dietaryTags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {item.dietaryTags.map((dt) => (
-                                <span
-                                  key={dt.id}
-                                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-                                  style={{
-                                    borderColor: theme.chipBorder,
-                                    backgroundColor: theme.chipBg,
-                                    color: theme.chipText,
-                                  }}
-                                >
-                                  {dt.tag.icon && <span>{dt.tag.icon}</span>}
-                                  {dt.tag.label}
-                                </span>
-                              ))}
+                          ) : (
+                            <div className="text-sm font-semibold" style={{ color: theme.price }}>
+                              {formatCurrency(item.price, item.currency)}
                             </div>
                           )}
                         </div>
-                      </Card>
-                    );
-                  })()
-                ))}
+                        {item.description ? (
+                          <p className="text-sm leading-6 text-stone">{item.description}</p>
+                        ) : null}
+                        {itemPromotions.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {itemPromotions.slice(0, 2).map((promotion) => (
+                              <span
+                                key={promotion.id}
+                                className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium"
+                                style={{
+                                  borderColor: theme.badgeBg,
+                                  backgroundColor: theme.badgeBg,
+                                  color: theme.badgeText,
+                                }}
+                              >
+                                {promotion.badgeLabel ?? promotion.title}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        {item.dietaryTags && item.dietaryTags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.dietaryTags.map((dt) => (
+                              <span
+                                key={dt.id}
+                                className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+                                style={{
+                                  borderColor: theme.chipBorder,
+                                  backgroundColor: theme.chipBg,
+                                  color: theme.chipText,
+                                }}
+                              >
+                                {dt.tag.icon && <span>{dt.tag.icon}</span>}
+                                {dt.tag.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           ))}

@@ -159,6 +159,18 @@ export function PromotionManager({
       { total: 0, live: 0, scheduled: 0, inactive: 0, expired: 0 }
     );
   }, [promotions]);
+  const previewCurrency = selectedItems[0]?.currency ?? "AED";
+  const selectedItemsLabel =
+    selectedItems.length > 0
+      ? selectedItems.map((item) => item.name).join(" • ")
+      : "Select dishes to build the offer preview.";
+  const previewBadge =
+    form.badgeLabel.trim() ||
+    (form.type === "combo"
+      ? "Combo"
+      : form.type === "deal"
+        ? "House special"
+        : "Deal");
 
   useEffect(() => {
     if (form.id) {
@@ -310,12 +322,15 @@ export function PromotionManager({
   return (
     <div className="space-y-6">
       <div className="grid gap-6 xl:grid-cols-[0.95fr,1.05fr]">
-        <Card className="border-[#E7DAC5]">
-          <CardHeader className="border-b border-[#F3E8D8]">
+        <Card className="animate-rise-in overflow-hidden border-[#E7DAC5] bg-[linear-gradient(180deg,#FFFDF9,#FFF7ED)] shadow-[0_20px_60px_rgba(32,26,23,0.06)]">
+          <CardHeader className="border-b border-[#F3E8D8] bg-[radial-gradient(circle_at_top_right,rgba(232,163,23,0.15),transparent_38%)]">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle>Offers library</CardTitle>
-                <p className="mt-2 text-sm text-stone">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone">
+                  Offers library
+                </div>
+                <CardTitle className="mt-3 text-2xl tracking-[-0.03em]">Build sharper merchandising moments</CardTitle>
+                <p className="mt-2 text-sm leading-6 text-stone">
                   Create time-bound discounts, merchandised deals, and shareable combos.
                 </p>
               </div>
@@ -348,7 +363,7 @@ export function PromotionManager({
             </div>
 
             {promotions.length === 0 ? (
-              <div className="rounded-[24px] border border-dashed border-[#E7DAC5] bg-[#FFF8EE] p-5 text-sm text-stone">
+              <div className="rounded-[24px] border border-dashed border-[#E7DAC5] bg-white/80 p-5 text-sm leading-6 text-stone">
                 No offers yet. Start with a discounted signature dish, a time-bound lunch deal, or a combo built from existing menu items.
               </div>
             ) : (
@@ -363,10 +378,10 @@ export function PromotionManager({
                       key={promotion.id}
                       type="button"
                       onClick={() => selectPromotion(promotion)}
-                      className={`w-full rounded-[22px] border p-4 text-left transition ${
+                      className={`w-full rounded-[24px] border p-4 text-left transition duration-300 ${
                         isSelected
-                          ? "border-[#D49A2A] bg-[#FFF8EE] shadow-sm"
-                          : "border-[#EADFCC] bg-white hover:border-[#DFC59B]"
+                          ? "border-[#D49A2A] bg-[linear-gradient(180deg,#FFF8EE,#FFF3DD)] shadow-[0_16px_44px_rgba(212,154,42,0.12)]"
+                          : "border-[#EADFCC] bg-white/90 hover:-translate-y-0.5 hover:border-[#DFC59B] hover:shadow-[0_12px_30px_rgba(32,26,23,0.06)]"
                       }`}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -378,7 +393,7 @@ export function PromotionManager({
                           </div>
                           <h3 className="mt-3 text-base font-semibold text-ink">{promotion.title}</h3>
                           {promotion.subtitle ? (
-                            <p className="mt-1 text-sm text-stone">{promotion.subtitle}</p>
+                            <p className="mt-1 text-sm leading-6 text-stone">{promotion.subtitle}</p>
                           ) : null}
                         </div>
                         <div className="text-right">
@@ -395,7 +410,7 @@ export function PromotionManager({
                           ) : null}
                         </div>
                       </div>
-                      <p className="mt-3 text-sm text-stone">
+                      <p className="mt-3 text-sm leading-6 text-stone">
                         {promotion.items.map((item) => item.menuItem.name).join(" • ")}
                       </p>
                     </button>
@@ -406,30 +421,68 @@ export function PromotionManager({
           </CardContent>
         </Card>
 
-        <Card className="border-[#E7DAC5]">
-          <CardHeader className="border-b border-[#F3E8D8]">
-            <CardTitle>{form.id ? "Edit offer" : "Create offer"}</CardTitle>
-            <p className="mt-2 text-sm text-stone">
+        <Card className="animate-rise-in overflow-hidden border-[#E7DAC5] shadow-[0_20px_60px_rgba(32,26,23,0.07)]">
+          <CardHeader className="border-b border-[#F3E8D8] bg-[linear-gradient(180deg,#FFFDF9,#FFF8EE)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone">
+              Offer editor
+            </div>
+            <CardTitle className="mt-3 text-2xl tracking-[-0.03em]">
+              {form.id ? "Refine the offer" : "Compose a new offer"}
+            </CardTitle>
+            <p className="mt-2 text-sm leading-6 text-stone">
               Keep base dish pricing untouched. Offers sit on top and can be scheduled, featured, or paused independently.
             </p>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
+            <div className="overflow-hidden rounded-[28px] border border-[#ECD9B6] bg-[linear-gradient(135deg,#201A17,#6D3B22)] p-5 text-white shadow-[0_18px_44px_rgba(32,26,23,0.16)]">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-lg">
+                  <div className="inline-flex rounded-full bg-white/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
+                    {previewBadge}
+                  </div>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em]">
+                    {form.title || "Your offer headline appears here"}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-white/75">
+                    {form.description || "Use this space to pressure-test the message before it goes live on the hosted menu."}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/65">
+                    {form.type === "combo" ? "Combo price" : "Promo price"}
+                  </div>
+                  <div className="mt-2 text-3xl font-semibold tracking-[-0.03em]">
+                    {form.promoPrice.trim() ? formatCurrency(form.promoPrice, previewCurrency) : "Add pricing"}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2 text-xs text-white/80">
+                <span className="rounded-full bg-white/10 px-3 py-1">{selectedItemsLabel}</span>
+                <span className="rounded-full bg-white/10 px-3 py-1">
+                  {form.isActive ? "Visible" : "Paused"}
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1">
+                  {form.isFeatured ? "Featured rail" : "Inline only"}
+                </span>
+              </div>
+            </div>
+
             <div className="space-y-3">
-              <Label>Offer type</Label>
+              <Label className="text-[11px] uppercase tracking-[0.18em] text-stone">Offer type</Label>
               <div className="grid gap-3 md:grid-cols-3">
                 {(["discounted_item", "deal", "combo"] as PromotionType[]).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => handleTypeChange(type)}
-                    className={`rounded-[20px] border px-4 py-3 text-left transition ${
+                    className={`rounded-[22px] border px-4 py-4 text-left transition ${
                       form.type === type
-                        ? "border-[#D49A2A] bg-[#FFF8EE]"
+                        ? "border-[#D49A2A] bg-[linear-gradient(180deg,#FFF8EE,#FFF2DA)] shadow-[0_10px_26px_rgba(212,154,42,0.10)]"
                         : "border-[#E7DAC5] bg-white hover:border-[#DFC59B]"
                     }`}
                   >
                     <div className="font-medium text-ink">{getTypeLabel(type)}</div>
-                    <div className="mt-1 text-xs text-stone">
+                    <div className="mt-1 text-xs leading-5 text-stone">
                       {type === "discounted_item"
                         ? "One dish with a lower promo price."
                         : type === "deal"
@@ -441,7 +494,10 @@ export function PromotionManager({
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 rounded-[28px] border border-[#EADFCC] bg-[#FFFDF9] p-5 md:grid-cols-2">
+              <div className="md:col-span-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
+                Messaging & pricing
+              </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Title</Label>
                 <Input
@@ -496,7 +552,7 @@ export function PromotionManager({
               </div>
               <div className="space-y-2">
                 <Label>Visibility</Label>
-                <div className="flex h-10 items-center gap-4 rounded-[16px] border border-[#E7DAC5] px-4">
+                <div className="flex min-h-10 flex-wrap items-center gap-4 rounded-[16px] border border-[#E7DAC5] bg-white px-4 py-2">
                   <label className="inline-flex items-center gap-2 text-sm text-ink">
                     <input
                       type="checkbox"
@@ -535,7 +591,7 @@ export function PromotionManager({
 
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <Label>Linked dishes</Label>
+                <Label className="text-[11px] uppercase tracking-[0.18em] text-stone">Linked dishes</Label>
                 <div className="text-xs text-stone">
                   {form.type === "discounted_item"
                     ? "Select exactly one dish."
@@ -545,7 +601,7 @@ export function PromotionManager({
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-[24px] border border-[#E7DAC5] bg-[#FFFDF9] p-4">
+              <div className="space-y-4 rounded-[28px] border border-[#E7DAC5] bg-[#FFFDF9] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                 {sections.map((section) => (
                   <div key={section.id} className="space-y-2">
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-stone">
@@ -560,9 +616,9 @@ export function PromotionManager({
                             key={item.id}
                             type="button"
                             onClick={() => toggleItem(item.id)}
-                            className={`flex items-center justify-between rounded-[18px] border px-4 py-3 text-left transition ${
+                            className={`flex items-center justify-between rounded-[20px] border px-4 py-3 text-left transition ${
                               selected
-                                ? "border-[#D49A2A] bg-[#FFF8EE]"
+                                ? "border-[#D49A2A] bg-[linear-gradient(180deg,#FFF8EE,#FFF2DA)] shadow-[0_10px_24px_rgba(212,154,42,0.10)]"
                                 : "border-[#E7DAC5] bg-white hover:border-[#DFC59B]"
                             }`}
                           >
@@ -588,10 +644,8 @@ export function PromotionManager({
                 {form.isFeatured ? <Badge variant="success">Featured</Badge> : null}
                 {form.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="accent">Paused</Badge>}
               </div>
-              <div className="mt-3 text-sm text-stone">
-                {selectedItems.length > 0
-                  ? selectedItems.map((item) => item.name).join(" • ")
-                  : "No linked dishes selected yet."}
+              <div className="mt-3 text-sm leading-6 text-stone">
+                {selectedItemsLabel}
               </div>
             </div>
 
