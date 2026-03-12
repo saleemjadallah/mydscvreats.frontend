@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, CreditCard, Shield } from "lucide-react";
@@ -43,7 +43,7 @@ const planCards = [
   },
 ];
 
-export default function BillingPage() {
+function BillingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getToken } = useAuth();
@@ -292,5 +292,17 @@ export default function BillingPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function BillingFallback() {
+  return <Card><CardContent className="p-8">Loading billing...</CardContent></Card>;
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={<BillingFallback />}>
+      <BillingContent />
+    </Suspense>
   );
 }
