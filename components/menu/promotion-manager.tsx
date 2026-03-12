@@ -366,6 +366,9 @@ export function PromotionManager({
         description: form.description || null,
         badgeLabel: form.badgeLabel || null,
         terms: form.terms || null,
+        promoPrice: form.promoPrice || null,
+        startsAt: form.startsAt || null,
+        endsAt: form.endsAt || null,
       });
 
       setAiSuggestion(result.suggestion);

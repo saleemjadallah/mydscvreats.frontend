@@ -324,6 +324,9 @@ export const apiClient = {
       description?: string | null;
       badgeLabel?: string | null;
       terms?: string | null;
+      promoPrice?: string | null;
+      startsAt?: string | null;
+      endsAt?: string | null;
       tone?: string;
     }
   ) {
