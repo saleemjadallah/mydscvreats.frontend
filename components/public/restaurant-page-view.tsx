@@ -500,7 +500,7 @@ export function RestaurantPageView({
                   return (
                     <Card
                       key={item.id}
-                      className={`overflow-hidden border-white/60 shadow-[0_14px_40px_rgba(25,20,15,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(25,20,15,0.12)] ${
+                      className={`flex h-full flex-col overflow-hidden border-white/60 shadow-[0_14px_40px_rgba(25,20,15,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(25,20,15,0.12)] ${
                         hasOffer ? "ring-1 ring-[#F1DFC0]" : ""
                       }`}
                     >
@@ -526,7 +526,7 @@ export function RestaurantPageView({
                           </div>
                         ) : null}
                       </div>
-                      <div className="space-y-4 p-5">
+                      <div className="flex flex-1 flex-col gap-4 p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div className="space-y-1">
                             <h3 className="text-xl font-semibold tracking-[-0.02em]">{item.name}</h3>
@@ -589,44 +589,46 @@ export function RestaurantPageView({
                             ))}
                           </div>
                         )}
-                        {buildWhatsAppHref ? (
-                          <Button
-                            asChild
-                            variant="secondary"
-                            className="w-full border-[#D9F4E5] bg-[#F3FFF8] text-[#156B45] hover:bg-[#E8F9F0]"
-                          >
-                            <a
-                              href={buildWhatsAppHref({
-                                source: "menu_item",
-                                menuItemId: item.id,
-                              })}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <MessageCircle className="h-4 w-4" />
-                              Ask about this dish on WhatsApp
-                            </a>
-                          </Button>
-                        ) : null}
-                        {!isEmbedded ? (
-                          <div className="flex justify-end">
+                        <div className="mt-auto space-y-3">
+                          {buildWhatsAppHref ? (
                             <Button
-                              type="button"
-                              variant="ghost"
-                              onClick={() => void likeMenuItem(item.id)}
-                              disabled={isLiked || isLikePending}
-                              className={cn(
-                                "h-10 rounded-full border px-3 text-xs font-semibold",
-                                isLiked
-                                  ? "border-[#F3D8A2] bg-[#FFF4DA] text-[#8C6217] hover:bg-[#FFF4DA]"
-                                  : "border-[#E7DAC5] bg-white text-stone hover:bg-[#FAF5EC] hover:text-ink"
-                              )}
+                              asChild
+                              variant="secondary"
+                              className="w-full border-[#D9F4E5] bg-[#F3FFF8] text-[#156B45] hover:bg-[#E8F9F0]"
                             >
-                              <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
-                              {isLiked ? "Liked" : isLikePending ? "Saving..." : "I like it"}
+                              <a
+                                href={buildWhatsAppHref({
+                                  source: "menu_item",
+                                  menuItemId: item.id,
+                                })}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <MessageCircle className="h-4 w-4" />
+                                Ask about this dish on WhatsApp
+                              </a>
                             </Button>
-                          </div>
-                        ) : null}
+                          ) : null}
+                          {!isEmbedded ? (
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => void likeMenuItem(item.id)}
+                                disabled={isLiked || isLikePending}
+                                className={cn(
+                                  "h-10 rounded-full border px-3 text-xs font-semibold",
+                                  isLiked
+                                    ? "border-[#F3D8A2] bg-[#FFF4DA] text-[#8C6217] hover:bg-[#FFF4DA]"
+                                    : "border-[#E7DAC5] bg-white text-stone hover:bg-[#FAF5EC] hover:text-ink"
+                                )}
+                              >
+                                <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
+                                {isLiked ? "Liked" : isLikePending ? "Saving..." : "I like it"}
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     </Card>
                   );
