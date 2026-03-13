@@ -476,7 +476,7 @@ export function MenuEditor({
         {/* Row 2: AI & Image tools — secondary actions, shown only for menu tab */}
         {activeTab === "menu" ? (
           <div className="flex flex-wrap items-center gap-2 border-t border-[#E7DAC5]/60 pt-4">
-            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.15em] text-stone/60">Tools</span>
+            <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.15em] text-stone">Tools</span>
             <button
               type="button"
               onClick={() => setShowBulkDescriptions(true)}
@@ -526,20 +526,20 @@ export function MenuEditor({
             <div className="mb-3 flex items-center gap-3">
               <div className="flex items-baseline gap-4">
                 <span className="text-[22px] font-bold leading-none text-ink">{audit.totalSections}</span>
-                <span className="text-[12px] text-stone/70">sections</span>
-                <span className="text-[12px] text-stone/40">/</span>
+                <span className="text-[12px] text-stone">sections</span>
+                <span className="text-[12px] text-stone/60">/</span>
                 <span className="text-[22px] font-bold leading-none text-ink">{audit.totalItems}</span>
-                <span className="text-[12px] text-stone/70">dishes</span>
+                <span className="text-[12px] text-stone">dishes</span>
               </div>
               <div className="ml-auto flex items-center gap-2">
                 {entitlements.hasSelectedPlan && usage.limit !== null ? (
-                  <span className={`text-[11.5px] font-medium ${usage.atLimit ? "text-[#9E3B2D]" : "text-stone/60"}`}>
+                  <span className={`text-[11.5px] font-medium ${usage.atLimit ? "text-[#9E3B2D]" : "text-stone"}`}>
                     {usage.totalItems}/{usage.limit} used
                   </span>
                 ) : !entitlements.hasSelectedPlan ? (
-                  <span className="text-[11.5px] font-medium text-stone/50">Draft</span>
+                  <span className="text-[11.5px] font-medium text-stone">Draft</span>
                 ) : (
-                  <span className="text-[11.5px] font-medium text-[#2E8B57]/70">Unlimited</span>
+                  <span className="text-[11.5px] font-medium text-[#2E8B57]">Unlimited</span>
                 )}
                 <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
                   audit.blockingIssues.length
@@ -563,7 +563,7 @@ export function MenuEditor({
                 ))}
               </div>
             ) : (
-              <div className="space-y-1 text-[13px] text-stone/70">
+              <div className="space-y-1 text-[13px] text-stone">
                 <p>
                   Pricing and menu structure look clean. Finish any optional polish, then move to publish.
                 </p>
@@ -581,18 +581,18 @@ export function MenuEditor({
             <div className="mb-3 flex items-center gap-3">
               <div className="flex items-baseline gap-4">
                 <span className="text-[22px] font-bold leading-none text-ink">{audit.imagesReady}</span>
-                <span className="text-[12px] text-stone/70">visuals ready</span>
+                <span className="text-[12px] text-stone">visuals ready</span>
                 {audit.itemsWithoutImages > 0 ? (
                   <>
-                    <span className="text-[12px] text-stone/40">/</span>
-                    <span className="text-[22px] font-bold leading-none text-stone/50">{audit.itemsWithoutImages}</span>
-                    <span className="text-[12px] text-stone/70">missing</span>
+                    <span className="text-[12px] text-stone/60">/</span>
+                    <span className="text-[22px] font-bold leading-none text-stone">{audit.itemsWithoutImages}</span>
+                    <span className="text-[12px] text-stone">missing</span>
                   </>
                 ) : null}
               </div>
               <div className="ml-auto flex items-center gap-2">
                 {entitlements.priorityImageGeneration ? (
-                  <span className="text-[11.5px] font-medium text-[#2E8B57]/70">Priority queue</span>
+                  <span className="text-[11.5px] font-medium text-[#2E8B57]">Priority queue</span>
                 ) : null}
                 {audit.failedImages > 0 ? (
                   <div className="flex items-center gap-1.5 rounded-full bg-[#FFDCD6]/50 px-2.5 py-1 text-[11.5px] font-semibold text-[#9E3B2D]">
@@ -612,7 +612,7 @@ export function MenuEditor({
                 ))}
               </div>
             ) : (
-              <p className="text-[13px] text-stone/70">
+              <p className="text-[13px] text-stone">
                 The page is already polished. Use bulk image generation only when you add new dishes.
               </p>
             )}

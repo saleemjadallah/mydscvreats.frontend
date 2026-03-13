@@ -558,26 +558,26 @@ export function PromotionManager({
             </div>
             <div className="mt-4 flex items-baseline gap-4">
               <span className="text-[22px] font-bold leading-none text-ink">{stats.total}</span>
-              <span className="text-[12px] text-stone/70">total</span>
+              <span className="text-[12px] text-stone">total</span>
               {stats.live > 0 ? (
                 <>
-                  <span className="text-[12px] text-stone/40">/</span>
+                  <span className="text-[12px] text-stone/60">/</span>
                   <span className="text-[22px] font-bold leading-none text-[#2E8B57]">{stats.live}</span>
-                  <span className="text-[12px] text-[#2E8B57]/70">live</span>
+                  <span className="text-[12px] text-[#2E8B57]">live</span>
                 </>
               ) : null}
               {stats.scheduled > 0 ? (
                 <>
-                  <span className="text-[12px] text-stone/40">/</span>
-                  <span className="text-[22px] font-bold leading-none text-stone/60">{stats.scheduled}</span>
-                  <span className="text-[12px] text-stone/70">scheduled</span>
+                  <span className="text-[12px] text-stone/60">/</span>
+                  <span className="text-[22px] font-bold leading-none text-stone">{stats.scheduled}</span>
+                  <span className="text-[12px] text-stone">scheduled</span>
                 </>
               ) : null}
               {(stats.inactive + stats.expired) > 0 ? (
                 <>
-                  <span className="text-[12px] text-stone/40">/</span>
-                  <span className="text-[22px] font-bold leading-none text-stone/40">{stats.inactive + stats.expired}</span>
-                  <span className="text-[12px] text-stone/50">inactive</span>
+                  <span className="text-[12px] text-stone/60">/</span>
+                  <span className="text-[22px] font-bold leading-none text-stone">{stats.inactive + stats.expired}</span>
+                  <span className="text-[12px] text-stone">inactive</span>
                 </>
               ) : null}
             </div>
@@ -622,7 +622,7 @@ export function PromotionManager({
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[11px] font-medium text-stone/60">{getTypeLabel(promotion.type)}</span>
+                            <span className="text-[11px] font-medium text-stone">{getTypeLabel(promotion.type)}</span>
                             <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                               status === "live"
                                 ? "bg-[#2E8B57]/8 text-[#206B48]"
@@ -636,7 +636,7 @@ export function PromotionManager({
                               {status}
                             </div>
                             {promotion.isFeatured ? (
-                              <span className="text-[11px] font-medium text-[#2E8B57]/70">Featured</span>
+                              <span className="text-[11px] font-medium text-[#2E8B57]">Featured</span>
                             ) : null}
                           </div>
                           <h3 className="mt-2.5 text-base font-semibold text-ink">{promotion.title}</h3>
@@ -973,7 +973,7 @@ export function PromotionManager({
 
             <div className="rounded-[20px] border border-[#E7DAC5]/70 bg-[rgba(255,248,238,0.5)] px-5 py-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-[12px] font-medium text-stone/60">{getTypeLabel(form.type)}</span>
+                <span className="text-[12px] font-medium text-stone">{getTypeLabel(form.type)}</span>
                 <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                   form.isActive
                     ? "bg-[#2E8B57]/8 text-[#206B48]"
@@ -983,10 +983,10 @@ export function PromotionManager({
                   {form.isActive ? "Active" : "Paused"}
                 </div>
                 {form.isFeatured ? (
-                  <span className="text-[11px] font-medium text-[#2E8B57]/70">Featured</span>
+                  <span className="text-[11px] font-medium text-[#2E8B57]">Featured</span>
                 ) : null}
               </div>
-              <p className="mt-2 text-[13px] leading-relaxed text-stone/70">
+              <p className="mt-2 text-[13px] leading-relaxed text-stone">
                 {selectedItemsLabel}
               </p>
             </div>
