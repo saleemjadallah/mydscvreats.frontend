@@ -512,7 +512,7 @@ export function RestaurantPageView({
                           placeholderFrom={theme.placeholderFrom}
                           placeholderTo={theme.placeholderTo}
                         />
-                        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3">
                           {item.badges && item.badges.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5">
                               {item.badges.map((mb) => (
