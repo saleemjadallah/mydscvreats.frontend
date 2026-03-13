@@ -512,8 +512,24 @@ export function RestaurantPageView({
                           placeholderFrom={theme.placeholderFrom}
                           placeholderTo={theme.placeholderTo}
                         />
-                        {hasOffer ? (
-                          <div className="absolute inset-x-0 top-0 flex justify-end p-3">
+                        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
+                          {item.badges && item.badges.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.badges.map((mb) => (
+                                <div
+                                  key={mb.id}
+                                  className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur"
+                                  style={{
+                                    backgroundColor: mb.badge.color,
+                                    color: mb.badge.textColor,
+                                  }}
+                                >
+                                  {mb.badge.label}
+                                </div>
+                              ))}
+                            </div>
+                          ) : <div />}
+                          {hasOffer ? (
                             <div
                               className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur"
                               style={{
@@ -523,8 +539,8 @@ export function RestaurantPageView({
                             >
                               Offer attached
                             </div>
-                          </div>
-                        ) : null}
+                          ) : null}
+                        </div>
                       </div>
                       <div className="flex flex-1 flex-col gap-4 p-5">
                         <div className="flex items-start justify-between gap-4">

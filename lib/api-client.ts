@@ -1,10 +1,12 @@
 import type {
   AnalyticsSummary,
+  BadgeType,
   DietaryTag,
   ItemTagSuggestions,
   MenuAnalysisResult,
   MenuAssistantMessage,
   MenuExtractionDraft,
+  MenuItemBadge,
   MenuItemImage,
   MenuSection,
   Promotion,
@@ -365,6 +367,22 @@ export const apiClient = {
       method: "POST",
       token,
       body: JSON.stringify({ actions }),
+    });
+  },
+
+  // ── Menu Badges ──────────────────────────────────────────
+  getBadgeTypes() {
+    return request<BadgeType[]>("/api/menu-badges");
+  },
+  setItemBadges(
+    token: string,
+    itemId: string,
+    badges: Array<{ badgeId: string }>
+  ) {
+    return request<MenuItemBadge[]>("/api/menu-badges/items/" + itemId + "/badges", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ badges }),
     });
   },
 

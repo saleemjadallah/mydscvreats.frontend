@@ -18,11 +18,12 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Eye, GripVertical, ImagePlus, Info, Plus, Save, Sparkles, Tag, Trash2, X, ZoomIn } from "lucide-react";
+import { Award, Eye, GripVertical, ImagePlus, Info, Plus, Save, Sparkles, Tag, Trash2, X, ZoomIn } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { BulkDescriptionDialog } from "@/components/menu/bulk-description-dialog";
 import { DescriptionEnhancer } from "@/components/menu/description-enhancer";
+import { BadgeManager } from "@/components/menu/badge-manager";
 import { DietaryTagManager } from "@/components/menu/dietary-tag-manager";
 import { ImageRetryDialog } from "@/components/menu/image-retry-dialog";
 import { ImageStatusBadge } from "@/components/menu/image-status-badge";
@@ -123,6 +124,7 @@ export function MenuEditor({
   const [imagePromptByItem, setImagePromptByItem] = useState<Record<string, string>>({});
   const [showBulkDescriptions, setShowBulkDescriptions] = useState(false);
   const [showDietaryTags, setShowDietaryTags] = useState(false);
+  const [showBadges, setShowBadges] = useState(false);
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
   const [queueingImageItemIds, setQueueingImageItemIds] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<"menu" | "offers">("menu");
@@ -492,6 +494,14 @@ export function MenuEditor({
             >
               <Tag className="h-3.5 w-3.5" />
               Dietary Tags
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowBadges(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#9E3B2D]/15 bg-[#9E3B2D]/6 px-3 py-1.5 text-[12.5px] font-medium text-[#9E3B2D] transition-colors hover:bg-[#9E3B2D]/12"
+            >
+              <Award className="h-3.5 w-3.5" />
+              Badges
             </button>
             <div className="mx-0.5 hidden h-4 w-px bg-[#E7DAC5] md:block" />
             <button
@@ -961,8 +971,24 @@ export function MenuEditor({
                                 </p>
                               </div>
 
-                              {/* Row 4: Dietary tags + Image status */}
+                              {/* Row 4: Badges + Dietary tags + Image status */}
                               <div className="flex flex-wrap items-center gap-2">
+                                {item.badges && item.badges.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.badges.map((mb) => (
+                                      <span
+                                        key={mb.id}
+                                        className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                                        style={{
+                                          backgroundColor: mb.badge.color,
+                                          color: mb.badge.textColor,
+                                        }}
+                                      >
+                                        {mb.badge.label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                                 {item.dietaryTags && item.dietaryTags.length > 0 && (
                                   <div className="flex flex-wrap gap-1">
                                     {item.dietaryTags.map((dt) => (
@@ -1065,6 +1091,16 @@ export function MenuEditor({
           restaurantId={restaurant.id}
           sections={sections}
           onClose={() => setShowDietaryTags(false)}
+          onApplied={onRefresh}
+        />
+      )}
+
+      {/* Badge manager */}
+      {showBadges && (
+        <BadgeManager
+          restaurantId={restaurant.id}
+          sections={sections}
+          onClose={() => setShowBadges(false)}
           onApplied={onRefresh}
         />
       )}

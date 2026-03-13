@@ -36,6 +36,24 @@ export interface MenuItemDietaryTag {
   tag: DietaryTag;
 }
 
+export interface BadgeType {
+  id: string;
+  key: string;
+  label: string;
+  icon: string | null;
+  color: string;
+  textColor: string;
+  category: string;
+  displayOrder: number;
+}
+
+export interface MenuItemBadge {
+  id: string;
+  menuItemId: string;
+  badgeId: string;
+  badge: BadgeType;
+}
+
 export interface MenuItem {
   id: string;
   sectionId: string;
@@ -53,6 +71,7 @@ export interface MenuItem {
   aiDescriptionStatus?: string | null;
   originalDescription?: string | null;
   dietaryTags?: MenuItemDietaryTag[];
+  badges?: MenuItemBadge[];
 }
 
 export interface MenuSection {
@@ -77,6 +96,7 @@ export interface PromotionMenuItemSummary {
   isAvailable: boolean;
   displayOrder: number;
   dietaryTags?: MenuItemDietaryTag[];
+  badges?: MenuItemBadge[];
 }
 
 export interface PromotionItem {
