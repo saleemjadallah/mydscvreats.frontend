@@ -102,6 +102,11 @@ function formatSuggestedPrice(amount: number) {
   return Number(amount.toFixed(2)).toString();
 }
 
+function toNumericPrice(value: number | string) {
+  const numeric = typeof value === "string" ? Number(value) : value;
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
 function joinDishNames(names: string[]) {
   if (names.length <= 2) {
     return names.join(" and ");
@@ -115,7 +120,7 @@ function buildAutoFillValues(
   items: Array<{
     name: string;
     description: string | null;
-    price: number;
+    price: number | string;
   }>
 ): Record<AutoFillField, string> | null {
   if (items.length === 0) {
@@ -125,7 +130,8 @@ function buildAutoFillValues(
   const firstItem = items[0];
   const itemNames = items.map((item) => item.name);
   const combinedNames = joinDishNames(itemNames);
-  const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
+  const firstItemPrice = toNumericPrice(firstItem.price);
+  const totalPrice = items.reduce((sum, item) => sum + toNumericPrice(item.price), 0);
 
   if (type === "discounted_item") {
     return {
@@ -135,7 +141,7 @@ function buildAutoFillValues(
         firstItem.description?.trim() || `A limited-time price on ${firstItem.name}.`,
       badgeLabel: "Deal",
       terms: "Available while this dish is in stock.",
-      promoPrice: formatSuggestedPrice(firstItem.price * 0.85),
+      promoPrice: formatSuggestedPrice(firstItemPrice * 0.85),
     };
   }
 
