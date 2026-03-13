@@ -13,39 +13,34 @@ import { formatCurrency } from "@/lib/utils";
 import type { Promotion } from "@/types";
 
 function getOfferIcon(type: Promotion["type"]) {
-  if (type === "combo") {
-    return Package2;
-  }
-
-  if (type === "deal") {
-    return Sparkles;
-  }
-
+  if (type === "combo") return Package2;
+  if (type === "deal") return Sparkles;
   return Clock3;
 }
 
 function formatSchedule(start: string | null, end: string | null) {
   const parts: string[] = [];
-
   if (start) {
-    parts.push(`Starts ${new Date(start).toLocaleDateString("en-AE", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    })}`);
+    parts.push(
+      `Starts ${new Date(start).toLocaleDateString("en-AE", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })}`
+    );
   }
-
   if (end) {
-    parts.push(`Ends ${new Date(end).toLocaleDateString("en-AE", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    })}`);
+    parts.push(
+      `Ends ${new Date(end).toLocaleDateString("en-AE", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })}`
+    );
   }
-
-  return parts.join(" • ");
+  return parts.join(" \u2022 ");
 }
 
 export function PromotionRail({
@@ -57,9 +52,7 @@ export function PromotionRail({
   theme: RestaurantTheme;
   buildWhatsAppHref?: (promotionId: string) => string;
 }) {
-  if (promotions.length === 0) {
-    return null;
-  }
+  if (promotions.length === 0) return null;
 
   return (
     <section id="offers" className="scroll-mt-28">
@@ -80,6 +73,7 @@ export function PromotionRail({
         />
 
         <div className="relative space-y-6">
+          {/* Header */}
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
               <div
@@ -95,160 +89,217 @@ export function PromotionRail({
                 Put the money-saving story ahead of the menu scroll
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-stone md:text-base">
-                Highlight signature discounts, time-bound deals, and shareable combos before diners start comparing individual dishes.
+                Highlight signature discounts, time-bound deals, and shareable
+                combos before diners start comparing individual dishes.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm md:min-w-[240px]">
               <div className="rounded-[20px] border border-white/60 bg-white/75 px-4 py-3 backdrop-blur">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Live now</div>
-                <div className="mt-2 text-2xl font-semibold text-ink">{promotions.length}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-stone">
+                  Live now
+                </div>
+                <div className="mt-2 text-2xl font-semibold text-ink">
+                  {promotions.length}
+                </div>
               </div>
               <div className="rounded-[20px] border border-white/60 bg-white/75 px-4 py-3 backdrop-blur">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-stone">Featured</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-stone">
+                  Featured
+                </div>
                 <div className="mt-2 text-2xl font-semibold text-ink">
-                  {promotions.filter((promotion) => promotion.isFeatured).length}
+                  {promotions.filter((p) => p.isFeatured).length}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-3">
-        {promotions.map((promotion, index) => {
-          const Icon = getOfferIcon(promotion.type);
-          const primaryItem = getPromotionPrimaryItem(promotion);
-          const savings = getPromotionSavings(promotion);
-          const schedule = formatSchedule(promotion.startsAt, promotion.endsAt);
-          const isHero = index === 0 && promotions.length > 1;
+          {/* Cards */}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {promotions.map((promotion, index) => {
+              const Icon = getOfferIcon(promotion.type);
+              const primaryItem = getPromotionPrimaryItem(promotion);
+              const savings = getPromotionSavings(promotion);
+              const schedule = formatSchedule(
+                promotion.startsAt,
+                promotion.endsAt
+              );
+              const isHero = index === 0 && promotions.length > 1;
+              const currency = primaryItem?.currency ?? "AED";
+              const displayText = promotion.subtitle || promotion.description;
 
-          return (
-            <Card
-              key={promotion.id}
-              className={`group overflow-hidden border border-white/60 bg-white/80 shadow-[0_16px_50px_rgba(25,20,15,0.08)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(25,20,15,0.14)] ${
-                isHero ? "xl:col-span-2 xl:grid xl:grid-cols-[1.05fr,0.95fr]" : ""
-              }`}
-            >
-              <div
-                className={`relative overflow-hidden ${isHero ? "h-56 xl:h-full" : "h-52"}`}
-                style={{
-                  background: primaryItem?.imageUrl
-                    ? `linear-gradient(180deg, rgba(20,18,15,0.05), rgba(20,18,15,0.55)), url("${primaryItem.imageUrl}") center / cover`
-                    : `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
-                }}
-              >
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,10,0.04),rgba(10,10,10,0.58))]" />
-                <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 text-white">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                    <Icon className="h-3.5 w-3.5" />
-                    {getPromotionBadge(promotion)}
-                  </div>
-                  {promotion.promoPrice ? (
-                    <div className="rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-ink">
-                      {formatCurrency(
-                        promotion.promoPrice,
-                        primaryItem?.currency ?? "AED"
-                      )}
-                    </div>
-                  ) : null}
-                </div>
-                {primaryItem ? (
-                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <div className="text-[11px] uppercase tracking-[0.18em] text-white/70">
-                      Anchored to
-                    </div>
-                    <div className="mt-1 text-lg font-semibold">{primaryItem.name}</div>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="space-y-5 p-5 md:p-6">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-                      {promotion.type === "combo" ? "Bundle offer" : promotion.type === "deal" ? "House special" : "Menu highlight"}
-                    </span>
-                    {promotion.isFeatured ? (
-                      <span
-                        className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
-                        style={{
-                          backgroundColor: theme.badgeBg,
-                          color: theme.badgeText,
-                        }}
-                      >
-                        Featured
-                      </span>
-                    ) : null}
-                  </div>
-                  <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-ink">
-                    {promotion.title}
-                  </h3>
-                  {promotion.subtitle ? (
-                    <p className="mt-2 text-sm leading-6 text-stone">{promotion.subtitle}</p>
-                  ) : null}
-                </div>
-
-                {promotion.description ? (
-                  <p className="text-sm leading-6 text-stone">{promotion.description}</p>
-                ) : null}
-
-                {promotion.promoPrice ? (
-                  <div className="flex flex-wrap items-end justify-between gap-3 rounded-[22px] border border-[#F2E3C7] bg-[#FFF8EA] px-4 py-4">
-                    <div>
-                      <div className="text-[11px] uppercase tracking-[0.18em] text-[#7A5211]/70">
-                        Promo price
-                      </div>
-                      <div className="mt-1 text-3xl font-semibold tracking-[-0.03em] text-[#7A5211]">
-                        {formatCurrency(promotion.promoPrice, primaryItem?.currency ?? "AED")}
-                      </div>
-                    </div>
-                    {savings ? (
-                      <div className="rounded-full bg-white px-3 py-1.5 text-sm font-medium text-[#7A5211] shadow-sm">
-                        Save {formatCurrency(savings.amount, primaryItem?.currency ?? "AED")}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-
-                <div className="flex flex-wrap gap-1.5">
-                  {promotion.items.map((item) => (
-                    <span
-                      key={item.id}
-                      className="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium"
-                      style={{
-                        borderColor: theme.chipBorder,
-                        backgroundColor: theme.chipBg,
-                        color: theme.chipText,
-                      }}
-                    >
-                      {item.menuItem.name}
-                    </span>
-                  ))}
-                </div>
-
-                {savings ? <p className="text-sm font-medium text-[#7A5211]">{savings.percent}% better value than ordering separately.</p> : null}
-
-                <div className="space-y-1.5 text-xs leading-5 text-stone">
-                  {schedule ? <p>{schedule}</p> : null}
-                  {promotion.terms ? <p>{promotion.terms}</p> : null}
-                </div>
-                {buildWhatsAppHref ? (
-                  <Button
-                    asChild
-                    variant="secondary"
-                    className="w-full border-[#D9F4E5] bg-[#F3FFF8] text-[#156B45] hover:bg-[#E8F9F0]"
+              return (
+                <Card
+                  key={promotion.id}
+                  className={`group overflow-hidden border border-white/60 bg-white/80 shadow-[0_16px_50px_rgba(25,20,15,0.08)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(25,20,15,0.14)] ${
+                    isHero
+                      ? "md:col-span-2 xl:col-span-2 xl:grid xl:grid-cols-[1.1fr,0.9fr]"
+                      : ""
+                  }`}
+                >
+                  {/* Image */}
+                  <div
+                    className={`relative overflow-hidden ${
+                      isHero
+                        ? "aspect-[4/3] xl:aspect-auto xl:min-h-72"
+                        : "aspect-[4/3]"
+                    }`}
                   >
-                    <a
-                      href={buildWhatsAppHref(promotion.id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Ask about this offer on WhatsApp
-                    </a>
-                  </Button>
-                ) : null}
-              </div>
-            </Card>
-          );
-        })}
+                    {primaryItem?.imageUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={primaryItem.imageUrl}
+                        alt={primaryItem.name ?? ""}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `linear-gradient(135deg, ${theme.placeholderFrom}, ${theme.placeholderTo})`,
+                        }}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
+                    {/* Top bar */}
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3.5">
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                        <Icon className="h-3 w-3" />
+                        {getPromotionBadge(promotion)}
+                      </div>
+                      {promotion.promoPrice ? (
+                        <div className="rounded-full bg-white/95 px-3 py-1 text-sm font-bold text-ink shadow-sm backdrop-blur-sm">
+                          {formatCurrency(promotion.promoPrice, currency)}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* Bottom: anchored item */}
+                    {primaryItem ? (
+                      <div className="absolute inset-x-0 bottom-0 p-3.5">
+                        <div className="text-[10px] uppercase tracking-[0.2em] text-white/60">
+                          Anchored to
+                        </div>
+                        <div className="mt-0.5 text-base font-semibold text-white">
+                          {primaryItem.name}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Content */}
+                  <div className="space-y-3 p-4 md:p-5">
+                    {/* Type + Featured */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone">
+                        {promotion.type === "combo"
+                          ? "Bundle offer"
+                          : promotion.type === "deal"
+                            ? "House special"
+                            : "Menu highlight"}
+                      </span>
+                      {promotion.isFeatured ? (
+                        <span
+                          className="inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em]"
+                          style={{
+                            backgroundColor: theme.badgeBg,
+                            color: theme.badgeText,
+                          }}
+                        >
+                          Featured
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-semibold leading-tight tracking-[-0.02em] text-ink line-clamp-2">
+                      {promotion.title}
+                    </h3>
+
+                    {/* Description — show subtitle or description, not both */}
+                    {displayText ? (
+                      <p className="text-sm leading-relaxed text-stone line-clamp-2">
+                        {displayText}
+                      </p>
+                    ) : null}
+
+                    {/* Promo price — compact */}
+                    {promotion.promoPrice ? (
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#F2E3C7] bg-[#FFF8EA] px-3.5 py-2.5">
+                        <div>
+                          <div className="text-[10px] uppercase tracking-[0.18em] text-[#7A5211]/60">
+                            Promo price
+                          </div>
+                          <div className="mt-0.5 text-2xl font-bold tracking-tight text-[#7A5211]">
+                            {formatCurrency(promotion.promoPrice, currency)}
+                          </div>
+                        </div>
+                        {savings ? (
+                          <div className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-[#7A5211] shadow-sm">
+                            Save {formatCurrency(savings.amount, currency)}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {/* Item chips */}
+                    {promotion.items.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {promotion.items.map((item) => (
+                          <span
+                            key={item.id}
+                            className="inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                            style={{
+                              borderColor: theme.chipBorder,
+                              backgroundColor: theme.chipBg,
+                              color: theme.chipText,
+                            }}
+                          >
+                            {item.menuItem.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {/* Meta — savings + schedule + terms condensed */}
+                    {savings || schedule || promotion.terms ? (
+                      <div className="space-y-1 text-xs leading-5 text-stone">
+                        {savings ? (
+                          <p className="font-medium text-[#7A5211]">
+                            {savings.percent}% better value than ordering
+                            separately.
+                          </p>
+                        ) : null}
+                        {schedule || promotion.terms ? (
+                          <p>
+                            {[schedule, promotion.terms]
+                              .filter(Boolean)
+                              .join(" \u00b7 ")}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {/* WhatsApp CTA */}
+                    {buildWhatsAppHref ? (
+                      <Button
+                        asChild
+                        variant="secondary"
+                        className="w-full border-[#D9F4E5] bg-[#F3FFF8] text-[#156B45] hover:bg-[#E8F9F0]"
+                      >
+                        <a
+                          href={buildWhatsAppHref(promotion.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Ask about this offer on WhatsApp
+                        </a>
+                      </Button>
+                    ) : null}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </div>
