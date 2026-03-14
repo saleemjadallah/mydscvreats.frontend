@@ -10,6 +10,7 @@ export interface PlanEntitlements {
   menuAssistantEnabled: boolean;
   customDomainEnabled: boolean;
   shortLinksEnabled: boolean;
+  hideBranding: boolean;
   analyticsTier: "basic" | "advanced";
   imageGenerationPriority: number;
   priorityImageGeneration: boolean;
@@ -30,6 +31,7 @@ const PLAN_ENTITLEMENTS: Record<
     menuAssistantEnabled: false,
     customDomainEnabled: false,
     shortLinksEnabled: false,
+    hideBranding: false,
     analyticsTier: "basic",
     imageGenerationPriority: 0,
     priorityImageGeneration: false,
@@ -45,6 +47,7 @@ const PLAN_ENTITLEMENTS: Record<
     menuAssistantEnabled: true,
     customDomainEnabled: false,
     shortLinksEnabled: true,
+    hideBranding: true,
     analyticsTier: "advanced",
     imageGenerationPriority: 10,
     priorityImageGeneration: true,
@@ -64,6 +67,7 @@ const DRAFT_ENTITLEMENTS: PlanEntitlements = {
   menuAssistantEnabled: false,
   customDomainEnabled: false,
   shortLinksEnabled: false,
+  hideBranding: false,
   analyticsTier: "basic",
   imageGenerationPriority: 0,
   priorityImageGeneration: false,

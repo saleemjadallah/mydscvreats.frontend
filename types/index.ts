@@ -166,6 +166,7 @@ export interface Restaurant {
     menuAssistantEnabled: boolean;
     customDomainEnabled: boolean;
     shortLinksEnabled: boolean;
+    hideBranding: boolean;
     analyticsTier: AnalyticsTier;
     imageGenerationPriority: number;
     priorityImageGeneration: boolean;
@@ -220,6 +221,10 @@ export interface AnalyticsSummary {
     path: string;
     views: number;
   }>;
+  branding: {
+    totalClicks: number;
+    clicksThisWeek: number;
+  };
 }
 
 export interface MenuExtractionDraft {

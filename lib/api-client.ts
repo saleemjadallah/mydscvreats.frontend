@@ -289,6 +289,17 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
+  trackBrandingClick(payload: {
+    restaurantId: string;
+    path?: string;
+    referrer?: string | null;
+    userAgent?: string | null;
+  }) {
+    return request<{ ok: boolean }>("/api/analytics/branding-click", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
   trackMenuItemLike(payload: {
     restaurantId: string;
     menuItemId: string;

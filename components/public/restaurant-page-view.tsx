@@ -15,6 +15,7 @@ import {
 import { DietaryFilterChips } from "@/components/public/dietary-filter-chips";
 import { EmbedHeightReporter } from "@/components/public/embed-height-reporter";
 import { MenuAIChat } from "@/components/public/menu-ai-chat";
+import { PoweredByFooter } from "@/components/public/powered-by-footer";
 import { PromotionRail } from "@/components/public/promotion-rail";
 import { RestaurantTracker } from "@/components/public/restaurant-tracker";
 import { Button } from "@/components/ui/button";
@@ -653,6 +654,12 @@ export function RestaurantPageView({
             </div>
           ))}
         </section>
+
+        <PoweredByFooter
+          restaurantId={restaurant.id}
+          hideBranding={restaurant.entitlements?.hideBranding ?? false}
+          isEmbedded={isEmbedded}
+        />
       </div>
       {buildWhatsAppHref ? (
         <a
