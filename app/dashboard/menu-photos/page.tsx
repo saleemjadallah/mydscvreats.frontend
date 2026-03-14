@@ -264,7 +264,6 @@ export default function MenuPhotosPage() {
             <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFFDF9] p-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="success">Included on all plans</Badge>
-                <Badge variant="muted">Truth-preserving intake</Badge>
               </div>
               <h3 className="mt-3 text-base font-semibold text-ink">Upload and review real menu photos on any plan</h3>
               <p className="mt-2 text-sm text-stone">

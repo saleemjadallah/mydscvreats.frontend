@@ -127,7 +127,16 @@ export function getRestaurantEntitlements(
   restaurant: Pick<Restaurant, "entitlements" | "subscription"> | null | undefined
 ) {
   const plan = getRestaurantPlan(restaurant);
-  return restaurant?.entitlements ?? (plan ? getPlanEntitlements(plan) : DRAFT_ENTITLEMENTS);
+  const fallback = plan ? getPlanEntitlements(plan) : DRAFT_ENTITLEMENTS;
+
+  if (!restaurant?.entitlements) {
+    return fallback;
+  }
+
+  return {
+    ...fallback,
+    ...restaurant.entitlements,
+  };
 }
 
 export function countMenuItems(sections: SectionLike[] | null | undefined) {

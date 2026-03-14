@@ -3,7 +3,6 @@
 import { Clock3, Package2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getMenuImageSourceLabel, getMenuImageSourceTone } from "@/lib/menu-image-provenance";
 import { type RestaurantTheme } from "@/lib/restaurant-theme";
 import {
   getPromotionBadge,
@@ -130,7 +129,6 @@ export function PromotionRail({
               const primaryImage = primaryItem?.images?.find((image) => image.isPrimary)
                 ?? primaryItem?.images?.[0]
                 ?? null;
-              const sourceTone = primaryImage ? getMenuImageSourceTone(primaryImage) : null;
 
               return (
                 <Card
@@ -182,23 +180,6 @@ export function PromotionRail({
                     {/* Bottom: anchored item */}
                     {primaryItem ? (
                       <div className="absolute inset-x-0 bottom-0 p-3.5">
-                        {primaryImage ? (
-                          <div className="mb-2">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
-                                sourceTone === "ai"
-                                  ? "bg-black/70 text-white"
-                                  : sourceTone === "enhanced"
-                                    ? "bg-[#E8A317]/90 text-[#201A17]"
-                                    : sourceTone === "owned"
-                                      ? "bg-[#2E8B57]/90 text-white"
-                                      : "bg-white/85 text-[#201A17]"
-                              }`}
-                            >
-                              {getMenuImageSourceLabel(primaryImage)}
-                            </span>
-                          </div>
-                        ) : null}
                         <div className="text-[10px] uppercase tracking-[0.2em] text-white/60">
                           Anchored to
                         </div>

@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { apiClient, getApiUrl } from "@/lib/api-client";
-import { getMenuImageSourceLabel, getMenuImageSourceTone } from "@/lib/menu-image-provenance";
 import { getOpenStatus } from "@/lib/operating-hours";
 import {
   getDiscountedItemPromotionMap,
@@ -99,7 +98,6 @@ function MenuItemImageGallery({
 
   const activeImage = images[activeIndex] ?? images[0];
   const hasMultipleImages = images.length > 1;
-  const sourceTone = getMenuImageSourceTone(activeImage);
 
   function showPreviousImage() {
     setActiveIndex((current) => (current === 0 ? images.length - 1 : current - 1));
@@ -156,21 +154,6 @@ function MenuItemImageGallery({
           </div>
         </>
       ) : null}
-      <div className="absolute bottom-3 left-3">
-        <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
-            sourceTone === "ai"
-              ? "bg-black/70 text-white"
-              : sourceTone === "enhanced"
-                ? "bg-[#E8A317]/90 text-[#201A17]"
-                : sourceTone === "owned"
-                  ? "bg-[#2E8B57]/90 text-white"
-                  : "bg-white/85 text-[#201A17]"
-          }`}
-        >
-          {getMenuImageSourceLabel(activeImage)}
-        </span>
-      </div>
     </>
   );
 }
