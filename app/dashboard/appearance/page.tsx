@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { Camera, Globe, ImageIcon, MessageCircle, Palette, Save, User } from "lucide-react";
+import { Camera, Clock, Globe, ImageIcon, MessageCircle, Palette, Plus, Save, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ThemePicker } from "@/components/dashboard/theme-picker";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
-import type { Restaurant } from "@/types";
+import { createDefaultSchedule, DAY_LABELS, GULF_TIMEZONES } from "@/lib/operating-hours";
+import type { OperatingHoursConfig, Restaurant } from "@/types";
 
 async function fileToBase64(file: File) {
   const buffer = await file.arrayBuffer();
@@ -254,6 +255,220 @@ export default function AppearancePage() {
           <p className="text-xs">
             Clicks are tracked separately from page views so you can see browsing vs conversation intent.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Operating hours */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-saffron/10">
+              <Clock className="h-5 w-5 text-saffron" />
+            </div>
+            <CardTitle>Operating hours</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {form.operatingHours ? (
+            <>
+              <div className="space-y-2">
+                <Label>Timezone</Label>
+                <select
+                  className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={form.operatingHours.timezone}
+                  onChange={(event) => {
+                    const hours = form.operatingHours as OperatingHoursConfig;
+                    setForm((current) => ({
+                      ...current,
+                      operatingHours: { ...hours, timezone: event.target.value },
+                    }));
+                  }}
+                >
+                  {GULF_TIMEZONES.map((tz) => (
+                    <option key={tz} value={tz}>
+                      {tz.replace("Asia/", "")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-3">
+                {(form.operatingHours as OperatingHoursConfig).schedule
+                  .slice()
+                  .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+                  .map((day) => (
+                    <div key={day.dayOfWeek} className="flex flex-wrap items-start gap-3 rounded-[16px] border border-[#E7DAC5] bg-[#FFF8EE] p-3">
+                      <div className="flex w-28 shrink-0 items-center gap-2 pt-1.5">
+                        <span className="text-sm font-medium">{DAY_LABELS[day.dayOfWeek]}</span>
+                      </div>
+                      <label className="flex items-center gap-2 pt-1.5">
+                        <input
+                          type="checkbox"
+                          checked={day.isClosed}
+                          onChange={(event) => {
+                            const hours = form.operatingHours as OperatingHoursConfig;
+                            setForm((current) => ({
+                              ...current,
+                              operatingHours: {
+                                ...hours,
+                                schedule: hours.schedule.map((d) =>
+                                  d.dayOfWeek === day.dayOfWeek
+                                    ? { ...d, isClosed: event.target.checked }
+                                    : d
+                                ),
+                              },
+                            }));
+                          }}
+                          className="h-4 w-4 rounded border-stone/30"
+                        />
+                        <span className="text-sm text-stone">Closed</span>
+                      </label>
+                      {!day.isClosed && (
+                        <div className="flex flex-1 flex-wrap items-start gap-2">
+                          {day.periods.map((period, periodIndex) => (
+                            <div key={periodIndex} className="flex items-center gap-1.5">
+                              <input
+                                type="time"
+                                value={period.open}
+                                onChange={(event) => {
+                                  const hours = form.operatingHours as OperatingHoursConfig;
+                                  setForm((current) => ({
+                                    ...current,
+                                    operatingHours: {
+                                      ...hours,
+                                      schedule: hours.schedule.map((d) =>
+                                        d.dayOfWeek === day.dayOfWeek
+                                          ? {
+                                              ...d,
+                                              periods: d.periods.map((p, pi) =>
+                                                pi === periodIndex
+                                                  ? { ...p, open: event.target.value }
+                                                  : p
+                                              ),
+                                            }
+                                          : d
+                                      ),
+                                    },
+                                  }));
+                                }}
+                                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                              />
+                              <span className="text-xs text-stone">to</span>
+                              <input
+                                type="time"
+                                value={period.close}
+                                onChange={(event) => {
+                                  const hours = form.operatingHours as OperatingHoursConfig;
+                                  setForm((current) => ({
+                                    ...current,
+                                    operatingHours: {
+                                      ...hours,
+                                      schedule: hours.schedule.map((d) =>
+                                        d.dayOfWeek === day.dayOfWeek
+                                          ? {
+                                              ...d,
+                                              periods: d.periods.map((p, pi) =>
+                                                pi === periodIndex
+                                                  ? { ...p, close: event.target.value }
+                                                  : p
+                                              ),
+                                            }
+                                          : d
+                                      ),
+                                    },
+                                  }));
+                                }}
+                                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                              />
+                              {day.periods.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const hours = form.operatingHours as OperatingHoursConfig;
+                                    setForm((current) => ({
+                                      ...current,
+                                      operatingHours: {
+                                        ...hours,
+                                        schedule: hours.schedule.map((d) =>
+                                          d.dayOfWeek === day.dayOfWeek
+                                            ? {
+                                                ...d,
+                                                periods: d.periods.filter(
+                                                  (_, pi) => pi !== periodIndex
+                                                ),
+                                              }
+                                            : d
+                                        ),
+                                      },
+                                    }));
+                                  }}
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-stone hover:bg-stone/10 hover:text-ink"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const hours = form.operatingHours as OperatingHoursConfig;
+                              setForm((current) => ({
+                                ...current,
+                                operatingHours: {
+                                  ...hours,
+                                  schedule: hours.schedule.map((d) =>
+                                    d.dayOfWeek === day.dayOfWeek
+                                      ? {
+                                          ...d,
+                                          periods: [
+                                            ...d.periods,
+                                            { open: "18:00", close: "23:00" },
+                                          ],
+                                        }
+                                      : d
+                                  ),
+                                },
+                              }));
+                            }}
+                            className="inline-flex h-9 items-center gap-1 rounded-full border border-dashed border-stone/30 px-3 text-xs text-stone hover:border-stone/50 hover:text-ink"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Add period
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((current) => ({ ...current, operatingHours: null }))
+                }
+                className="text-sm text-stone underline hover:text-ink"
+              >
+                Remove operating hours
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <p className="text-sm text-stone">
+                No operating hours configured. Setting hours shows an &quot;Open Now&quot; badge on your public page.
+              </p>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  setForm((current) => ({
+                    ...current,
+                    operatingHours: createDefaultSchedule(),
+                  }))
+                }
+              >
+                <Clock className="h-4 w-4" />
+                Set up operating hours
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

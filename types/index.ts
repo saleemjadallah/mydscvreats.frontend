@@ -10,6 +10,31 @@ export type ImageStatus =
   | "generated"
   | "uploaded"
   | "failed";
+export type ImageOriginType =
+  | "legacy_unspecified"
+  | "mydscvr_ai"
+  | "owner_upload"
+  | "menu_source_upload";
+export type ImageDerivationType =
+  | "original"
+  | "truth_preserving_edit"
+  | "synthetic_generation";
+
+export interface TimePeriod {
+  open: string;   // "09:00" HH:mm 24h
+  close: string;  // "23:00" HH:mm 24h
+}
+
+export interface DaySchedule {
+  dayOfWeek: number;   // 0=Sunday ... 6=Saturday
+  isClosed: boolean;
+  periods: TimePeriod[];
+}
+
+export interface OperatingHoursConfig {
+  timezone: string;          // IANA e.g. "Asia/Dubai"
+  schedule: DaySchedule[];   // exactly 7 entries
+}
 
 export interface MenuItemImage {
   id: string;
@@ -18,6 +43,47 @@ export interface MenuItemImage {
   imageStatus: ImageStatus;
   promptModifier: string | null;
   isPrimary: boolean;
+  originType: ImageOriginType;
+  derivationType: ImageDerivationType;
+  parentImageId: string | null;
+}
+
+export interface DetectedMenuSourceImage {
+  itemId: string;
+  pageNumber: number;
+  confidence: number;
+  bbox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  note?: string;
+}
+
+export type MenuSourceImageReviewStatus = "pending" | "confirmed" | "dismissed";
+
+export interface MenuSourceImageCandidate {
+  id: string;
+  restaurantId: string;
+  imageUrl: string;
+  sourcePageNumber: number;
+  confidence: number;
+  note: string | null;
+  reviewStatus: MenuSourceImageReviewStatus;
+  suggestedMenuItemId: string | null;
+  assignedMenuItemId: string | null;
+  linkedImageId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  suggestedMenuItem?: {
+    id: string;
+    name: string;
+  } | null;
+  assignedMenuItem?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface DietaryTag {
@@ -155,6 +221,7 @@ export interface Restaurant {
   website: string | null;
   whatsappNumber: string | null;
   whatsappPrefill: string | null;
+  operatingHours?: OperatingHoursConfig | null;
   logoUrl: string | null;
   coverImageUrl: string | null;
   isPublished: boolean;
@@ -169,6 +236,7 @@ export interface Restaurant {
     createdAt: string;
     updatedAt: string;
   } | null;
+  pendingMenuSourceImageReviewCount?: number;
   menuSections?: MenuSection[];
   promotions?: Promotion[];
   gbpConnection?: GbpConnection | null;

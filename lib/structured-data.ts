@@ -1,5 +1,41 @@
-import type { Restaurant } from "@/types";
+import type { OperatingHoursConfig, Restaurant } from "@/types";
 import { normalizeExternalUrl } from "@/lib/utils";
+
+const SCHEMA_DAY_MAP: Record<number, string> = {
+  0: "https://schema.org/Sunday",
+  1: "https://schema.org/Monday",
+  2: "https://schema.org/Tuesday",
+  3: "https://schema.org/Wednesday",
+  4: "https://schema.org/Thursday",
+  5: "https://schema.org/Friday",
+  6: "https://schema.org/Saturday",
+};
+
+export function buildOpeningHoursSpec(config: OperatingHoursConfig) {
+  const specs: Array<{
+    "@type": string;
+    dayOfWeek: string;
+    opens: string;
+    closes: string;
+  }> = [];
+
+  for (const day of config.schedule) {
+    if (day.isClosed || day.periods.length === 0) continue;
+    const schemaDay = SCHEMA_DAY_MAP[day.dayOfWeek];
+    if (!schemaDay) continue;
+
+    for (const period of day.periods) {
+      specs.push({
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: schemaDay,
+        opens: period.open,
+        closes: period.close,
+      });
+    }
+  }
+
+  return specs;
+}
 
 const DIET_MAP: Record<string, string> = {
   vegetarian: "https://schema.org/VegetarianDiet",
@@ -89,6 +125,14 @@ export function buildRestaurantJsonLd(restaurant: Restaurant) {
       : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
     ...(gbpUrl ? { hasMap: gbpUrl } : {}),
+    ...(restaurant.operatingHours
+      ? (() => {
+          const specs = buildOpeningHoursSpec(restaurant.operatingHours);
+          return specs.length > 0
+            ? { openingHoursSpecification: specs }
+            : {};
+        })()
+      : {}),
     hasMenu: {
       "@type": "Menu",
       "@id": `${menuUrl}#menu`,

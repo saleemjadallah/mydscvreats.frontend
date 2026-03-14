@@ -29,6 +29,7 @@ import { getRestaurantSetupState } from "@/lib/restaurant-setup";
 const stepIcons = {
   menu: ScanLine,
   theme: Palette,
+  photos: ImageIcon,
   publish: CreditCard,
 };
 

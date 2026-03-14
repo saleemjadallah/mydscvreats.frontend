@@ -12,6 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
 import { getMenuItemLimitMessage, getMenuItemUsage } from "@/lib/entitlements";
+import {
+  cropRenderedMenuSourcePage,
+  renderMenuSourcePages,
+} from "@/lib/menu-source-images";
 import type { MenuExtractionDraft } from "@/types";
 
 async function fileToBase64(file: File) {
@@ -123,8 +127,70 @@ export function AiMenuImportPanel({
         sections: draft.sections,
       });
 
+      let createdSourceImageCandidates = 0;
+      let detectedSourceImages = 0;
+
+      if (file && (file.type === "application/pdf" || file.type.startsWith("image/"))) {
+        try {
+          const pages = await renderMenuSourcePages(file);
+          if (pages.length) {
+            const detection = await apiClient.detectMenuSourceImages(token, {
+              restaurantId: restaurant.id,
+              pages: pages.map((page) => ({
+                pageNumber: page.pageNumber,
+                base64: page.base64,
+                contentType: page.contentType,
+              })),
+            });
+
+            detectedSourceImages = detection.matches.length;
+
+            for (const match of detection.matches) {
+              const page = pages.find((candidate) => candidate.pageNumber === match.pageNumber);
+              if (!page) {
+                continue;
+              }
+
+              try {
+                const cropped = await cropRenderedMenuSourcePage(page, match.bbox);
+                await apiClient.createMenuSourceImageCandidate(token, {
+                  restaurantId: restaurant.id,
+                  filename: `menu-source-page-${match.pageNumber}-${match.itemId}.jpg`,
+                  contentType: cropped.contentType,
+                  base64: cropped.base64,
+                  sourcePageNumber: match.pageNumber,
+                  confidence: match.confidence,
+                  note: match.note,
+                  suggestedMenuItemId: match.itemId,
+                });
+                createdSourceImageCandidates += 1;
+              } catch (error) {
+                console.warn("Skipping detected menu source image", {
+                  itemId: match.itemId,
+                  pageNumber: match.pageNumber,
+                  error,
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.warn("Menu source image detection failed", error);
+          toast.error("Menu saved, but source image detection could not finish.");
+        }
+      }
+
       await refresh();
-      toast.success("Menu imported.");
+      if (createdSourceImageCandidates > 0) {
+        toast.success(
+          `Menu imported. Queued ${createdSourceImageCandidates} imported menu photo${createdSourceImageCandidates === 1 ? "" : "s"} for review.`
+        );
+      } else if (detectedSourceImages > 0) {
+        toast.message(
+          "Menu imported. We found likely dish photos in the upload, but none could be staged for review."
+        );
+      } else {
+        toast.success("Menu imported.");
+      }
       await afterSave?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save extracted menu.");

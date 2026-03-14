@@ -3,7 +3,7 @@ import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import type { Restaurant } from "@/types";
 
 export interface SetupStep {
-  id: "menu" | "theme" | "publish";
+  id: "menu" | "theme" | "photos" | "publish";
   label: string;
   description: string;
   href: string;
@@ -17,6 +17,8 @@ export function getRestaurantSetupState(restaurant: Restaurant | null) {
   const audit = auditSections(sections);
   const hasMenu = audit.totalItems > 0;
   const hasTheme = Boolean(restaurant?.themeKey);
+  const hasReviewedImportedPhotos =
+    (restaurant?.pendingMenuSourceImageReviewCount ?? 0) === 0;
   const isPublished = Boolean(restaurant?.isPublished);
   const onboardingComplete = Boolean(restaurant && hasMenu && hasTheme);
   const themeName = hasTheme ? getRestaurantTheme(restaurant?.themeKey).name : null;
@@ -43,6 +45,17 @@ export function getRestaurantSetupState(restaurant: Restaurant | null) {
       summary: hasTheme
         ? `${themeName} is applied to the hosted page.`
         : "Theme choice is still missing.",
+    },
+    {
+      id: "photos",
+      label: "Review imported menu photos",
+      description: "Confirm or reassign any dish photos cropped from the uploaded menu before launch.",
+      href: "/dashboard/menu-photos",
+      cta: hasReviewedImportedPhotos ? "Review complete" : "Review menu photos",
+      completed: hasReviewedImportedPhotos,
+      summary: hasReviewedImportedPhotos
+        ? "No imported menu photos are waiting for review."
+        : `${restaurant?.pendingMenuSourceImageReviewCount ?? 0} imported menu photo${restaurant?.pendingMenuSourceImageReviewCount === 1 ? "" : "s"} still need review.`,
     },
     {
       id: "publish",

@@ -1,6 +1,7 @@
 import type {
   AnalyticsSummary,
   BadgeType,
+  DetectedMenuSourceImage,
   DietaryTag,
   GbpConnection,
   ItemTagSuggestions,
@@ -9,6 +10,7 @@ import type {
   MenuExtractionDraft,
   MenuItemBadge,
   MenuItemImage,
+  MenuSourceImageCandidate,
   MenuSection,
   Promotion,
   Restaurant,
@@ -224,6 +226,92 @@ export const apiClient = {
   },
   selectMenuItemImage(token: string, itemId: string, imageId: string) {
     return request<{ ok: boolean }>(`/api/menu/items/${itemId}/images/${imageId}/select`, {
+      method: "POST",
+      token,
+    });
+  },
+  uploadMenuItemImage(token: string, itemId: string, payload: {
+    filename: string;
+    contentType: string;
+    base64: string;
+    makePrimary?: boolean;
+    originType?: "owner_upload" | "menu_source_upload";
+  }) {
+    return request<{ ok: boolean; image: MenuItemImage }>(`/api/menu/items/${itemId}/images/upload`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  detectMenuSourceImages(token: string, payload: {
+    restaurantId: string;
+    pages: Array<{
+      pageNumber: number;
+      base64: string;
+      contentType: "image/jpeg" | "image/png" | "image/webp";
+    }>;
+  }) {
+    return request<{ matches: DetectedMenuSourceImage[] }>("/api/menu/detect-source-images", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  createMenuSourceImageCandidate(token: string, payload: {
+    restaurantId: string;
+    filename: string;
+    contentType: string;
+    base64: string;
+    sourcePageNumber: number;
+    confidence: number;
+    note?: string;
+    suggestedMenuItemId?: string | null;
+  }) {
+    return request<MenuSourceImageCandidate>("/api/menu-source-images", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  listMenuSourceImageCandidates(
+    token: string,
+    restaurantId: string,
+    status?: "pending" | "confirmed" | "dismissed"
+  ) {
+    const search = status ? `?status=${encodeURIComponent(status)}` : "";
+    return request<MenuSourceImageCandidate[]>(`/api/menu-source-images/${restaurantId}${search}`, {
+      token,
+    });
+  },
+  updateMenuSourceImageCandidate(
+    token: string,
+    candidateId: string,
+    payload: { assignedMenuItemId: string | null }
+  ) {
+    return request<MenuSourceImageCandidate>(`/api/menu-source-images/${candidateId}`, {
+      method: "PUT",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  confirmMenuSourceImageCandidate(token: string, candidateId: string) {
+    return request<MenuSourceImageCandidate>(`/api/menu-source-images/${candidateId}/confirm`, {
+      method: "POST",
+      token,
+    });
+  },
+  bulkConfirmMenuSourceImageCandidates(token: string, candidateIds: string[]) {
+    return request<{ ok: boolean; confirmed: MenuSourceImageCandidate[] }>(
+      "/api/menu-source-images/bulk-confirm",
+      {
+        method: "POST",
+        token,
+        body: JSON.stringify({ candidateIds }),
+      }
+    );
+  },
+  dismissMenuSourceImageCandidate(token: string, candidateId: string) {
+    return request<MenuSourceImageCandidate>(`/api/menu-source-images/${candidateId}/dismiss`, {
       method: "POST",
       token,
     });

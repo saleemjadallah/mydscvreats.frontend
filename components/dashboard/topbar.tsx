@@ -89,6 +89,20 @@ export function DashboardTopbar() {
             </Button>
           </div>
         </div>
+      ) : restaurant && (restaurant.pendingMenuSourceImageReviewCount ?? 0) > 0 ? (
+        <div className="border-t border-[#E5D7C0] bg-[#FFF8EE] px-5 py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-ink">Imported menu photos need review</div>
+              <p className="mt-1 text-sm text-stone">
+                {restaurant.pendingMenuSourceImageReviewCount} cropped photo{restaurant.pendingMenuSourceImageReviewCount === 1 ? "" : "s"} from the uploaded menu are still waiting for confirmation or reassignment before launch.
+              </p>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link href="/dashboard/menu-photos">Review menu photos</Link>
+            </Button>
+          </div>
+        </div>
       ) : null}
     </div>
   );

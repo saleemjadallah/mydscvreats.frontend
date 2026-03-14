@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { apiClient, getApiUrl } from "@/lib/api-client";
+import { getMenuImageSourceLabel, getMenuImageSourceTone } from "@/lib/menu-image-provenance";
+import { getOpenStatus } from "@/lib/operating-hours";
 import {
   getDiscountedItemPromotionMap,
   getPromotionsByItemId,
@@ -30,7 +32,7 @@ import {
 import { buildBreadcrumbJsonLd, buildPopularDishesJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { cn, formatCurrency, normalizeExternalUrl } from "@/lib/utils";
-import type { MenuItem, MenuItemImage, Restaurant, RestaurantThemeKey } from "@/types";
+import type { MenuItem, MenuItemImage, OperatingHoursConfig, Restaurant, RestaurantThemeKey } from "@/types";
 
 type DisplayMenuImage = MenuItemImage & {
   isSynthetic?: boolean;
@@ -54,6 +56,9 @@ function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
       promptModifier: null,
       isPrimary: true,
       isSynthetic: true,
+      originType: "legacy_unspecified",
+      derivationType: "original",
+      parentImageId: null,
     },
   ];
 }
@@ -92,6 +97,7 @@ function MenuItemImageGallery({
 
   const activeImage = images[activeIndex] ?? images[0];
   const hasMultipleImages = images.length > 1;
+  const sourceTone = getMenuImageSourceTone(activeImage);
 
   function showPreviousImage() {
     setActiveIndex((current) => (current === 0 ? images.length - 1 : current - 1));
@@ -148,7 +154,47 @@ function MenuItemImageGallery({
           </div>
         </>
       ) : null}
+      <div className="absolute bottom-3 left-3">
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+            sourceTone === "ai"
+              ? "bg-black/70 text-white"
+              : sourceTone === "enhanced"
+                ? "bg-[#E8A317]/90 text-[#201A17]"
+                : sourceTone === "owned"
+                  ? "bg-[#2E8B57]/90 text-white"
+                  : "bg-white/85 text-[#201A17]"
+          }`}
+        >
+          {getMenuImageSourceLabel(activeImage)}
+        </span>
+      </div>
     </>
+  );
+}
+
+function OpenStatusBadge({ config }: { config: OperatingHoursConfig }) {
+  const [status, setStatus] = useState<{ isOpen: boolean; label: string } | null>(null);
+
+  useEffect(() => {
+    setStatus(getOpenStatus(config));
+    const interval = setInterval(() => setStatus(getOpenStatus(config)), 60_000);
+    return () => clearInterval(interval);
+  }, [config]);
+
+  if (!status) return null;
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span
+        className={`h-2.5 w-2.5 rounded-full ${
+          status.isOpen
+            ? "bg-[#2E8B57] animate-pulse"
+            : "bg-white/40"
+        }`}
+      />
+      {status.label}
+    </span>
   );
 }
 
@@ -394,6 +440,9 @@ export function RestaurantPageView({
               ) : null}
             </div>
             <div className="flex flex-wrap gap-4 text-sm text-white/85">
+              {restaurant.operatingHours ? (
+                <OpenStatusBadge config={restaurant.operatingHours} />
+              ) : null}
               {restaurant.location ? (
                 <span className="inline-flex items-center gap-2">
                   <MapPin className="h-4 w-4" />

@@ -18,7 +18,21 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Award, Eye, GripVertical, ImagePlus, Info, Plus, Save, Sparkles, Tag, Trash2, X, ZoomIn } from "lucide-react";
+import {
+  Award,
+  Eye,
+  GripVertical,
+  ImagePlus,
+  Info,
+  Plus,
+  Save,
+  Sparkles,
+  Tag,
+  Trash2,
+  Upload,
+  X,
+  ZoomIn,
+} from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { BulkDescriptionDialog } from "@/components/menu/bulk-description-dialog";
@@ -48,6 +62,7 @@ import {
   getMenuItemUsage,
   getRestaurantEntitlements,
 } from "@/lib/entitlements";
+import { getMenuImageSourceLabel, getMenuImageSourceTone } from "@/lib/menu-image-provenance";
 import { auditSections } from "@/lib/menu-audit";
 import type { MenuItem, MenuItemImage, MenuSection, Restaurant } from "@/types";
 
@@ -103,8 +118,23 @@ function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
       promptModifier: null,
       isPrimary: true,
       isSynthetic: true,
+      originType: "legacy_unspecified",
+      derivationType: "original",
+      parentImageId: null,
     },
   ];
+}
+
+async function fileToBase64(file: File) {
+  const buffer = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary);
 }
 
 export function MenuEditor({
@@ -343,6 +373,38 @@ export function MenuEditor({
       );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to queue image generation.");
+    } finally {
+      setQueueingImageItemIds((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
+    }
+  }
+
+  async function uploadMenuItemImage(
+    itemId: string,
+    file: File,
+    options?: { makePrimary?: boolean }
+  ) {
+    if (queueingImageItemIds[itemId]) {
+      return;
+    }
+
+    setQueueingImageItemIds((prev) => ({ ...prev, [itemId]: true }));
+    try {
+      await withToken(async (token) => {
+        await apiClient.uploadMenuItemImage(token, itemId, {
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+          base64: await fileToBase64(file),
+          makePrimary: options?.makePrimary,
+        });
+        await onRefresh();
+      });
+      toast.success("Owner photo uploaded.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to upload owner photo.");
     } finally {
       setQueueingImageItemIds((prev) => {
         const next = { ...prev };
@@ -695,6 +757,7 @@ export function MenuEditor({
                       {section.items.map((item, itemIndex) => {
                         const displayImages = getDisplayImages(item);
                         const canAddVariant = displayImages.length > 0 && displayImages.length < 3;
+                        const canUploadImage = displayImages.length < 3;
                         const isComposingVariant = imageComposerItemId === item.id;
                         const isQueueingImage = Boolean(queueingImageItemIds[item.id]);
                         const isImageBusy = item.imageStatus === "generating" || isQueueingImage;
@@ -746,6 +809,19 @@ export function MenuEditor({
                                             Primary
                                           </Badge>
                                         ) : null}
+                                        <span
+                                          className={`inline-flex w-full justify-center rounded-full px-2 py-1 text-center text-[10px] font-medium ${
+                                            getMenuImageSourceTone(image) === "ai"
+                                              ? "bg-[#201A17] text-white"
+                                              : getMenuImageSourceTone(image) === "enhanced"
+                                                ? "bg-[#E8A317]/10 text-[#9A7210]"
+                                                : getMenuImageSourceTone(image) === "owned"
+                                                  ? "bg-[#2E8B57]/10 text-[#206B48]"
+                                                  : "bg-[#F1E6D5] text-stone"
+                                          }`}
+                                        >
+                                          {getMenuImageSourceLabel(image)}
+                                        </span>
                                         {image.promptModifier ? (
                                           <p className="line-clamp-2 text-[11px] leading-4 text-stone">
                                             {image.promptModifier}
@@ -791,16 +867,44 @@ export function MenuEditor({
                                   </div>
                                 )}
 
+                                {canUploadImage ? (
+                                  <label
+                                    className={`flex h-[88px] w-[88px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#2E8B57]/35 bg-[#F5FBF7] text-[#206B48] transition-colors hover:border-[#2E8B57] ${
+                                      isImageBusy ? "pointer-events-none opacity-50" : ""
+                                    }`}
+                                  >
+                                    <Upload className="h-5 w-5" />
+                                    <span className="mt-1 text-xs">
+                                      {isQueueingImage ? "..." : "Upload"}
+                                    </span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      disabled={isImageBusy}
+                                      onChange={(event) => {
+                                        const file = event.target.files?.[0];
+                                        if (file) {
+                                          void uploadMenuItemImage(item.id, file, {
+                                            makePrimary: displayImages.length === 0,
+                                          });
+                                        }
+                                        event.currentTarget.value = "";
+                                      }}
+                                    />
+                                  </label>
+                                ) : null}
+
                                 {canAddVariant && !isComposingVariant ? (
                                     <button
                                       type="button"
                                       disabled={isImageBusy}
-                                      className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#D8C7AF] bg-[#FFF8EE] text-stone transition-colors hover:border-saffron hover:text-saffron disabled:cursor-not-allowed disabled:opacity-50"
+                                      className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#201A17]/25 bg-[#FBF7F2] text-[#201A17] transition-colors hover:border-[#201A17] hover:text-[#201A17] disabled:cursor-not-allowed disabled:opacity-50"
                                       onClick={() => setImageComposerItemId(item.id)}
                                     >
                                       <Plus className="h-5 w-5" />
                                       <span className="mt-1 text-xs">
-                                        {isQueueingImage ? "..." : "Add"}
+                                        {isQueueingImage ? "..." : "AI"}
                                       </span>
                                     </button>
                                 ) : null}
@@ -1008,15 +1112,40 @@ export function MenuEditor({
                                     {displayImages.length}/3 image{displayImages.length === 1 ? "" : "s"}
                                   </Badge>
                                   {!displayImages.length ? (
-                                    <Button
-                                      variant="secondary"
-                                      size="sm"
-                                      disabled={isImageBusy}
-                                      onClick={() => void queueImage(item.id)}
-                                    >
-                                      <ImagePlus className="h-4 w-4" />
-                                      {isQueueingImage ? "Queueing..." : "Generate"}
-                                    </Button>
+                                    <>
+                                      <label
+                                        className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-md border border-[#2E8B57]/25 bg-[#F5FBF7] px-3 text-sm font-medium text-[#206B48] transition-colors hover:bg-[#ECF7EF] ${
+                                          isImageBusy ? "pointer-events-none opacity-50" : ""
+                                        }`}
+                                      >
+                                        <Upload className="h-4 w-4" />
+                                        Upload own photo
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          disabled={isImageBusy}
+                                          onChange={(event) => {
+                                            const file = event.target.files?.[0];
+                                            if (file) {
+                                              void uploadMenuItemImage(item.id, file, {
+                                                makePrimary: true,
+                                              });
+                                            }
+                                            event.currentTarget.value = "";
+                                          }}
+                                        />
+                                      </label>
+                                      <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        disabled={isImageBusy}
+                                        onClick={() => void queueImage(item.id)}
+                                      >
+                                        <ImagePlus className="h-4 w-4" />
+                                        {isQueueingImage ? "Queueing..." : "Generate with MyDscvr AI"}
+                                      </Button>
+                                    </>
                                   ) : null}
                                   {item.imageStatus === "failed" ? (
                                     <Button
