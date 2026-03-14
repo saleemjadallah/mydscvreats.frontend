@@ -13,6 +13,7 @@ import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
 import { getMenuItemLimitMessage, getMenuItemUsage } from "@/lib/entitlements";
 import {
+  adjustDetectedMenuPhotoCrop,
   cropRenderedMenuSourcePage,
   renderMenuSourcePages,
 } from "@/lib/menu-source-images";
@@ -152,13 +153,26 @@ export function AiMenuImportPanel({
               }
 
               try {
-                const cropped = await cropRenderedMenuSourcePage(page, match.bbox);
+                const adjusted = adjustDetectedMenuPhotoCrop(page, match.bbox);
+                if (adjusted.rejected) {
+                  continue;
+                }
+
+                const cropped = await cropRenderedMenuSourcePage(page, adjusted.bbox);
                 await apiClient.createMenuSourceImageCandidate(token, {
                   restaurantId: restaurant.id,
                   filename: `menu-source-page-${match.pageNumber}-${match.itemId}.jpg`,
                   contentType: cropped.contentType,
                   base64: cropped.base64,
+                  sourcePageFilename: `menu-source-page-${match.pageNumber}.jpg`,
+                  sourcePageContentType: page.contentType,
+                  sourcePageBase64: page.base64,
                   sourcePageNumber: match.pageNumber,
+                  cropX: adjusted.bbox.x,
+                  cropY: adjusted.bbox.y,
+                  cropWidth: adjusted.bbox.width,
+                  cropHeight: adjusted.bbox.height,
+                  textOverlapScore: adjusted.textOverlapScore,
                   confidence: match.confidence,
                   note: match.note,
                   suggestedMenuItemId: match.itemId,

@@ -263,7 +263,15 @@ export const apiClient = {
     filename: string;
     contentType: string;
     base64: string;
+    sourcePageFilename: string;
+    sourcePageContentType: string;
+    sourcePageBase64: string;
     sourcePageNumber: number;
+    cropX: number;
+    cropY: number;
+    cropWidth: number;
+    cropHeight: number;
+    textOverlapScore?: number;
     confidence: number;
     note?: string;
     suggestedMenuItemId?: string | null;
@@ -287,7 +295,19 @@ export const apiClient = {
   updateMenuSourceImageCandidate(
     token: string,
     candidateId: string,
-    payload: { assignedMenuItemId: string | null }
+    payload: {
+      assignedMenuItemId?: string | null;
+      crop?: {
+        filename: string;
+        contentType: string;
+        base64: string;
+        cropX: number;
+        cropY: number;
+        cropWidth: number;
+        cropHeight: number;
+        textOverlapScore?: number;
+      };
+    }
   ) {
     return request<MenuSourceImageCandidate>(`/api/menu-source-images/${candidateId}`, {
       method: "PUT",

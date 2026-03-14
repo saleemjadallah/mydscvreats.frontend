@@ -67,7 +67,13 @@ export interface MenuSourceImageCandidate {
   id: string;
   restaurantId: string;
   imageUrl: string;
+  sourcePageImageUrl: string | null;
   sourcePageNumber: number;
+  cropX: number | null;
+  cropY: number | null;
+  cropWidth: number | null;
+  cropHeight: number | null;
+  textOverlapScore: number | null;
   confidence: number;
   note: string | null;
   reviewStatus: MenuSourceImageReviewStatus;

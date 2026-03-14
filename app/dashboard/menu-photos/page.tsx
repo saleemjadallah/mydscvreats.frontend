@@ -6,12 +6,17 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ImageIcon, Loader2, RefreshCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  MenuPhotoCropEditor,
+  type CropBox,
+} from "@/components/menu/menu-photo-crop-editor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
 import { getImageEnhancementLimitLabel, getRestaurantEntitlements } from "@/lib/entitlements";
+import { cropSourceImageUrl } from "@/lib/menu-source-images";
 import type { ImageEnhancementUsage, MenuSourceImageCandidate } from "@/types";
 
 const statusOptions = [
@@ -30,7 +35,16 @@ export default function MenuPhotosPage() {
   const [candidates, setCandidates] = useState<MenuSourceImageCandidate[]>([]);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
   const [enhancementUsage, setEnhancementUsage] = useState<ImageEnhancementUsage | null>(null);
+  const [editingCropCandidateId, setEditingCropCandidateId] = useState<string | null>(null);
+  const [cropSavingCandidateId, setCropSavingCandidateId] = useState<string | null>(null);
   const entitlements = getRestaurantEntitlements(restaurant);
+  const batchEnhancementEnabled =
+    enhancementUsage?.capabilities.batchEnhancement ?? entitlements.batchImageEnhancementEnabled;
+  const enhancementAllowanceLabel = enhancementUsage
+    ? enhancementUsage.usage.limit === null
+      ? "Unlimited on Pro"
+      : `${enhancementUsage.usage.used}/${enhancementUsage.usage.limit} used this month`
+    : getImageEnhancementLimitLabel(entitlements.imageEnhancementLimit);
 
   const menuItems = useMemo(
     () =>
@@ -177,6 +191,53 @@ export default function MenuPhotosPage() {
     }
   }
 
+  function getCandidateCrop(candidate: MenuSourceImageCandidate): CropBox {
+    return {
+      x: candidate.cropX ?? 0.1,
+      y: candidate.cropY ?? 0.1,
+      width: candidate.cropWidth ?? 0.8,
+      height: candidate.cropHeight ?? 0.8,
+    };
+  }
+
+  async function saveCandidateCrop(candidate: MenuSourceImageCandidate, crop: CropBox) {
+    if (!candidate.sourcePageImageUrl) {
+      toast.error("This imported menu photo is missing its source page image.");
+      return;
+    }
+
+    try {
+      setCropSavingCandidateId(candidate.id);
+      const token = await getToken();
+      if (!token) {
+        throw new Error("Missing auth token");
+      }
+
+      const cropped = await cropSourceImageUrl(candidate.sourcePageImageUrl, crop);
+      const updated = await apiClient.updateMenuSourceImageCandidate(token, candidate.id, {
+        crop: {
+          filename: `menu-source-adjusted-${candidate.id}.jpg`,
+          contentType: cropped.contentType,
+          base64: cropped.base64,
+          cropX: crop.x,
+          cropY: crop.y,
+          cropWidth: crop.width,
+          cropHeight: crop.height,
+        },
+      });
+
+      setCandidates((current) =>
+        current.map((entry) => (entry.id === candidate.id ? updated : entry))
+      );
+      setEditingCropCandidateId(null);
+      toast.success("Crop updated.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update crop.");
+    } finally {
+      setCropSavingCandidateId(null);
+    }
+  }
+
   if (!restaurant) {
     return (
       <Card>
@@ -213,19 +274,13 @@ export default function MenuPhotosPage() {
 
             <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
               <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone">AI enhancement allowance</div>
-              <div className="mt-3 text-lg font-semibold text-ink">
-                {enhancementUsage
-                  ? enhancementUsage.usage.limit === null
-                    ? "Unlimited on Pro"
-                    : `${enhancementUsage.usage.used}/${enhancementUsage.usage.limit} used this month`
-                  : getImageEnhancementLimitLabel(entitlements.imageEnhancementLimit)}
-              </div>
+              <div className="mt-3 text-lg font-semibold text-ink">{enhancementAllowanceLabel}</div>
               <p className="mt-2 text-sm text-stone">
-                {entitlements.batchImageEnhancementEnabled
+                {batchEnhancementEnabled
                   ? "Batch enhancement and advanced styling are enabled on this plan."
                   : "Starter keeps enhancement lightweight. Upgrade to Pro for batch enhancement and advanced styling controls."}
               </p>
-              {!entitlements.batchImageEnhancementEnabled ? (
+              {!batchEnhancementEnabled ? (
                 <Button asChild variant="secondary" size="sm" className="mt-4">
                   <Link href="/dashboard/billing">Upgrade to Pro</Link>
                 </Button>
@@ -285,6 +340,7 @@ export default function MenuPhotosPage() {
                 const isBusy = busyId === candidate.id;
                 const isSelected = selectedCandidateIds.includes(candidate.id);
                 const canBulkConfirm = candidate.reviewStatus === "pending" && Boolean(selectedItemId);
+                const isEditingCrop = editingCropCandidateId === candidate.id;
 
                 return (
                   <Card key={candidate.id} className="overflow-hidden border border-[#E7DAC5]">
@@ -325,6 +381,11 @@ export default function MenuPhotosPage() {
                           {candidate.suggestedMenuItem ? (
                             <Badge variant="muted">Suggested: {candidate.suggestedMenuItem.name}</Badge>
                           ) : null}
+                          {candidate.textOverlapScore !== null && candidate.textOverlapScore > 0 ? (
+                            <Badge variant={candidate.textOverlapScore <= 0.03 ? "success" : "accent"}>
+                              {Math.round(candidate.textOverlapScore * 100)}% text overlap
+                            </Badge>
+                          ) : null}
                         </div>
 
                         {candidate.note ? (
@@ -362,6 +423,19 @@ export default function MenuPhotosPage() {
                               {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                               Confirm and add to dish
                             </Button>
+                            {candidate.sourcePageImageUrl ? (
+                              <Button
+                                variant="secondary"
+                                disabled={isBusy || cropSavingCandidateId === candidate.id}
+                                onClick={() =>
+                                  setEditingCropCandidateId((current) =>
+                                    current === candidate.id ? null : candidate.id
+                                  )
+                                }
+                              >
+                                Adjust crop
+                              </Button>
+                            ) : null}
                             <Button
                               variant="secondary"
                               disabled={isBusy}
@@ -378,6 +452,16 @@ export default function MenuPhotosPage() {
                               : "Dismissed."}
                           </div>
                         )}
+
+                        {isEditingCrop && candidate.sourcePageImageUrl ? (
+                          <MenuPhotoCropEditor
+                            sourceImageUrl={candidate.sourcePageImageUrl}
+                            initialCrop={getCandidateCrop(candidate)}
+                            saving={cropSavingCandidateId === candidate.id}
+                            onCancel={() => setEditingCropCandidateId(null)}
+                            onSave={(crop) => saveCandidateCrop(candidate, crop)}
+                          />
+                        ) : null}
                       </CardContent>
                     </div>
                   </Card>

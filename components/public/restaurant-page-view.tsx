@@ -40,7 +40,9 @@ type DisplayMenuImage = MenuItemImage & {
 
 function getDisplayImages(item: MenuItem): DisplayMenuImage[] {
   if (item.images?.length) {
-    return [...item.images].sort((a, b) => a.slot - b.slot);
+    return [...item.images]
+      .filter((image) => image.slot >= 0)
+      .sort((a, b) => a.slot - b.slot);
   }
 
   if (!item.imageUrl) {
