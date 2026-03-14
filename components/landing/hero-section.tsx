@@ -21,7 +21,7 @@ export function HeroSection() {
           <div className="flex flex-wrap items-center gap-4">
             <Button asChild size="lg">
               <Link href="/dashboard">
-                Start free trial
+                List Your Restaurant
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>

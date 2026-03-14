@@ -16,7 +16,7 @@ export function FinalCta() {
             className="bg-white text-ink hover:bg-white/90"
           >
             <Link href="/dashboard">
-              Start free trial
+              List Your Restaurant
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
