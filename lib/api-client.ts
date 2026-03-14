@@ -4,6 +4,7 @@ import type {
   DetectedMenuSourceImage,
   DietaryTag,
   GbpConnection,
+  ImageEnhancementUsage,
   ItemTagSuggestions,
   MenuAnalysisResult,
   MenuAssistantMessage,
@@ -542,6 +543,11 @@ export const apiClient = {
       createdAt?: string;
       level: "basic" | "full";
     }>("/api/ai/analyze-menu/" + restaurantId, {
+      token,
+    });
+  },
+  getImageEnhancementUsage(token: string, restaurantId: string) {
+    return request<ImageEnhancementUsage>("/api/ai/image-enhancement-usage/" + restaurantId, {
       token,
     });
   },

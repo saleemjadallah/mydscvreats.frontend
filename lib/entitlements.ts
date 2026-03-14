@@ -6,6 +6,8 @@ export interface PlanEntitlements {
   plan: SubscriptionPlan | null;
   hasSelectedPlan: boolean;
   menuItemLimit: number | null;
+  sourcePhotoImportEnabled: boolean;
+  sourcePhotoReviewEnabled: boolean;
   widgetEnabled: boolean;
   menuAssistantEnabled: boolean;
   customDomainEnabled: boolean;
@@ -14,6 +16,9 @@ export interface PlanEntitlements {
   analyticsTier: "basic" | "advanced";
   imageGenerationPriority: number;
   priorityImageGeneration: boolean;
+  imageEnhancementLimit: number | null;
+  batchImageEnhancementEnabled: boolean;
+  advancedPhotoStylingEnabled: boolean;
   aiDescriptionLimit: number | null;
   bulkDescriptionEnabled: boolean;
   aiTagAnalysisLimit: number | null;
@@ -27,6 +32,8 @@ const PLAN_ENTITLEMENTS: Record<
 > = {
   starter: {
     menuItemLimit: 30,
+    sourcePhotoImportEnabled: true,
+    sourcePhotoReviewEnabled: true,
     widgetEnabled: false,
     menuAssistantEnabled: false,
     customDomainEnabled: false,
@@ -35,6 +42,9 @@ const PLAN_ENTITLEMENTS: Record<
     analyticsTier: "basic",
     imageGenerationPriority: 0,
     priorityImageGeneration: false,
+    imageEnhancementLimit: 5,
+    batchImageEnhancementEnabled: false,
+    advancedPhotoStylingEnabled: false,
     aiDescriptionLimit: 5,
     bulkDescriptionEnabled: false,
     aiTagAnalysisLimit: 1,
@@ -43,6 +53,8 @@ const PLAN_ENTITLEMENTS: Record<
   },
   pro: {
     menuItemLimit: null,
+    sourcePhotoImportEnabled: true,
+    sourcePhotoReviewEnabled: true,
     widgetEnabled: true,
     menuAssistantEnabled: true,
     customDomainEnabled: false,
@@ -51,6 +63,9 @@ const PLAN_ENTITLEMENTS: Record<
     analyticsTier: "advanced",
     imageGenerationPriority: 10,
     priorityImageGeneration: true,
+    imageEnhancementLimit: null,
+    batchImageEnhancementEnabled: true,
+    advancedPhotoStylingEnabled: true,
     aiDescriptionLimit: null,
     bulkDescriptionEnabled: true,
     aiTagAnalysisLimit: null,
@@ -63,6 +78,8 @@ const DRAFT_ENTITLEMENTS: PlanEntitlements = {
   plan: null,
   hasSelectedPlan: false,
   menuItemLimit: null,
+  sourcePhotoImportEnabled: true,
+  sourcePhotoReviewEnabled: true,
   widgetEnabled: false,
   menuAssistantEnabled: false,
   customDomainEnabled: false,
@@ -71,6 +88,9 @@ const DRAFT_ENTITLEMENTS: PlanEntitlements = {
   analyticsTier: "basic",
   imageGenerationPriority: 0,
   priorityImageGeneration: false,
+  imageEnhancementLimit: 3,
+  batchImageEnhancementEnabled: false,
+  advancedPhotoStylingEnabled: false,
   aiDescriptionLimit: 3,
   bulkDescriptionEnabled: false,
   aiTagAnalysisLimit: 1,
@@ -136,4 +156,12 @@ export function getMenuItemUsage(
 
 export function getMenuItemLimitMessage(limit: number) {
   return `Starter includes up to ${limit} menu items. Upgrade to Pro for unlimited dishes.`;
+}
+
+export function getImageEnhancementLimitLabel(limit: number | null) {
+  if (limit === null) {
+    return "Unlimited AI photo enhancements";
+  }
+
+  return `${limit} AI photo enhancement${limit === 1 ? "" : "s"} / month`;
 }

@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, ImageIcon, Loader2, RefreshCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRestaurant } from "@/hooks/use-restaurant";
 import { apiClient } from "@/lib/api-client";
-import type { MenuSourceImageCandidate } from "@/types";
+import { getImageEnhancementLimitLabel, getRestaurantEntitlements } from "@/lib/entitlements";
+import type { ImageEnhancementUsage, MenuSourceImageCandidate } from "@/types";
 
 const statusOptions = [
   { id: "pending", label: "Pending review" },
@@ -19,12 +22,15 @@ const statusOptions = [
 
 export default function MenuPhotosPage() {
   const { getToken } = useAuth();
+  const router = useRouter();
   const { restaurant, refresh } = useRestaurant();
   const [status, setStatus] = useState<(typeof statusOptions)[number]["id"]>("pending");
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<MenuSourceImageCandidate[]>([]);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
+  const [enhancementUsage, setEnhancementUsage] = useState<ImageEnhancementUsage | null>(null);
+  const entitlements = getRestaurantEntitlements(restaurant);
 
   const menuItems = useMemo(
     () =>
@@ -64,6 +70,27 @@ export default function MenuPhotosPage() {
     void loadCandidates(status);
   }, [restaurant?.id, status]);
 
+  useEffect(() => {
+    if (!restaurant) {
+      setEnhancementUsage(null);
+      return;
+    }
+
+    void (async () => {
+      try {
+        const token = await getToken();
+        if (!token) {
+          throw new Error("Missing auth token");
+        }
+
+        const usage = await apiClient.getImageEnhancementUsage(token, restaurant.id);
+        setEnhancementUsage(usage);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to load image enhancement allowance.");
+      }
+    })();
+  }, [getToken, restaurant?.id]);
+
   async function reassignCandidate(candidateId: string, assignedMenuItemId: string | null) {
     try {
       setBusyId(candidateId);
@@ -91,10 +118,13 @@ export default function MenuPhotosPage() {
         throw new Error("Missing auth token");
       }
 
-      await apiClient.confirmMenuSourceImageCandidate(token, candidateId);
+      const confirmed = await apiClient.confirmMenuSourceImageCandidate(token, candidateId);
       setCandidates((current) => current.filter((candidate) => candidate.id !== candidateId));
       await refresh();
-      toast.success("Imported menu photo confirmed and added to the dish.");
+      toast.success(
+        `Imported menu photo confirmed for ${confirmed.assignedMenuItem?.name ?? confirmed.suggestedMenuItem?.name ?? "the selected dish"}. Opening the menu editor.`
+      );
+      router.push("/dashboard/menu");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to confirm imported menu photo.");
     } finally {
@@ -169,6 +199,40 @@ export default function MenuPhotosPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-5 p-6">
+          <div className="grid gap-4 xl:grid-cols-[1.35fr,0.65fr]">
+            <div className="rounded-[24px] border border-[#E7DAC5] bg-[#FFFDF9] p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="success">Included on all plans</Badge>
+                <Badge variant="muted">Truth-preserving intake</Badge>
+              </div>
+              <h3 className="mt-3 text-base font-semibold text-ink">Upload and review real menu photos on any plan</h3>
+              <p className="mt-2 text-sm text-stone">
+                Owners can upload their own dish photos, extract crops from a PDF menu, and manually confirm or reassign each photo before it becomes public. That accuracy workflow stays open on Starter and Pro.
+              </p>
+            </div>
+
+            <div className="rounded-[24px] border border-[#E7DAC5] bg-white p-5">
+              <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone">AI enhancement allowance</div>
+              <div className="mt-3 text-lg font-semibold text-ink">
+                {enhancementUsage
+                  ? enhancementUsage.usage.limit === null
+                    ? "Unlimited on Pro"
+                    : `${enhancementUsage.usage.used}/${enhancementUsage.usage.limit} used this month`
+                  : getImageEnhancementLimitLabel(entitlements.imageEnhancementLimit)}
+              </div>
+              <p className="mt-2 text-sm text-stone">
+                {entitlements.batchImageEnhancementEnabled
+                  ? "Batch enhancement and advanced styling are enabled on this plan."
+                  : "Starter keeps enhancement lightweight. Upgrade to Pro for batch enhancement and advanced styling controls."}
+              </p>
+              {!entitlements.batchImageEnhancementEnabled ? (
+                <Button asChild variant="secondary" size="sm" className="mt-4">
+                  <Link href="/dashboard/billing">Upgrade to Pro</Link>
+                </Button>
+              ) : null}
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center gap-3">
             {statusOptions.map((option) => (
               <button

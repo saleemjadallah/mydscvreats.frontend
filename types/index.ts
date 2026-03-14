@@ -244,6 +244,8 @@ export interface Restaurant {
     plan: SubscriptionPlan | null;
     hasSelectedPlan: boolean;
     menuItemLimit: number | null;
+    sourcePhotoImportEnabled: boolean;
+    sourcePhotoReviewEnabled: boolean;
     widgetEnabled: boolean;
     menuAssistantEnabled: boolean;
     customDomainEnabled: boolean;
@@ -252,6 +254,9 @@ export interface Restaurant {
     analyticsTier: AnalyticsTier;
     imageGenerationPriority: number;
     priorityImageGeneration: boolean;
+    imageEnhancementLimit: number | null;
+    batchImageEnhancementEnabled: boolean;
+    advancedPhotoStylingEnabled: boolean;
     aiDescriptionLimit: number | null;
     bulkDescriptionEnabled: boolean;
     aiTagAnalysisLimit: number | null;
@@ -318,6 +323,21 @@ export interface MenuExtractionDraft {
       price: number;
     }>;
   }>;
+}
+
+export interface ImageEnhancementUsage {
+  allowed: boolean;
+  usage: {
+    used: number;
+    limit: number | null;
+    remaining: number | null;
+  };
+  capabilities: {
+    importOwnPhotos: boolean;
+    reviewImportedPhotos: boolean;
+    batchEnhancement: boolean;
+    advancedStyling: boolean;
+  };
 }
 
 export interface TagSuggestion {

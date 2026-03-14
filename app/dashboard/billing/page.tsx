@@ -15,6 +15,8 @@ const starterFeatures = [
   "Up to 30 menu items",
   "AI menu extraction",
   "AI dish imagery",
+  "Owner photo uploads + PDF photo review",
+  "5 AI photo enhancements / month",
   "Hosted page at mydscvr.ai",
   "Basic page analytics",
 ];
@@ -25,6 +27,8 @@ const proFeatures = [
   "Private dish notes",
   "AI menu assistant on your public page",
   "Priority image generation",
+  "Unlimited AI photo enhancements",
+  "Batch enhancement + advanced styling",
   "Short share links",
   "Embeddable widget",
   "Advanced analytics",
@@ -280,6 +284,11 @@ function BillingContent() {
                 Priority image queue
               </div>
             ) : null}
+            <div className="rounded-full bg-[#EFE7DB] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#6B5A4C]">
+              {entitlements.imageEnhancementLimit === null
+                ? "Unlimited AI photo enhancement"
+                : `${entitlements.imageEnhancementLimit} photo enhancements / mo`}
+            </div>
             {entitlements.widgetEnabled ? (
               <div className="rounded-full bg-[#D9F4E5] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#206B48]">
                 Widget unlocked

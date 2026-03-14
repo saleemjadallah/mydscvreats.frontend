@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api-client";
 import {
+  getImageEnhancementLimitLabel,
   getPlanEntitlements,
   getMenuItemLimitMessage,
   getMenuItemUsage,
@@ -684,9 +685,16 @@ export function MenuEditor({
                 ))}
               </div>
             ) : (
-              <p className="text-[13px] text-stone">
-                The page is already polished. Use bulk image generation only when you add new dishes.
-              </p>
+              <div className="space-y-1 text-[13px] text-stone">
+                <p>The page is already polished. Use bulk image generation only when you add new dishes.</p>
+                <p>
+                  Real-photo upload and imported-photo review stay open on all plans.{" "}
+                  {getImageEnhancementLimitLabel(entitlements.imageEnhancementLimit)}.
+                </p>
+                {!entitlements.batchImageEnhancementEnabled ? (
+                  <p>Pro adds batch enhancement and advanced styling controls for owner-supplied photos.</p>
+                ) : null}
+              </div>
             )}
           </div>
         </div>
