@@ -2,6 +2,7 @@ export type SubscriptionStatus = "trial" | "active" | "paused" | "cancelled";
 export type SubscriptionPlan = "starter" | "pro";
 export type AnalyticsTier = "basic" | "advanced";
 export type RestaurantThemeKey = "saffron" | "midnight" | "rose" | "noir" | "aegean" | "neon";
+export type GbpConnectionStatus = "not_connected" | "self_reported" | "verified";
 export type PromotionType = "discounted_item" | "deal" | "combo";
 export type ImageStatus =
   | "none"
@@ -52,6 +53,18 @@ export interface MenuItemBadge {
   menuItemId: string;
   badgeId: string;
   badge: BadgeType;
+}
+
+export interface GbpConnection {
+  id: string;
+  restaurantId: string;
+  status: GbpConnectionStatus;
+  gbpUrl: string | null;
+  placeId: string | null;
+  verifiedAt: string | null;
+  connectedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MenuItem {
@@ -158,6 +171,7 @@ export interface Restaurant {
   } | null;
   menuSections?: MenuSection[];
   promotions?: Promotion[];
+  gbpConnection?: GbpConnection | null;
   entitlements?: {
     plan: SubscriptionPlan | null;
     hasSelectedPlan: boolean;

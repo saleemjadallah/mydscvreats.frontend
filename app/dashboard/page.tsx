@@ -8,6 +8,7 @@ import {
   CreditCard,
   Eye,
   ImageIcon,
+  MapPin,
   Palette,
   Rocket,
   ScanLine,
@@ -305,6 +306,21 @@ export default function DashboardPage() {
                         ? "Now that the page skeleton exists, move into menu polish, image generation, and billing."
                         : "The goal of onboarding is to assemble the first version of the page, not to complete every task."}
                   </p>
+                  {restaurant.isPublished && (restaurant.gbpConnection?.status === "self_reported" || restaurant.gbpConnection?.status === "verified") ? (
+                    <div className="mt-3 flex items-center gap-2 text-sm text-[#206B48]">
+                      <MapPin className="h-4 w-4" />
+                      Connected to Google Maps
+                    </div>
+                  ) : restaurant.isPublished && !restaurant.gbpConnection ? (
+                    <Link
+                      href="/dashboard/google-business"
+                      className="mt-3 inline-flex items-center gap-2 text-sm text-saffron hover:underline"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Connect your Google Business Profile to get discovered on Maps
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  ) : null}
                 </div>
               )}
             </CardContent>

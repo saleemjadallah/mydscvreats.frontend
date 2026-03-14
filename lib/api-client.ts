@@ -2,6 +2,7 @@ import type {
   AnalyticsSummary,
   BadgeType,
   DietaryTag,
+  GbpConnection,
   ItemTagSuggestions,
   MenuAnalysisResult,
   MenuAssistantMessage,
@@ -453,6 +454,26 @@ export const apiClient = {
       createdAt?: string;
       level: "basic" | "full";
     }>("/api/ai/analyze-menu/" + restaurantId, {
+      token,
+    });
+  },
+
+  // ── Google Business Profile ─────────────────────────────────
+  getGbpConnection(token: string, restaurantId: string) {
+    return request<GbpConnection | null>(`/api/gbp/${restaurantId}`, {
+      token,
+    });
+  },
+  connectGbp(token: string, restaurantId: string, payload?: { gbpUrl?: string }) {
+    return request<GbpConnection>(`/api/gbp/${restaurantId}/connect`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload ?? {}),
+    });
+  },
+  disconnectGbp(token: string, restaurantId: string) {
+    return request<{ ok: boolean }>(`/api/gbp/${restaurantId}`, {
+      method: "DELETE",
       token,
     });
   },

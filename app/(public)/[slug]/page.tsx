@@ -32,9 +32,14 @@ export async function generateMetadata({
 
   const cuisine = restaurant.cuisineType ? ` - ${restaurant.cuisineType}` : "";
   const title = `${restaurant.name} Menu${cuisine} | mydscvr Eats`;
+
+  const itemCount = (restaurant.menuSections ?? []).reduce(
+    (sum, s) => sum + s.items.length,
+    0
+  );
   const description =
     restaurant.description ??
-    `Browse the full menu for ${restaurant.name}${restaurant.location ? ` in ${restaurant.location}` : ""}. Dish photos, prices, and descriptions on mydscvr Eats.`;
+    `Browse the full menu for ${restaurant.name}${cuisine}${restaurant.location ? ` in ${restaurant.location}` : ""}. ${itemCount} dishes with photos, prices & dietary info.`;
   const coverImageUrl = getSafeAssetUrl(restaurant.coverImageUrl);
 
   return {
@@ -42,6 +47,12 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: `https://mydscvr.ai/${restaurant.slug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large" as const,
+      "max-snippet": -1,
     },
     openGraph: {
       title,

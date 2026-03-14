@@ -27,7 +27,7 @@ import {
   getPromotionsByItemId,
   isPromotionLive,
 } from "@/lib/promotions";
-import { buildBreadcrumbJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
+import { buildBreadcrumbJsonLd, buildPopularDishesJsonLd, buildRestaurantJsonLd } from "@/lib/structured-data";
 import { getRestaurantTheme } from "@/lib/restaurant-theme";
 import { cn, formatCurrency, normalizeExternalUrl } from "@/lib/utils";
 import type { MenuItem, MenuItemImage, Restaurant, RestaurantThemeKey } from "@/types";
@@ -265,6 +265,7 @@ export function RestaurantPageView({
   const theme = getRestaurantTheme(themeKeyOverride ?? restaurant.themeKey);
   const jsonLd = buildRestaurantJsonLd(restaurant);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(restaurant.name, restaurant.slug);
+  const popularDishesJsonLd = buildPopularDishesJsonLd(restaurant);
   const websiteUrl = normalizeExternalUrl(restaurant.website);
   const whatsappEnabled = !isEmbedded && Boolean(restaurant.whatsappNumber);
   const campaign = searchParams.get("utm_campaign");
@@ -340,6 +341,12 @@ export function RestaurantPageView({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
           />
+          {popularDishesJsonLd ? (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(popularDishesJsonLd) }}
+            />
+          ) : null}
         </>
       ) : null}
       {trackPageView ? <RestaurantTracker restaurantId={restaurant.id} /> : null}
