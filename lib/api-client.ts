@@ -244,6 +244,22 @@ export const apiClient = {
       body: JSON.stringify(payload),
     });
   },
+  enhanceMenuItemImage(
+    token: string,
+    itemId: string,
+    imageId: string,
+    payload?: { preset?: "clean_studio" | "warm_natural" | "lighter_background" }
+  ) {
+    return request<{
+      ok: boolean;
+      image: MenuItemImage;
+      usage: { used: number; limit: number | null; remaining: number | null };
+    }>(`/api/menu/items/${itemId}/images/${imageId}/enhance`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload ?? {}),
+    });
+  },
   detectMenuSourceImages(token: string, payload: {
     restaurantId: string;
     pages: Array<{

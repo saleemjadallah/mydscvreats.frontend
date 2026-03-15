@@ -160,6 +160,8 @@ export function MenuEditor({
   const [showBadges, setShowBadges] = useState(false);
   const [imageComposerItemId, setImageComposerItemId] = useState<string | null>(null);
   const [queueingImageItemIds, setQueueingImageItemIds] = useState<Record<string, boolean>>({});
+  const [enhancingImageKey, setEnhancingImageKey] = useState<string | null>(null);
+  const [enhancePickerImageKey, setEnhancePickerImageKey] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"menu" | "offers">("menu");
   const [imageRetryChoice, setImageRetryChoice] = useState<{
     itemId: string;
@@ -426,6 +428,34 @@ export function MenuEditor({
       toast.success("Primary dish image updated.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update the primary image.");
+    }
+  }
+
+  async function enhanceMenuItemImage(
+    itemId: string,
+    imageId: string,
+    preset: "clean_studio" | "warm_natural" | "lighter_background"
+  ) {
+    const imageKey = `${itemId}:${imageId}`;
+
+    try {
+      setEnhancingImageKey(imageKey);
+      await withToken(async (token) => {
+        const result = await apiClient.enhanceMenuItemImage(token, itemId, imageId, { preset });
+        await onRefresh();
+
+        const remainingLabel =
+          result.usage.remaining === null
+            ? "Unlimited remaining on Pro."
+            : `${result.usage.remaining} enhancement${result.usage.remaining === 1 ? "" : "s"} remaining this month.`;
+
+        toast.success(`Photo enhanced. ${remainingLabel}`);
+      });
+      setEnhancePickerImageKey(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to enhance uploaded photo.");
+    } finally {
+      setEnhancingImageKey(null);
     }
   }
 
@@ -813,7 +843,20 @@ export function MenuEditor({
                                           </div>
                                         )}
                                       </button>
-                                      <div className="space-y-1">
+                              <div className="space-y-1">
+                                        {(() => {
+                                          const imageKey = `${item.id}:${image.id}`;
+                                          const canEnhanceUploadedImage =
+                                            !image.isSynthetic &&
+                                            Boolean(image.imageUrl) &&
+                                            (image.originType === "owner_upload" ||
+                                              image.originType === "menu_source_upload") &&
+                                            image.imageStatus !== "generating";
+                                          const showEnhancePicker = enhancePickerImageKey === imageKey;
+                                          const isEnhancingThisImage = enhancingImageKey === imageKey;
+
+                                          return (
+                                            <>
                                         {image.isPrimary ? (
                                           <Badge variant="success" className="w-full justify-center">
                                             Primary
@@ -868,6 +911,61 @@ export function MenuEditor({
                                             Use
                                           </Button>
                                         ) : null}
+                                        {canEnhanceUploadedImage ? (
+                                          showEnhancePicker ? (
+                                            <div className="space-y-1">
+                                              <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="w-full"
+                                                disabled={isEnhancingThisImage}
+                                                onClick={() => void enhanceMenuItemImage(item.id, image.id, "clean_studio")}
+                                              >
+                                                {isEnhancingThisImage ? "Enhancing..." : "Studio"}
+                                              </Button>
+                                              <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="w-full"
+                                                disabled={isEnhancingThisImage}
+                                                onClick={() => void enhanceMenuItemImage(item.id, image.id, "warm_natural")}
+                                              >
+                                                Warm
+                                              </Button>
+                                              <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="w-full"
+                                                disabled={isEnhancingThisImage}
+                                                onClick={() => void enhanceMenuItemImage(item.id, image.id, "lighter_background")}
+                                              >
+                                                Light BG
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="w-full"
+                                                disabled={isEnhancingThisImage}
+                                                onClick={() => setEnhancePickerImageKey(null)}
+                                              >
+                                                Cancel
+                                              </Button>
+                                            </div>
+                                          ) : (
+                                            <Button
+                                              variant="secondary"
+                                              size="sm"
+                                              className="w-full"
+                                              disabled={isEnhancingThisImage}
+                                              onClick={() => setEnhancePickerImageKey(imageKey)}
+                                            >
+                                              Enhance
+                                            </Button>
+                                          )
+                                        ) : null}
+                                            </>
+                                          );
+                                        })()}
                                       </div>
                                     </div>
                                   ))
